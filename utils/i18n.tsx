@@ -68,6 +68,11 @@ const translations = {
     tasksFound: 'tarefas encontradas',
     columns: 'Colunas',
     manageColumns: 'Gerenciar Colunas',
+    groupBy: 'Agrupar por',
+    groupByNone: 'Nenhum',
+    groupByStatus: 'Status',
+    groupByPriority: 'Prioridade',
+    groupByAssignee: 'Responsável',
     
     // Shared
     daysOld: 'dias',

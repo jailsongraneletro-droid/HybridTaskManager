@@ -80,9 +80,6 @@ export const DataService = {
              avatar: avatarUrl
          });
 
-         // We do NOT seed data here immediately because RLS might need a fresh session.
-         // Data seeding happens on first getBoardData call.
-
          return { id: data.user.id, name, email, avatar: avatarUrl };
     }
     throw new Error("Signup failed");
@@ -116,7 +113,7 @@ export const DataService = {
     for (let i = 0; i < DEFAULT_COLUMNS.length; i++) {
         const col = DEFAULT_COLUMNS[i];
         await supabase.from('kanban_columns').insert({
-            id: col.id, // Using string ID as requested by schema, mapped per user via RLS
+            id: col.id, 
             title: col.title,
             color: col.color,
             position: i,
@@ -148,7 +145,6 @@ export const DataService = {
     if (!user) throw new Error("User not authenticated");
 
     // 1. Check if user has columns. If not, seed data.
-    // IMPORTANT: Explicitly filter by user.id to handle cases where RLS might be off.
     const { count } = await supabase
         .from('kanban_columns')
         .select('*', { count: 'exact', head: true })
@@ -159,7 +155,6 @@ export const DataService = {
     }
 
     // 2. Fetch All Data with explicit user_id filter
-    // This ensures that even if RLS is disabled on Supabase, the user only sees their own data client-side.
     const [
         { data: columnsData },
         { data: prioritiesData },
@@ -227,7 +222,12 @@ export const DataService = {
         user_id: user.id
     });
 
-    if (error) throw error;
+    if (error) {
+        if (error.message?.includes('kanban_tasks_assignee_id_fkey')) {
+             throw new Error("Erro de Banco de Dados: Chave estrangeira inválida. Execute o script SQL para corrigir a tabela kanban_tasks.");
+        }
+        throw error;
+    }
     return DataService.getBoardData();
   },
 
@@ -244,7 +244,12 @@ export const DataService = {
         })
         .eq('id', task.id);
 
-    if (error) throw error;
+    if (error) {
+        if (error.message?.includes('kanban_tasks_assignee_id_fkey')) {
+             throw new Error("Erro de Banco de Dados: Chave estrangeira inválida. Execute o script SQL para corrigir a tabela kanban_tasks.");
+        }
+        throw error;
+    }
     return DataService.getBoardData();
   },
 
@@ -264,7 +269,6 @@ export const DataService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No user");
 
-    // Generate a clean ID
     const id = title.trim();
 
     const { error } = await supabase.from('kanban_columns').insert({
@@ -279,9 +283,6 @@ export const DataService = {
   },
 
   deleteColumn: async (columnId: string): Promise<BoardData> => {
-    // Delete column (RLS handles permission)
-    // Note: Database should ideally CASCADE tasks, or we delete tasks first. 
-    // Assuming backend handles cascade or we leave orphaned tasks for now (hidden from view due to missing col).
     const { error } = await supabase.from('kanban_columns').delete().eq('id', columnId);
     if (error) throw error;
     return DataService.getBoardData();
@@ -299,7 +300,7 @@ export const DataService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No user");
 
-    const id = title.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now().toString(36); // Unique ID to prevent collision
+    const id = title.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now().toString(36); 
     const { error } = await supabase.from('kanban_priorities').insert({
         id,
         title,
