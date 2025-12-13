@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { Layout, LayoutDashboard, Table2, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
 import { KanbanBoard } from './views/KanbanBoard';
@@ -422,11 +422,11 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
               {!isSidebarCollapsed && <span>{t('dashboard')}</span>}
             </NavLink>
             <NavLink to="/board" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <Layout size={18} title={isSidebarCollapsed ? t('kanban') : ''} />
+              <Kanban size={18} title={isSidebarCollapsed ? t('kanban') : ''} />
               {!isSidebarCollapsed && <span>{t('kanban')}</span>}
             </NavLink>
             <NavLink to="/table" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <Table2 size={18} title={isSidebarCollapsed ? t('table') : ''} />
+              <List size={18} title={isSidebarCollapsed ? t('table') : ''} />
               {!isSidebarCollapsed && <span>{t('table')}</span>}
             </NavLink>
             <NavLink to="/settings" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
