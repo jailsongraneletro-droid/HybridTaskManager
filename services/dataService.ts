@@ -1,7 +1,24 @@
 import { BoardData, Column, Task, User, Priority } from '../types';
 import { supabase } from '../utils/supabaseClient';
+import { MOCK_USERS } from '../constants';
 
 export const DataService = {
+  // --- Helper to seed mock users ---
+  ensureMockUsers: async () => {
+    // Attempt to insert the mock users into the 'profiles' table.
+    // This allows the "assignee_id" foreign key to work correctly for these static users.
+    // Note: If 'profiles' table has a strict foreign key to 'auth.users' that cascades, 
+    // this might fail if those UIDs don't exist in auth. 
+    // But it's the best attempt to make "Jailson" etc work without real signup.
+    const { error } = await supabase.from('profiles').upsert(MOCK_USERS, { onConflict: 'id', ignoreDuplicates: true });
+    
+    if (error) {
+        // If this fails (e.g. 23503 foreign_key_violation on auth.users), 
+        // we log it, but we can't do much else without changing DB schema.
+        console.warn("Autosync of Mock Users failed (Likely due to Auth FK constraints):", error.message);
+    }
+  },
+
   // --- User / Auth (Supabase) ---
   
   getCurrentUser: async (): Promise<User | null> => {
@@ -99,8 +116,7 @@ export const DataService = {
              throw new Error("CONFIRM_EMAIL");
          }
 
-         // 2. Insert into profiles table (Only if we have a session, otherwise RLS might block, 
-         // or we rely on triggers/login fallback)
+         // 2. Insert into profiles table
          const { error: profileError } = await supabase.from('profiles').upsert({
              id: data.user.id,
              name: name,
@@ -149,6 +165,9 @@ export const DataService = {
   // --- Board Data (Supabase) ---
 
   getBoardData: async (): Promise<BoardData> => {
+    // Try to sync mock users to ensure they exist for assignment
+    await DataService.ensureMockUsers();
+
     // 1. Fetch Columns
     const { data: columnsData, error: colError } = await supabase
         .from('kanban_columns')
@@ -229,34 +248,74 @@ export const DataService = {
   },
 
   addTask: async (task: Task): Promise<BoardData> => {
-    const { error } = await supabase.from('kanban_tasks').insert({
-        title: task.title,
-        description: task.description,
-        status: task.status,
-        priority: task.priority,
-        assignee_id: task.assigneeId || null,
-        due_date: task.dueDate,
-        position: 999999 
-    });
-
-    if (error) throw error;
-    return DataService.getBoardData();
-  },
-
-  updateTask: async (task: Task): Promise<BoardData> => {
-    const { error } = await supabase
-        .from('kanban_tasks')
-        .update({
+    try {
+        const { error } = await supabase.from('kanban_tasks').insert({
             title: task.title,
             description: task.description,
             status: task.status,
             priority: task.priority,
             assignee_id: task.assigneeId || null,
-            due_date: task.dueDate
-        })
-        .eq('id', task.id);
+            due_date: task.dueDate,
+            position: 999999 
+        });
 
-    if (error) throw error;
+        if (error) throw error;
+    } catch (error: any) {
+        // Fallback: If Foreign Key violation (Assignee doesn't exist in DB), try inserting without assignee
+        if (error.code === '23503') {
+            console.warn("Assignee ID not found in DB (Foreign Key Constraint). Task created without assignee.");
+            const { error: retryError } = await supabase.from('kanban_tasks').insert({
+                title: task.title,
+                description: task.description,
+                status: task.status,
+                priority: task.priority,
+                assignee_id: null,
+                due_date: task.dueDate,
+                position: 999999 
+            });
+            if (retryError) throw retryError;
+        } else {
+            throw error;
+        }
+    }
+    return DataService.getBoardData();
+  },
+
+  updateTask: async (task: Task): Promise<BoardData> => {
+    try {
+        const { error } = await supabase
+            .from('kanban_tasks')
+            .update({
+                title: task.title,
+                description: task.description,
+                status: task.status,
+                priority: task.priority,
+                assignee_id: task.assigneeId || null,
+                due_date: task.dueDate
+            })
+            .eq('id', task.id);
+
+        if (error) throw error;
+    } catch (error: any) {
+        // Fallback for update as well
+        if (error.code === '23503') {
+             console.warn("Assignee ID not found in DB during update. Assignee removed.");
+             const { error: retryError } = await supabase
+                .from('kanban_tasks')
+                .update({
+                    title: task.title,
+                    description: task.description,
+                    status: task.status,
+                    priority: task.priority,
+                    assignee_id: null,
+                    due_date: task.dueDate
+                })
+                .eq('id', task.id);
+            if (retryError) throw retryError;
+        } else {
+            throw error;
+        }
+    }
     return DataService.getBoardData();
   },
 

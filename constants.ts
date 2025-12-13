@@ -1,15 +1,21 @@
 
 import { BoardData, User, Priority } from './types';
 
+// IDs are valid UUID format to avoid syntax errors in Postgres.
+// These specific IDs will be synced to the 'profiles' table by DataService if possible.
 export const MOCK_USERS: User[] = [
-  { id: 'u1', name: 'Alex Johnson', email: 'alex@example.com', password: 'password', avatar: 'https://picsum.photos/32/32?random=1' },
-  { id: 'u2', name: 'Sam Smith', email: 'sam@example.com', password: 'password', avatar: 'https://picsum.photos/32/32?random=2' },
-  { id: 'u3', name: 'Jordan Lee', email: 'jordan@example.com', password: 'password', avatar: 'https://picsum.photos/32/32?random=3' },
+  { id: '00000000-0000-0000-0000-000000000001', name: 'Jailson', email: 'jailson@gran.com', avatar: 'https://ui-avatars.com/api/?name=Jailson&background=random' },
+  { id: '00000000-0000-0000-0000-000000000002', name: 'Suelany', email: 'suelany@gran.com', avatar: 'https://ui-avatars.com/api/?name=Suelany&background=random' },
+  { id: '00000000-0000-0000-0000-000000000003', name: 'Silvana', email: 'silvana@gran.com', avatar: 'https://ui-avatars.com/api/?name=Silvana&background=random' },
+  { id: '00000000-0000-0000-0000-000000000004', name: 'Rafael', email: 'rafael@gran.com', avatar: 'https://ui-avatars.com/api/?name=Rafael&background=random' },
+  { id: '00000000-0000-0000-0000-000000000005', name: 'Jose', email: 'jose@gran.com', avatar: 'https://ui-avatars.com/api/?name=Jose&background=random' },
+  { id: '00000000-0000-0000-0000-000000000006', name: 'Carlos', email: 'carlos@gran.com', avatar: 'https://ui-avatars.com/api/?name=Carlos&background=random' },
+  { id: '00000000-0000-0000-0000-000000000007', name: 'Setor de Peças', email: 'pecas@gran.com', avatar: 'https://ui-avatars.com/api/?name=Setor+Pecas&background=random' },
+  { id: '00000000-0000-0000-0000-000000000008', name: 'ADM', email: 'adm@gran.com', avatar: 'https://ui-avatars.com/api/?name=ADM&background=random' },
+  { id: '00000000-0000-0000-0000-000000000009', name: 'Transporte', email: 'transporte@gran.com', avatar: 'https://ui-avatars.com/api/?name=Transporte&background=random' },
 ];
 
 const now = new Date();
-const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
 
 const DEFAULT_PRIORITIES: Priority[] = [
   { id: 'low', title: 'Low', color: '#dbeafe' }, // blue-100
@@ -18,70 +24,25 @@ const DEFAULT_PRIORITIES: Priority[] = [
 ];
 
 export const INITIAL_DATA: BoardData = {
-  tasks: {
-    'task-1': {
-      id: 'task-1',
-      title: 'Design System Audit',
-      description: 'Review the current component library and identify inconsistencies.',
-      status: 'In Progress',
-      priority: 'high',
-      assigneeId: 'u1',
-      dueDate: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: fiveDaysAgo.toISOString(),
-      tags: ['Design', 'Audit']
-    },
-    'task-2': {
-      id: 'task-2',
-      title: 'API Integration for Auth',
-      description: 'Implement JWT based authentication flow.',
-      status: 'To Do',
-      priority: 'high',
-      assigneeId: 'u2',
-      dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: now.toISOString(),
-      tags: ['Backend', 'Security']
-    },
-    'task-3': {
-      id: 'task-3',
-      title: 'Update Documentation',
-      description: 'Update the README and API docs.',
-      status: 'Done',
-      priority: 'low',
-      assigneeId: 'u3',
-      dueDate: twoDaysAgo.toISOString(),
-      createdAt: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      tags: ['Docs']
-    },
-    'task-4': {
-      id: 'task-4',
-      title: 'Refactor Table Component',
-      description: 'Improve performance of the data table.',
-      status: 'To Do',
-      priority: 'medium',
-      assigneeId: 'u1',
-      dueDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      createdAt: twoDaysAgo.toISOString(),
-      tags: ['Refactor', 'Frontend']
-    }
-  },
+  tasks: {},
   columns: {
     'To Do': {
       id: 'To Do',
       title: 'To Do',
       color: '#64748b', // Slate
-      taskIds: ['task-2', 'task-4']
+      taskIds: []
     },
     'In Progress': {
       id: 'In Progress',
       title: 'In Progress',
       color: '#3b82f6', // Blue
-      taskIds: ['task-1']
+      taskIds: []
     },
     'Done': {
       id: 'Done',
       title: 'Done',
       color: '#22c55e', // Green
-      taskIds: ['task-3']
+      taskIds: []
     }
   },
   columnOrder: ['To Do', 'In Progress', 'Done'],
