@@ -148,25 +148,28 @@ export const DataService = {
     if (!user) throw new Error("User not authenticated");
 
     // 1. Check if user has columns. If not, seed data.
+    // IMPORTANT: Explicitly filter by user.id to handle cases where RLS might be off.
     const { count } = await supabase
         .from('kanban_columns')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
     
     if (count === 0) {
         await DataService.seedUserData(user);
     }
 
-    // 2. Fetch All Data (RLS filters by user_id automatically)
+    // 2. Fetch All Data with explicit user_id filter
+    // This ensures that even if RLS is disabled on Supabase, the user only sees their own data client-side.
     const [
         { data: columnsData },
         { data: prioritiesData },
         { data: tasksData },
         { data: assigneesData }
     ] = await Promise.all([
-        supabase.from('kanban_columns').select('*').order('position'),
-        supabase.from('kanban_priorities').select('*'),
-        supabase.from('kanban_tasks').select('*').order('position'),
-        supabase.from('kanban_assignees').select('*').order('created_at')
+        supabase.from('kanban_columns').select('*').eq('user_id', user.id).order('position'),
+        supabase.from('kanban_priorities').select('*').eq('user_id', user.id),
+        supabase.from('kanban_tasks').select('*').eq('user_id', user.id).order('position'),
+        supabase.from('kanban_assignees').select('*').eq('user_id', user.id).order('created_at')
     ]);
 
     // 3. Transform
