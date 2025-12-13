@@ -1,0 +1,7 @@
+{
+  "name": "HybridTaskManager",
+  "description": "A comprehensive task management application combining Kanban and Table views with detailed task tracking, priority management, and productivity visualization.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
