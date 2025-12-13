@@ -17,6 +17,7 @@ const translations = {
     save: 'Salvar Alterações',
     create: 'Criar Tarefa',
     cancel: 'Cancelar',
+    confirm: 'Confirmar',
     addColumn: 'Adicionar Categoria',
     deleteCategory: 'Excluir Categoria',
     addPriority: 'Adicionar Prioridade',
@@ -72,8 +73,19 @@ const translations = {
     daysOld: 'dias',
     today: 'Hoje',
     unassigned: 'Não atribuído',
-    confirmDeleteTask: 'Tem certeza que deseja excluir esta tarefa?',
-    confirmDeleteCategory: 'Excluir uma categoria excluirá todas as tarefas nela. Tem certeza?',
+    
+    // Confirmation Modals
+    confirmDeleteTitle: 'Excluir Item',
+    confirmDeleteMessage: 'Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.',
+    confirmDeleteTaskTitle: 'Excluir Tarefa',
+    confirmDeleteTaskMessage: 'Tem certeza que deseja excluir esta tarefa permanentemente?',
+    confirmDeleteCategoryTitle: 'Excluir Categoria',
+    confirmDeleteCategoryMessage: 'Tem certeza? Excluir uma categoria apagará PERMANENTEMENTE todas as tarefas contidas nela.',
+    confirmDeletePriorityTitle: 'Excluir Prioridade',
+    confirmDeletePriorityMessage: 'Tem certeza que deseja excluir esta prioridade? Tarefas com esta prioridade podem ficar sem classificação.',
+
+    // Validation
+    dateInPastError: 'A data de vencimento não pode ser anterior à data atual.',
 
     // Auth & Profile
     welcomeBack: 'Bem-vindo de volta! Por favor, insira seus dados.',

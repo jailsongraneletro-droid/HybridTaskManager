@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Task, BoardData } from '../types';
 import { Modal } from './Shared';
 import { MOCK_USERS } from '../constants';
-import { Trash2 } from 'lucide-react';
+import { Trash2, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 
 interface TaskModalProps {
@@ -27,6 +27,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
   const [assigneeId, setAssigneeId] = useState(initialData?.assigneeId || '');
   const [dueDate, setDueDate] = useState(initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : '');
 
+  const [validationError, setValidationError] = useState('');
+
   React.useEffect(() => {
     if (isOpen) {
         setTitle(initialData?.title || '');
@@ -35,11 +37,27 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
         setStatus(initialData?.status || (boardData?.columnOrder[0] || ''));
         setAssigneeId(initialData?.assigneeId || '');
         setDueDate(initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : '');
+        setValidationError('');
     }
   }, [isOpen, initialData, boardData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError('');
+
+    // Date Validation
+    if (dueDate) {
+        const selectedDate = new Date(dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+        
+        // We allow selecting today, so we check if strict less than today
+        if (selectedDate.getTime() < today.getTime()) {
+            setValidationError(t('dateInPastError'));
+            return;
+        }
+    }
+
     onSubmit({
       title,
       description,
@@ -53,16 +71,23 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
 
   const handleDelete = () => {
     if (initialData && onDelete) {
-        if(window.confirm(t('confirmDeleteTask'))) {
-            onDelete(initialData.id);
-            onClose();
-        }
+        // We delegate the confirmation to App.tsx via onDelete prop
+        onDelete(initialData.id);
+        onClose();
     }
   }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={initialData ? t('edit') : t('newTask')}>
       <form onSubmit={handleSubmit} className="space-y-4">
+        
+        {validationError && (
+            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-start gap-2 border border-red-100">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <span>{validationError}</span>
+            </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">{t('title')}</label>
           <input
@@ -107,9 +132,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
           <input
             required
             type="date"
-            className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none"
+            className={`w-full px-3 py-2 bg-white text-slate-900 border rounded-lg outline-none ${validationError ? 'border-red-300 focus:ring-2 focus:ring-red-200' : 'border-slate-200'}`}
             value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+            onChange={(e) => {
+                setDueDate(e.target.value);
+                setValidationError('');
+            }}
           />
         </div>
 

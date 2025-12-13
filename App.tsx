@@ -9,6 +9,7 @@ import { Dashboard } from './views/Dashboard';
 import { SettingsView } from './views/SettingsView';
 import { TaskModal } from './components/TaskModal';
 import { ProfileModal } from './components/ProfileModal';
+import { ConfirmationModal } from './components/Shared';
 import { DropResult } from '@hello-pangea/dnd';
 import { LanguageProvider, useLanguage } from './utils/i18n';
 
@@ -178,6 +179,9 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
 
+  // Delete Confirmation State
+  const [deleteIntent, setDeleteIntent] = useState<{ type: 'task' | 'column' | 'priority', id: string } | null>(null);
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -299,15 +303,61 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
+  // --- Deletion Handlers with Confirmation ---
+
+  const requestDeleteTask = (taskId: string) => {
+    setDeleteIntent({ type: 'task', id: taskId });
+  };
+
+  const requestDeleteColumn = (columnId: string) => {
+    setDeleteIntent({ type: 'column', id: columnId });
+  };
+
+  const requestDeletePriority = (priorityId: string) => {
+    setDeleteIntent({ type: 'priority', id: priorityId });
+  };
+
+  const executeDelete = async () => {
+    if (!deleteIntent) return;
+    
     setAppError('');
     try {
-        const newData = await DataService.deleteTask(taskId);
-        setData(newData);
+        let newData = null;
+        if (deleteIntent.type === 'task') {
+             newData = await DataService.deleteTask(deleteIntent.id);
+        } else if (deleteIntent.type === 'column') {
+             newData = await DataService.deleteColumn(deleteIntent.id);
+        } else if (deleteIntent.type === 'priority') {
+             newData = await DataService.deletePriority(deleteIntent.id);
+        }
+
+        if (newData) setData(newData);
     } catch (e: any) {
-        setAppError("Error deleting task: " + e.message);
+        setAppError("Error deleting: " + e.message);
+    } finally {
+        setDeleteIntent(null);
     }
   };
+
+  const getConfirmationTitle = () => {
+    switch (deleteIntent?.type) {
+        case 'task': return t('confirmDeleteTaskTitle');
+        case 'column': return t('confirmDeleteCategoryTitle');
+        case 'priority': return t('confirmDeletePriorityTitle');
+        default: return t('confirmDeleteTitle');
+    }
+  };
+
+  const getConfirmationMessage = () => {
+    switch (deleteIntent?.type) {
+        case 'task': return t('confirmDeleteTaskMessage');
+        case 'column': return t('confirmDeleteCategoryMessage');
+        case 'priority': return t('confirmDeletePriorityMessage');
+        default: return t('confirmDeleteMessage');
+    }
+  };
+
+  // -------------------------------------------
 
   const openNewTask = () => {
     setEditingTask(undefined);
@@ -339,19 +389,6 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     }
   };
 
-  const handleDeleteColumn = async (id: string) => {
-    if (window.confirm(t('confirmDeleteCategory'))) {
-        setAppError('');
-        try {
-            const newData = await DataService.deleteColumn(id);
-            setData(newData);
-        } catch (e: any) {
-            setAppError("Error: " + e.message);
-        }
-    }
-  };
-
-  // -- Priority Handlers --
   const handleAddPriority = async (title: string, color: string) => {
     setAppError('');
     try {
@@ -369,18 +406,6 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
         setData(newData);
     } catch (e: any) {
         setAppError("Error: " + e.message);
-    }
-  };
-
-  const handleDeletePriority = async (id: string) => {
-    if (window.confirm(t('deletePriority') + '?')) {
-        setAppError('');
-        try {
-            const newData = await DataService.deletePriority(id);
-            setData(newData);
-        } catch (e: any) {
-             setAppError("Error: " + e.message);
-        }
     }
   };
 
@@ -552,14 +577,14 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                   data={data} 
                   onDragEnd={handleDragEnd} 
                   onEditTask={openEditTask} 
-                  onDeleteTask={handleDeleteTask}
+                  onDeleteTask={requestDeleteTask}
                 />
               } />
               <Route path="/table" element={
                 <TableView 
                   data={data} 
                   onEditTask={openEditTask} 
-                  onDeleteTask={handleDeleteTask}
+                  onDeleteTask={requestDeleteTask}
                 />
               } />
               <Route path="/settings" element={
@@ -567,10 +592,10 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                   data={data} 
                   onAddColumn={handleAddColumn}
                   onUpdateColumn={handleUpdateColumn}
-                  onDeleteColumn={handleDeleteColumn}
+                  onDeleteColumn={requestDeleteColumn}
                   onAddPriority={handleAddPriority}
                   onUpdatePriority={handleUpdatePriority}
-                  onDeletePriority={handleDeletePriority}
+                  onDeletePriority={requestDeletePriority}
                 />
               } />
               <Route path="*" element={<Navigate to="/" replace />} />
@@ -583,7 +608,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
         isOpen={isTaskModalOpen} 
         onClose={() => setIsTaskModalOpen(false)} 
         onSubmit={handleSaveTask}
-        onDelete={handleDeleteTask}
+        onDelete={requestDeleteTask}
         initialData={editingTask}
         boardData={data}
       />
@@ -593,6 +618,15 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
         onClose={() => setIsProfileModalOpen(false)}
         user={user}
         onUpdate={handleUpdateProfile}
+      />
+
+      {/* Global Confirmation Modal */}
+      <ConfirmationModal 
+        isOpen={!!deleteIntent}
+        onClose={() => setDeleteIntent(null)}
+        onConfirm={executeDelete}
+        title={getConfirmationTitle()}
+        message={getConfirmationMessage()}
       />
     </HashRouter>
   );
