@@ -1,238 +1,299 @@
-import { INITIAL_DATA, MOCK_USERS } from '../constants';
-import { BoardData, Column, Task, User, Priority } from '../types';
 
-const STORAGE_KEY = 'hybrid_task_manager_data';
-const CURRENT_USER_KEY = 'hybrid_task_manager_user';
-const USERS_LIST_KEY = 'hybrid_task_manager_users_list';
+import { BoardData, Column, Task, User, Priority } from '../types';
+import { supabase } from '../utils/supabaseClient';
 
 export const DataService = {
-  // --- User / Auth ---
+  // --- User / Auth (Supabase) ---
   
-  getCurrentUser: (): User | null => {
-    const stored = localStorage.getItem(CURRENT_USER_KEY);
-    return stored ? JSON.parse(stored) : null;
+  getCurrentUser: async (): Promise<User | null> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return null;
+    
+    // Fetch profile data
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+
+    if (profile) {
+        return {
+            id: profile.id,
+            name: profile.name,
+            email: profile.email,
+            avatar: profile.avatar
+        };
+    }
+    return null;
   },
 
-  getAllUsers: (): User[] => {
-    const stored = localStorage.getItem(USERS_LIST_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-    const initialUsers = MOCK_USERS;
-    localStorage.setItem(USERS_LIST_KEY, JSON.stringify(initialUsers));
-    return initialUsers;
+  getAllUsers: async (): Promise<User[]> => {
+    const { data } = await supabase.from('profiles').select('*');
+    return (data || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        avatar: p.avatar
+    }));
   },
 
   login: async (email: string, password?: string): Promise<User> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
+    if (!password) throw new Error("Password required");
     
-    const users = DataService.getAllUsers();
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (user) {
-        if (!password || (user as any).password === password || password === 'password') {
-             localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
-             return user;
-        }
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+    });
+
+    if (error) throw error;
+    if (data.user) {
+        // Fetch profile to return full user object
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+        return {
+            id: data.user.id,
+            name: profile?.name || email,
+            email: data.user.email!,
+            avatar: profile?.avatar
+        };
     }
-    throw new Error('Invalid credentials');
+    throw new Error("Login failed");
   },
 
   signup: async (name: string, email: string, password: string): Promise<User> => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const users = DataService.getAllUsers();
-    
-    if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-        throw new Error('User already exists');
-    }
-
-    const newUser: User = {
-        id: `u-${Date.now()}`,
-        name,
+    const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
-    };
+        options: {
+            data: {
+                name,
+                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
+            }
+        }
+    });
 
-    users.push(newUser);
-    localStorage.setItem(USERS_LIST_KEY, JSON.stringify(users));
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
-    return newUser;
+    if (error) throw error;
+    
+    // Note: If email confirmation is enabled in Supabase, user won't be returned immediately active.
+    // For this MVP, disable email confirmation in Supabase Dashboard > Authentication > Providers > Email
+    if (data.user) {
+         return {
+            id: data.user.id,
+            name: name,
+            email: email,
+            avatar: data.user.user_metadata.avatar
+        };
+    }
+    throw new Error("Signup failed");
   },
 
   updateCurrentUser: async (userId: string, updates: Partial<User>): Promise<User> => {
-    const users = DataService.getAllUsers();
-    const index = users.findIndex(u => u.id === userId);
-    if (index === -1) throw new Error("User not found");
+    const { error } = await supabase
+        .from('profiles')
+        .update({
+            name: updates.name,
+            avatar: updates.avatar
+        })
+        .eq('id', userId);
 
-    const updatedUser = { ...users[index], ...updates };
-    users[index] = updatedUser;
+    if (error) throw error;
     
-    localStorage.setItem(USERS_LIST_KEY, JSON.stringify(users));
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
-    return updatedUser;
+    // Password update is separate in Supabase
+    if (updates.password) {
+        const { error: pwdError } = await supabase.auth.updateUser({ password: updates.password });
+        if (pwdError) throw pwdError;
+    }
+
+    return { id: userId, ...updates } as User;
   },
 
-  logout: () => {
-    localStorage.removeItem(CURRENT_USER_KEY);
+  logout: async () => {
+    await supabase.auth.signOut();
   },
 
-  // --- Board Data ---
+  // --- Board Data (Supabase) ---
 
   getBoardData: async (): Promise<BoardData> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DATA));
-      return INITIAL_DATA;
-    }
-    return JSON.parse(stored);
+    // 1. Fetch Columns
+    const { data: columnsData, error: colError } = await supabase
+        .from('kanban_columns')
+        .select('*')
+        .order('position');
+    
+    if (colError) throw colError;
+
+    // 2. Fetch Priorities
+    const { data: prioritiesData, error: prioError } = await supabase
+        .from('kanban_priorities')
+        .select('*');
+        
+    if (prioError) throw prioError;
+
+    // 3. Fetch Tasks
+    const { data: tasksData, error: taskError } = await supabase
+        .from('kanban_tasks')
+        .select('*')
+        .order('position'); // Order by drag position
+
+    if (taskError) throw taskError;
+
+    // 4. Transform to BoardData structure
+    const tasks: Record<string, Task> = {};
+    const columns: Record<string, Column> = {};
+    const columnOrder: string[] = [];
+    const priorities: Priority[] = prioritiesData.map(p => ({
+        id: p.id,
+        title: p.title,
+        color: p.color
+    }));
+
+    // Initialize Columns
+    columnsData.forEach(col => {
+        columns[col.id] = {
+            id: col.id,
+            title: col.title,
+            color: col.color,
+            taskIds: [] // Will populate next
+        };
+        columnOrder.push(col.id);
+    });
+
+    // Populate Tasks and Column TaskIds
+    tasksData.forEach(t => {
+        const task: Task = {
+            id: t.id,
+            title: t.title,
+            description: t.description,
+            status: t.status,
+            priority: t.priority,
+            assigneeId: t.assignee_id,
+            dueDate: t.due_date,
+            createdAt: t.created_at,
+            tags: [] 
+        };
+        tasks[task.id] = task;
+        
+        // Add to column if column exists
+        if (columns[t.status]) {
+            columns[t.status].taskIds.push(t.id);
+        }
+    });
+
+    return {
+        tasks,
+        columns,
+        columnOrder,
+        priorities
+    };
   },
 
-  saveBoardData: (data: BoardData) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  saveBoardData: async (data: BoardData) => {
+    // In SQL version, we save granularly. This method might be deprecated 
+    // or used to sync positions if needed, but we handle individual ops below.
+    console.log("Bulk save not implemented for SQL - usage individual methods");
   },
 
   addTask: async (task: Task): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    const newData = { ...currentData };
+    // Get current max position in the column to append
+    // This is a simplification; ideally we query DB. 
+    // We will assume appending to end.
     
-    newData.tasks[task.id] = task;
-    const columnId = newData.columns[task.status] ? task.status : newData.columnOrder[0];
-    task.status = columnId;
-    newData.tasks[task.id] = task;
-    newData.columns[columnId].taskIds.push(task.id);
-    
-    DataService.saveBoardData(newData);
-    return newData;
+    const { error } = await supabase.from('kanban_tasks').insert({
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        assignee_id: task.assigneeId || null,
+        due_date: task.dueDate,
+        position: 999999 // Put at end, or calculate logic
+    });
+
+    if (error) throw error;
+    return DataService.getBoardData();
   },
 
   updateTask: async (task: Task): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    const oldTask = currentData.tasks[task.id];
-    
-    if (oldTask.status !== task.status) {
-      const sourceColumn = currentData.columns[oldTask.status];
-      if (sourceColumn) {
-        sourceColumn.taskIds = sourceColumn.taskIds.filter(id => id !== task.id);
-      }
-      
-      const destColumn = currentData.columns[task.status];
-      if (destColumn) {
-        destColumn.taskIds.push(task.id);
-      }
-    }
-    
-    currentData.tasks[task.id] = task;
-    DataService.saveBoardData(currentData);
-    return currentData;
+    // If it's just content update
+    const { error } = await supabase
+        .from('kanban_tasks')
+        .update({
+            title: task.title,
+            description: task.description,
+            status: task.status,
+            priority: task.priority,
+            assignee_id: task.assigneeId || null,
+            due_date: task.dueDate
+        })
+        .eq('id', task.id);
+
+    if (error) throw error;
+    return DataService.getBoardData();
+  },
+
+  // Special method for Drag and Drop reordering
+  updateTaskPosition: async (taskId: string, newStatus: string, newPosition: number): Promise<void> => {
+      await supabase
+        .from('kanban_tasks')
+        .update({
+            status: newStatus,
+            position: newPosition
+        })
+        .eq('id', taskId);
   },
 
   deleteTask: async (taskId: string): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    const task = currentData.tasks[taskId];
-    if (!task) return currentData;
-
-    const column = currentData.columns[task.status];
-    if (column) {
-      column.taskIds = column.taskIds.filter(id => id !== taskId);
-    }
-    delete currentData.tasks[taskId];
-    DataService.saveBoardData(currentData);
-    return currentData;
+    const { error } = await supabase.from('kanban_tasks').delete().eq('id', taskId);
+    if (error) throw error;
+    return DataService.getBoardData();
   },
 
-  // --- Columns / Status ---
+  // --- Columns ---
 
   addColumn: async (title: string, color: string): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    const newId = title; // Use Title as ID for simplicity in this MVP to match existing keys
-    
-    if (currentData.columns[newId]) return currentData;
-
-    const newColumn: Column = {
-      id: newId,
-      title,
-      color,
-      taskIds: []
-    };
-
-    currentData.columns[newId] = newColumn;
-    currentData.columnOrder.push(newId);
-    DataService.saveBoardData(currentData);
-    return currentData;
+    const { error } = await supabase.from('kanban_columns').insert({
+        id: title, // Using title as ID as per original design
+        title,
+        color,
+        position: 999
+    });
+    if (error) throw error;
+    return DataService.getBoardData();
   },
 
   deleteColumn: async (columnId: string): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    if (currentData.columnOrder.length <= 1) return currentData;
-
-    const column = currentData.columns[columnId];
-    if (!column) return currentData;
-
-    column.taskIds.forEach(taskId => {
-      delete currentData.tasks[taskId];
-    });
-
-    delete currentData.columns[columnId];
-    currentData.columnOrder = currentData.columnOrder.filter(id => id !== columnId);
-    DataService.saveBoardData(currentData);
-    return currentData;
+    // Cascade delete handles tasks
+    const { error } = await supabase.from('kanban_columns').delete().eq('id', columnId);
+    if (error) throw error;
+    return DataService.getBoardData();
   },
 
   updateColumn: async (columnId: string, updates: Partial<Column>): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    if (!currentData.columns[columnId]) return currentData;
-
-    currentData.columns[columnId] = { ...currentData.columns[columnId], ...updates };
-    DataService.saveBoardData(currentData);
-    return currentData;
+    const { error } = await supabase.from('kanban_columns').update(updates).eq('id', columnId);
+    if (error) throw error;
+    return DataService.getBoardData();
   },
 
   // --- Priorities ---
 
   addPriority: async (title: string, color: string): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    const newId = title.toLowerCase().replace(/\s+/g, '_');
-    
-    if (currentData.priorities.find(p => p.id === newId)) return currentData;
-
-    const newPriority: Priority = {
-      id: newId,
-      title,
-      color
-    };
-
-    currentData.priorities.push(newPriority);
-    DataService.saveBoardData(currentData);
-    return currentData;
+    const id = title.toLowerCase().replace(/\s+/g, '_');
+    const { error } = await supabase.from('kanban_priorities').insert({
+        id,
+        title,
+        color
+    });
+    if (error) throw error;
+    return DataService.getBoardData();
   },
 
   updatePriority: async (id: string, updates: Partial<Priority>): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    const index = currentData.priorities.findIndex(p => p.id === id);
-    if (index === -1) return currentData;
-
-    currentData.priorities[index] = { ...currentData.priorities[index], ...updates };
-    DataService.saveBoardData(currentData);
-    return currentData;
+    const { error } = await supabase.from('kanban_priorities').update(updates).eq('id', id);
+    if (error) throw error;
+    return DataService.getBoardData();
   },
 
   deletePriority: async (priorityId: string): Promise<BoardData> => {
-    const currentData = await DataService.getBoardData();
-    if (currentData.priorities.length <= 1) return currentData; // Prevent deleting last priority
-
-    currentData.priorities = currentData.priorities.filter(p => p.id !== priorityId);
-    // Reset tasks with this priority to the first available
-    const fallbackPriority = currentData.priorities[0].id;
-    
-    Object.values(currentData.tasks).forEach(task => {
-        if (task.priority === priorityId) {
-            task.priority = fallbackPriority;
-        }
-    });
-
-    DataService.saveBoardData(currentData);
-    return currentData;
+    const { error } = await supabase.from('kanban_priorities').delete().eq('id', priorityId);
+    if (error) throw error;
+    return DataService.getBoardData();
   }
 };
