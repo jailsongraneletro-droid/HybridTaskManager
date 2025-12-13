@@ -92,11 +92,12 @@ const translations = {
     signingUp: 'Cadastrando...',
     dontHaveAccount: "Não tem uma conta?",
     alreadyHaveAccount: "Já tem uma conta?",
-    loginError: "Email ou senha inválidos.",
-    signupError: "Usuário já existe.",
+    loginError: "Email ou senha inválidos. Verifique se confirmou seu email.",
+    signupError: "Erro ao cadastrar. Usuário pode já existir.",
     fillAllFields: "Por favor, preencha todos os campos.",
     profileSettings: 'Configurações de Perfil',
-    updateProfile: 'Atualizar Perfil'
+    updateProfile: 'Atualizar Perfil',
+    checkEmail: 'Cadastro realizado! Verifique seu email para ativar a conta antes de entrar.'
 };
 
 interface LanguageContextType {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { Layout, LayoutDashboard, Table2, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar } from 'lucide-react';
+import { Layout, LayoutDashboard, Table2, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
 import { KanbanBoard } from './views/KanbanBoard';
@@ -24,10 +24,12 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     setLoading(true);
 
     try {
@@ -42,10 +44,18 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
             throw new Error(t('fillAllFields'));
         }
         const user = await DataService.signup(name, email, password);
+        // Signup success (auto-login scenario)
         onLogin(user);
       }
     } catch (err: any) {
-      setError(isLogin ? t('loginError') : (err.message || t('signupError')));
+      if (err.message === 'CONFIRM_EMAIL') {
+          // Special case: Signup successful, but email confirmation required
+          setSuccessMsg(t('checkEmail'));
+          setIsLogin(true); // Switch back to login
+          setPassword(''); // Clear password
+      } else {
+          setError(isLogin ? t('loginError') : (err.message || t('signupError')));
+      }
     } finally {
       setLoading(false);
     }
@@ -54,6 +64,7 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setError('');
+    setSuccessMsg('');
   };
 
   return (
@@ -111,6 +122,13 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
                required
              />
           </div>
+
+          {successMsg && (
+            <div className="text-green-600 text-sm flex items-start gap-2 bg-green-50 p-3 rounded-lg border border-green-100">
+              <CheckCircle size={18} className="shrink-0 mt-0.5" />
+              <span>{successMsg}</span>
+            </div>
+          )}
 
           {error && (
             <div className="text-red-500 text-sm text-center bg-red-50 py-2 rounded-lg border border-red-100">

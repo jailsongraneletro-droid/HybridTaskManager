@@ -1,4 +1,3 @@
-
 import { BoardData, Column, Task, User, Priority } from '../types';
 import { supabase } from '../utils/supabaseClient';
 
@@ -24,7 +23,14 @@ export const DataService = {
             avatar: profile.avatar
         };
     }
-    return null;
+    
+    // Fallback if profile missing but auth exists
+    return {
+        id: session.user.id,
+        name: session.user.user_metadata.name || session.user.email,
+        email: session.user.email!,
+        avatar: session.user.user_metadata.avatar
+    };
   },
 
   getAllUsers: async (): Promise<User[]> => {
@@ -45,42 +51,72 @@ export const DataService = {
         password
     });
 
-    if (error) throw error;
+    if (error) {
+       // Melhora a mensagem de erro para o usuário
+       if (error.message.includes("Invalid login credentials")) {
+         throw new Error("Email ou senha inválidos.");
+       }
+       if (error.message.includes("Email not confirmed")) {
+         throw new Error("Por favor, confirme seu email antes de entrar.");
+       }
+       throw error;
+    }
+
     if (data.user) {
         // Fetch profile to return full user object
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
+        
         return {
             id: data.user.id,
-            name: profile?.name || email,
+            name: profile?.name || data.user.user_metadata.name || email,
             email: data.user.email!,
-            avatar: profile?.avatar
+            avatar: profile?.avatar || data.user.user_metadata.avatar
         };
     }
     throw new Error("Login failed");
   },
 
   signup: async (name: string, email: string, password: string): Promise<User> => {
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    
+    // 1. Create Auth User
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
             data: {
                 name,
-                avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
+                avatar: avatarUrl
             }
         }
     });
 
     if (error) throw error;
     
-    // Note: If email confirmation is enabled in Supabase, user won't be returned immediately active.
-    // For this MVP, disable email confirmation in Supabase Dashboard > Authentication > Providers > Email
     if (data.user) {
+         // CHECK: If session is missing, it means email confirmation is required by Supabase settings
+         if (!data.session) {
+             throw new Error("CONFIRM_EMAIL");
+         }
+
+         // 2. Insert into profiles table (Only if we have a session, otherwise RLS might block, 
+         // or we rely on triggers/login fallback)
+         const { error: profileError } = await supabase.from('profiles').upsert({
+             id: data.user.id,
+             name: name,
+             email: email,
+             avatar: avatarUrl
+         });
+
+         if (profileError) {
+             console.error("Error creating profile:", profileError);
+         }
+
          return {
             id: data.user.id,
             name: name,
             email: email,
-            avatar: data.user.user_metadata.avatar
+            avatar: avatarUrl
         };
     }
     throw new Error("Signup failed");
@@ -140,14 +176,16 @@ export const DataService = {
     const tasks: Record<string, Task> = {};
     const columns: Record<string, Column> = {};
     const columnOrder: string[] = [];
-    const priorities: Priority[] = prioritiesData.map(p => ({
+    
+    // Safety check for priorities
+    const priorities: Priority[] = (prioritiesData || []).map(p => ({
         id: p.id,
         title: p.title,
         color: p.color
     }));
 
     // Initialize Columns
-    columnsData.forEach(col => {
+    (columnsData || []).forEach(col => {
         columns[col.id] = {
             id: col.id,
             title: col.title,
@@ -158,7 +196,7 @@ export const DataService = {
     });
 
     // Populate Tasks and Column TaskIds
-    tasksData.forEach(t => {
+    (tasksData || []).forEach(t => {
         const task: Task = {
             id: t.id,
             title: t.title,
@@ -187,16 +225,10 @@ export const DataService = {
   },
 
   saveBoardData: async (data: BoardData) => {
-    // In SQL version, we save granularly. This method might be deprecated 
-    // or used to sync positions if needed, but we handle individual ops below.
     console.log("Bulk save not implemented for SQL - usage individual methods");
   },
 
   addTask: async (task: Task): Promise<BoardData> => {
-    // Get current max position in the column to append
-    // This is a simplification; ideally we query DB. 
-    // We will assume appending to end.
-    
     const { error } = await supabase.from('kanban_tasks').insert({
         title: task.title,
         description: task.description,
@@ -204,7 +236,7 @@ export const DataService = {
         priority: task.priority,
         assignee_id: task.assigneeId || null,
         due_date: task.dueDate,
-        position: 999999 // Put at end, or calculate logic
+        position: 999999 
     });
 
     if (error) throw error;
@@ -212,7 +244,6 @@ export const DataService = {
   },
 
   updateTask: async (task: Task): Promise<BoardData> => {
-    // If it's just content update
     const { error } = await supabase
         .from('kanban_tasks')
         .update({
@@ -229,7 +260,6 @@ export const DataService = {
     return DataService.getBoardData();
   },
 
-  // Special method for Drag and Drop reordering
   updateTaskPosition: async (taskId: string, newStatus: string, newPosition: number): Promise<void> => {
       await supabase
         .from('kanban_tasks')
@@ -250,7 +280,7 @@ export const DataService = {
 
   addColumn: async (title: string, color: string): Promise<BoardData> => {
     const { error } = await supabase.from('kanban_columns').insert({
-        id: title, // Using title as ID as per original design
+        id: title, 
         title,
         color,
         position: 999
@@ -260,7 +290,6 @@ export const DataService = {
   },
 
   deleteColumn: async (columnId: string): Promise<BoardData> => {
-    // Cascade delete handles tasks
     const { error } = await supabase.from('kanban_columns').delete().eq('id', columnId);
     if (error) throw error;
     return DataService.getBoardData();
