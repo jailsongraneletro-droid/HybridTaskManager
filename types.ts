@@ -20,6 +20,14 @@ export interface User {
   avatar?: string;
 }
 
+// New Interface for custom assignees per user board
+export interface Assignee {
+  id: string;
+  name: string;
+  email?: string;
+  avatar?: string;
+}
+
 export interface Priority {
   id: string;
   title: string;
@@ -50,4 +58,5 @@ export interface BoardData {
   columns: Record<string, Column>;
   columnOrder: string[];
   priorities: Priority[]; // Added dynamic priorities
+  assignees: Assignee[]; // Added dynamic assignees
 }

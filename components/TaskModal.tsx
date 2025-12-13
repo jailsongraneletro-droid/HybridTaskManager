@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Task, BoardData } from '../types';
 import { Modal } from './Shared';
-import { MOCK_USERS } from '../constants';
 import { Trash2, AlertCircle } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 
@@ -71,11 +70,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
 
   const handleDelete = () => {
     if (initialData && onDelete) {
-        // We delegate the confirmation to App.tsx via onDelete prop
         onDelete(initialData.id);
         onClose();
     }
   }
+
+  const assignees = boardData?.assignees || [];
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={initialData ? t('edit') : t('newTask')}>
@@ -149,7 +149,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
             onChange={(e) => setAssigneeId(e.target.value)}
           >
             <option value="">{t('unassigned')}</option>
-            {MOCK_USERS.map(user => (
+            {assignees.map(user => (
               <option key={user.id} value={user.id}>{user.name}</option>
             ))}
           </select>

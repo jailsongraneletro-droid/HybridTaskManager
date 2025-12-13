@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { BoardData } from '../types';
-import { Plus, Trash2 } from 'lucide-react';
+import { BoardData, Assignee } from '../types';
+import { Plus, Trash2, User } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 
 interface SettingsViewProps {
@@ -11,6 +11,8 @@ interface SettingsViewProps {
   onAddPriority: (title: string, color: string) => void;
   onUpdatePriority: (id: string, updates: any) => void;
   onDeletePriority: (id: string) => void;
+  onAddAssignee: (name: string, email: string) => void;
+  onDeleteAssignee: (id: string) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ 
@@ -20,7 +22,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onDeleteColumn,
   onAddPriority,
   onUpdatePriority,
-  onDeletePriority
+  onDeletePriority,
+  onAddAssignee,
+  onDeleteAssignee
 }) => {
   const { t } = useLanguage();
   
@@ -31,6 +35,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   // Priority State
   const [newPrioTitle, setNewPrioTitle] = useState('');
   const [newPrioColor, setNewPrioColor] = useState('#dbeafe');
+
+  // Assignee State
+  const [newAssigneeName, setNewAssigneeName] = useState('');
+  const [newAssigneeEmail, setNewAssigneeEmail] = useState('');
   
   const handleAddColumnSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +53,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     if (newPrioTitle.trim()) {
         onAddPriority(newPrioTitle, newPrioColor);
         setNewPrioTitle('');
+    }
+  };
+
+  const handleAddAssigneeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAssigneeName.trim()) {
+      onAddAssignee(newAssigneeName, newAssigneeEmail);
+      setNewAssigneeName('');
+      setNewAssigneeEmail('');
     }
   };
 
@@ -65,8 +82,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
         
         <div className="p-6 space-y-6">
-          
-          {/* List existing columns */}
           <div className="space-y-3">
              {data.columnOrder.map(colId => {
                const col = data.columns[colId];
@@ -77,7 +92,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       value={col.color}
                       onChange={(e) => onUpdateColumn(colId, { color: e.target.value })}
                       className="w-8 h-8 rounded cursor-pointer border-none bg-transparent"
-                      title="Change Color"
                     />
                     <div className="flex-1">
                       <input 
@@ -86,12 +100,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                         onChange={(e) => onUpdateColumn(colId, { title: e.target.value })}
                         className="bg-transparent font-medium text-slate-700 outline-none border-b border-transparent focus:border-indigo-500 w-full"
                       />
-                      <p className="text-xs text-slate-400 mt-1">{col.taskIds.length} tasks</p>
                     </div>
                     <button 
                       onClick={() => onDeleteColumn(colId)}
                       className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      title={t('deleteCategory')}
                     >
                       <Trash2 size={18} />
                     </button>
@@ -100,7 +112,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
              })}
           </div>
 
-          {/* Add New Column */}
           <form onSubmit={handleAddColumnSubmit} className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex items-end gap-4">
              <div className="flex-1">
                <label className="block text-xs font-semibold text-indigo-900 mb-1">{t('newCategoryName')}</label>
@@ -109,7 +120,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                  value={newColTitle}
                  onChange={(e) => setNewColTitle(e.target.value)}
                  className="w-full px-3 py-2 bg-white text-slate-900 rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-                 placeholder="e.g. In Review, Testing, Backlog"
                  required
                />
              </div>
@@ -124,15 +134,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                  />
                </div>
              </div>
-             <button 
-               type="submit"
-               className="h-[42px] px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg flex items-center gap-2 shadow-sm shadow-indigo-200"
-             >
+             <button type="submit" className="h-[42px] px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg flex items-center gap-2 shadow-sm shadow-indigo-200">
                <Plus size={18} />
                {t('addColumn')}
              </button>
           </form>
-
         </div>
       </section>
 
@@ -140,7 +146,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <h3 className="font-semibold text-lg text-slate-800">{t('managePriorities')}</h3>
-          <span className="text-xs text-slate-400">{t('managePrioritiesDesc')}</span>
         </div>
         
         <div className="p-6 space-y-6">
@@ -152,7 +157,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       value={prio.color}
                       onChange={(e) => onUpdatePriority(prio.id, { color: e.target.value })}
                       className="w-8 h-8 rounded cursor-pointer border-none bg-transparent"
-                      title="Change Color"
                     />
                     <div className="flex-1">
                         <input 
@@ -162,18 +166,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                           className="bg-transparent font-medium text-slate-700 outline-none border-b border-transparent focus:border-indigo-500 w-full"
                         />
                     </div>
-                    <button 
-                      onClick={() => onDeletePriority(prio.id)}
-                      className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      title={t('deletePriority')}
-                    >
+                    <button onClick={() => onDeletePriority(prio.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                       <Trash2 size={18} />
                     </button>
                 </div>
              ))}
            </div>
 
-           {/* Add New Priority */}
            <form onSubmit={handleAddPrioritySubmit} className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex items-end gap-4">
              <div className="flex-1">
                <label className="block text-xs font-semibold text-indigo-900 mb-1">{t('newPriorityName')}</label>
@@ -182,7 +181,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                  value={newPrioTitle}
                  onChange={(e) => setNewPrioTitle(e.target.value)}
                  className="w-full px-3 py-2 bg-white text-slate-900 rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-                 placeholder="e.g. Critical, Optional"
                  required
                />
              </div>
@@ -197,10 +195,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                  />
                </div>
              </div>
-             <button 
-               type="submit"
-               className="h-[42px] px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg flex items-center gap-2 shadow-sm shadow-indigo-200"
-             >
+             <button type="submit" className="h-[42px] px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg flex items-center gap-2 shadow-sm shadow-indigo-200">
                <Plus size={18} />
                {t('addPriority')}
              </button>
@@ -208,26 +203,56 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </section>
 
-      {/* Info Section */}
-      <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <h3 className="font-semibold text-lg text-slate-800 mb-4">{t('permissions')}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
-          <div className="p-3 bg-slate-50 rounded-lg">
-             <strong className="block text-slate-800 mb-1">Read / View</strong>
-             Access Dashboard, Board, and Table views. All team members can view all tasks.
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg">
-             <strong className="block text-slate-800 mb-1">Create</strong>
-             Add new tasks using the "+" button in the top bar or "New Task" in columns.
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg">
-             <strong className="block text-slate-800 mb-1">Edit</strong>
-             Click on any task card or row to open the edit modal. You can modify descriptions, assignees, and dates.
-          </div>
-          <div className="p-3 bg-slate-50 rounded-lg">
-             <strong className="block text-slate-800 mb-1">Delete</strong>
-             Use the trash icon in the edit modal or list view. Deleting a category deletes all tasks within it.
-          </div>
+      {/* Assignee Management (NEW) */}
+      <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="font-semibold text-lg text-slate-800">Gerenciar Responsáveis</h3>
+          <span className="text-xs text-slate-400">Adicione pessoas ao seu quadro</span>
+        </div>
+        
+        <div className="p-6 space-y-6">
+           <div className="space-y-3">
+             {data.assignees.map(a => (
+                <div key={a.id} className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <img src={a.avatar} alt={a.name} className="w-8 h-8 rounded-full border border-slate-200" />
+                    <div className="flex-1">
+                        <p className="font-medium text-slate-800">{a.name}</p>
+                        <p className="text-xs text-slate-500">{a.email}</p>
+                    </div>
+                    <button onClick={() => onDeleteAssignee(a.id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                      <Trash2 size={18} />
+                    </button>
+                </div>
+             ))}
+           </div>
+
+           <form onSubmit={handleAddAssigneeSubmit} className="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-100 flex items-end gap-4">
+             <div className="flex-1">
+               <label className="block text-xs font-semibold text-indigo-900 mb-1">{t('name')}</label>
+               <input 
+                 type="text" 
+                 value={newAssigneeName}
+                 onChange={(e) => setNewAssigneeName(e.target.value)}
+                 className="w-full px-3 py-2 bg-white text-slate-900 rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                 placeholder="Ex: João Silva"
+                 required
+               />
+             </div>
+             <div className="flex-1">
+               <label className="block text-xs font-semibold text-indigo-900 mb-1">{t('email')}</label>
+               <input 
+                 type="email" 
+                 value={newAssigneeEmail}
+                 onChange={(e) => setNewAssigneeEmail(e.target.value)}
+                 className="w-full px-3 py-2 bg-white text-slate-900 rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                 placeholder="Opcional"
+               />
+             </div>
+             <button type="submit" className="h-[42px] px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg flex items-center gap-2 shadow-sm shadow-indigo-200">
+               <Plus size={18} />
+               Adicionar
+             </button>
+          </form>
         </div>
       </section>
 

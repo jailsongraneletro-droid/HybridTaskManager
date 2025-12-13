@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { BoardData, Task } from '../types';
 import { PriorityBadge, StatusBadge, Avatar, TaskAge } from '../components/Shared';
-import { MOCK_USERS } from '../constants';
 import { ArrowUpDown, Search, Trash2, Edit, GripVertical, Settings2, Eye, EyeOff } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useLanguage } from '../utils/i18n';
@@ -90,7 +89,6 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
 
   const visibleColumns = columnOrder.filter(id => !hiddenColumns.includes(id));
   
-  // Dynamic Grid Template
   const getGridTemplate = () => {
     const defs = visibleColumns.map(id => ALL_COLUMNS.find(c => c.id === id)?.width || '1fr');
     return defs.join(' ');
@@ -98,7 +96,6 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-full relative">
-      {/* Toolbar */}
       <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
          <div className="flex items-center gap-4">
            <div className="relative w-64">
@@ -146,10 +143,8 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="min-w-[800px]"> {/* Ensure min width for scrolling on small screens */}
-          
+        <div className="min-w-[800px]">
           <DragDropContext onDragEnd={handleDragEnd}>
-            {/* Header */}
             <Droppable droppableId="table-headers" direction="horizontal">
               {(provided) => (
                 <div 
@@ -192,10 +187,9 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
             </Droppable>
           </DragDropContext>
 
-          {/* Body */}
           <div className="divide-y divide-slate-100">
             {sortedAndFilteredTasks.map((task) => {
-              const assignee = MOCK_USERS.find(u => u.id === task.assigneeId);
+              const assignee = data.assignees.find(a => a.id === task.assigneeId);
               const statusColumn = data.columns[task.status];
               const priorityData = data.priorities.find(p => p.id === task.priority);
               
@@ -207,7 +201,6 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                 >
                   {visibleColumns.map(colId => (
                     <div key={colId} className="px-4 py-3 text-sm text-slate-600 truncate">
-                      {/* Cell Content Switch */}
                       {colId === 'title' && (
                          <span 
                            className="font-medium text-slate-800 cursor-pointer hover:text-indigo-600"
@@ -262,7 +255,6 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
               );
             })}
           </div>
-
         </div>
       </div>
     </div>

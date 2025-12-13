@@ -1,26 +1,11 @@
-import { BoardData, Column, Task, User, Priority } from '../types';
+import { BoardData, Column, Task, User, Priority, Assignee } from '../types';
 import { supabase } from '../utils/supabaseClient';
-import { MOCK_USERS } from '../constants';
+import { DEFAULT_PRIORITIES, DEFAULT_COLUMNS } from '../constants';
 
 export const DataService = {
-  // --- Helper to seed mock users ---
-  ensureMockUsers: async () => {
-    // Attempt to insert the mock users into the 'profiles' table.
-    // This allows the "assignee_id" foreign key to work correctly for these static users.
-    // Note: If 'profiles' table has a strict foreign key to 'auth.users' that cascades, 
-    // this might fail if those UIDs don't exist in auth. 
-    // But it's the best attempt to make "Jailson" etc work without real signup.
-    const { error } = await supabase.from('profiles').upsert(MOCK_USERS, { onConflict: 'id', ignoreDuplicates: true });
-    
-    if (error) {
-        // If this fails (e.g. 23503 foreign_key_violation on auth.users), 
-        // we log it, but we can't do much else without changing DB schema.
-        console.warn("Autosync of Mock Users failed (Likely due to Auth FK constraints):", error.message);
-    }
-  },
-
-  // --- User / Auth (Supabase) ---
   
+  // --- Auth & User ---
+
   getCurrentUser: async (): Promise<User | null> => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) return null;
@@ -41,7 +26,6 @@ export const DataService = {
         };
     }
     
-    // Fallback if profile missing but auth exists
     return {
         id: session.user.id,
         name: session.user.user_metadata.name || session.user.email,
@@ -50,39 +34,20 @@ export const DataService = {
     };
   },
 
-  getAllUsers: async (): Promise<User[]> => {
-    const { data } = await supabase.from('profiles').select('*');
-    return (data || []).map(p => ({
-        id: p.id,
-        name: p.name,
-        email: p.email,
-        avatar: p.avatar
-    }));
-  },
-
   login: async (email: string, password?: string): Promise<User> => {
     if (!password) throw new Error("Password required");
     
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-       // Melhora a mensagem de erro para o usuário
-       if (error.message.includes("Invalid login credentials")) {
-         throw new Error("Email ou senha inválidos.");
-       }
-       if (error.message.includes("Email not confirmed")) {
-         throw new Error("Por favor, confirme seu email antes de entrar.");
-       }
+       if (error.message.includes("Invalid login credentials")) throw new Error("Email ou senha inválidos.");
+       if (error.message.includes("Email not confirmed")) throw new Error("Por favor, confirme seu email.");
        throw error;
     }
 
     if (data.user) {
-        // Fetch profile to return full user object
+        // Fetch profile
         const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
-        
         return {
             id: data.user.id,
             name: profile?.name || data.user.user_metadata.name || email,
@@ -96,44 +61,29 @@ export const DataService = {
   signup: async (name: string, email: string, password: string): Promise<User> => {
     const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
     
-    // 1. Create Auth User
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-            data: {
-                name,
-                avatar: avatarUrl
-            }
-        }
+        options: { data: { name, avatar: avatarUrl } }
     });
 
     if (error) throw error;
     
     if (data.user) {
-         // CHECK: If session is missing, it means email confirmation is required by Supabase settings
-         if (!data.session) {
-             throw new Error("CONFIRM_EMAIL");
-         }
+         if (!data.session) throw new Error("CONFIRM_EMAIL");
 
-         // 2. Insert into profiles table
-         const { error: profileError } = await supabase.from('profiles').upsert({
+         // Create Profile
+         await supabase.from('profiles').upsert({
              id: data.user.id,
              name: name,
              email: email,
              avatar: avatarUrl
          });
 
-         if (profileError) {
-             console.error("Error creating profile:", profileError);
-         }
+         // We do NOT seed data here immediately because RLS might need a fresh session.
+         // Data seeding happens on first getBoardData call.
 
-         return {
-            id: data.user.id,
-            name: name,
-            email: email,
-            avatar: avatarUrl
-        };
+         return { id: data.user.id, name, email, avatar: avatarUrl };
     }
     throw new Error("Signup failed");
   },
@@ -141,15 +91,11 @@ export const DataService = {
   updateCurrentUser: async (userId: string, updates: Partial<User>): Promise<User> => {
     const { error } = await supabase
         .from('profiles')
-        .update({
-            name: updates.name,
-            avatar: updates.avatar
-        })
+        .update({ name: updates.name, avatar: updates.avatar })
         .eq('id', userId);
 
     if (error) throw error;
     
-    // Password update is separate in Supabase
     if (updates.password) {
         const { error: pwdError } = await supabase.auth.updateUser({ password: updates.password });
         if (pwdError) throw pwdError;
@@ -162,59 +108,84 @@ export const DataService = {
     await supabase.auth.signOut();
   },
 
-  // --- Board Data (Supabase) ---
+  // --- Board Data & Isolation Logic ---
+
+  // Helper to create default data for a new user
+  seedUserData: async (user: User) => {
+    // 1. Create Default Columns
+    for (let i = 0; i < DEFAULT_COLUMNS.length; i++) {
+        const col = DEFAULT_COLUMNS[i];
+        await supabase.from('kanban_columns').insert({
+            id: col.id, // Using string ID as requested by schema, mapped per user via RLS
+            title: col.title,
+            color: col.color,
+            position: i,
+            user_id: user.id
+        });
+    }
+
+    // 2. Create Default Priorities
+    for (const prio of DEFAULT_PRIORITIES) {
+        await supabase.from('kanban_priorities').insert({
+            id: prio.id,
+            title: prio.title,
+            color: prio.color,
+            user_id: user.id
+        });
+    }
+
+    // 3. Create Self as First Assignee
+    await supabase.from('kanban_assignees').insert({
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        user_id: user.id
+    });
+  },
 
   getBoardData: async (): Promise<BoardData> => {
-    // Try to sync mock users to ensure they exist for assignment
-    await DataService.ensureMockUsers();
+    const user = await DataService.getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
 
-    // 1. Fetch Columns
-    const { data: columnsData, error: colError } = await supabase
+    // 1. Check if user has columns. If not, seed data.
+    const { count } = await supabase
         .from('kanban_columns')
-        .select('*')
-        .order('position');
+        .select('*', { count: 'exact', head: true });
     
-    if (colError) throw colError;
+    if (count === 0) {
+        await DataService.seedUserData(user);
+    }
 
-    // 2. Fetch Priorities
-    const { data: prioritiesData, error: prioError } = await supabase
-        .from('kanban_priorities')
-        .select('*');
-        
-    if (prioError) throw prioError;
+    // 2. Fetch All Data (RLS filters by user_id automatically)
+    const [
+        { data: columnsData },
+        { data: prioritiesData },
+        { data: tasksData },
+        { data: assigneesData }
+    ] = await Promise.all([
+        supabase.from('kanban_columns').select('*').order('position'),
+        supabase.from('kanban_priorities').select('*'),
+        supabase.from('kanban_tasks').select('*').order('position'),
+        supabase.from('kanban_assignees').select('*').order('created_at')
+    ]);
 
-    // 3. Fetch Tasks
-    const { data: tasksData, error: taskError } = await supabase
-        .from('kanban_tasks')
-        .select('*')
-        .order('position'); // Order by drag position
-
-    if (taskError) throw taskError;
-
-    // 4. Transform to BoardData structure
+    // 3. Transform
     const tasks: Record<string, Task> = {};
     const columns: Record<string, Column> = {};
     const columnOrder: string[] = [];
-    
-    // Safety check for priorities
-    const priorities: Priority[] = (prioritiesData || []).map(p => ({
-        id: p.id,
-        title: p.title,
-        color: p.color
-    }));
+    const priorities: Priority[] = (prioritiesData || []).map(p => ({ id: p.id, title: p.title, color: p.color }));
+    const assignees: Assignee[] = (assigneesData || []).map(a => ({ id: a.id, name: a.name, email: a.email, avatar: a.avatar }));
 
-    // Initialize Columns
     (columnsData || []).forEach(col => {
         columns[col.id] = {
             id: col.id,
             title: col.title,
             color: col.color,
-            taskIds: [] // Will populate next
+            taskIds: []
         };
         columnOrder.push(col.id);
     });
 
-    // Populate Tasks and Column TaskIds
     (tasksData || []).forEach(t => {
         const task: Task = {
             id: t.id,
@@ -228,105 +199,54 @@ export const DataService = {
             tags: [] 
         };
         tasks[task.id] = task;
-        
-        // Add to column if column exists
         if (columns[t.status]) {
             columns[t.status].taskIds.push(t.id);
         }
     });
 
-    return {
-        tasks,
-        columns,
-        columnOrder,
-        priorities
-    };
+    return { tasks, columns, columnOrder, priorities, assignees };
   },
 
-  saveBoardData: async (data: BoardData) => {
-    console.log("Bulk save not implemented for SQL - usage individual methods");
-  },
+  // --- Tasks ---
 
   addTask: async (task: Task): Promise<BoardData> => {
-    try {
-        const { error } = await supabase.from('kanban_tasks').insert({
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No user");
+
+    const { error } = await supabase.from('kanban_tasks').insert({
+        title: task.title,
+        description: task.description,
+        status: task.status,
+        priority: task.priority,
+        assignee_id: task.assigneeId || null,
+        due_date: task.dueDate,
+        position: 999999,
+        user_id: user.id
+    });
+
+    if (error) throw error;
+    return DataService.getBoardData();
+  },
+
+  updateTask: async (task: Task): Promise<BoardData> => {
+    const { error } = await supabase
+        .from('kanban_tasks')
+        .update({
             title: task.title,
             description: task.description,
             status: task.status,
             priority: task.priority,
             assignee_id: task.assigneeId || null,
-            due_date: task.dueDate,
-            position: 999999 
-        });
+            due_date: task.dueDate
+        })
+        .eq('id', task.id);
 
-        if (error) throw error;
-    } catch (error: any) {
-        // Fallback: If Foreign Key violation (Assignee doesn't exist in DB), try inserting without assignee
-        if (error.code === '23503') {
-            console.warn("Assignee ID not found in DB (Foreign Key Constraint). Task created without assignee.");
-            const { error: retryError } = await supabase.from('kanban_tasks').insert({
-                title: task.title,
-                description: task.description,
-                status: task.status,
-                priority: task.priority,
-                assignee_id: null,
-                due_date: task.dueDate,
-                position: 999999 
-            });
-            if (retryError) throw retryError;
-        } else {
-            throw error;
-        }
-    }
-    return DataService.getBoardData();
-  },
-
-  updateTask: async (task: Task): Promise<BoardData> => {
-    try {
-        const { error } = await supabase
-            .from('kanban_tasks')
-            .update({
-                title: task.title,
-                description: task.description,
-                status: task.status,
-                priority: task.priority,
-                assignee_id: task.assigneeId || null,
-                due_date: task.dueDate
-            })
-            .eq('id', task.id);
-
-        if (error) throw error;
-    } catch (error: any) {
-        // Fallback for update as well
-        if (error.code === '23503') {
-             console.warn("Assignee ID not found in DB during update. Assignee removed.");
-             const { error: retryError } = await supabase
-                .from('kanban_tasks')
-                .update({
-                    title: task.title,
-                    description: task.description,
-                    status: task.status,
-                    priority: task.priority,
-                    assignee_id: null,
-                    due_date: task.dueDate
-                })
-                .eq('id', task.id);
-            if (retryError) throw retryError;
-        } else {
-            throw error;
-        }
-    }
+    if (error) throw error;
     return DataService.getBoardData();
   },
 
   updateTaskPosition: async (taskId: string, newStatus: string, newPosition: number): Promise<void> => {
-      await supabase
-        .from('kanban_tasks')
-        .update({
-            status: newStatus,
-            position: newPosition
-        })
-        .eq('id', taskId);
+      await supabase.from('kanban_tasks').update({ status: newStatus, position: newPosition }).eq('id', taskId);
   },
 
   deleteTask: async (taskId: string): Promise<BoardData> => {
@@ -338,17 +258,27 @@ export const DataService = {
   // --- Columns ---
 
   addColumn: async (title: string, color: string): Promise<BoardData> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No user");
+
+    // Generate a clean ID
+    const id = title.trim();
+
     const { error } = await supabase.from('kanban_columns').insert({
-        id: title, 
+        id: id, 
         title,
         color,
-        position: 999
+        position: 999,
+        user_id: user.id
     });
     if (error) throw error;
     return DataService.getBoardData();
   },
 
   deleteColumn: async (columnId: string): Promise<BoardData> => {
+    // Delete column (RLS handles permission)
+    // Note: Database should ideally CASCADE tasks, or we delete tasks first. 
+    // Assuming backend handles cascade or we leave orphaned tasks for now (hidden from view due to missing col).
     const { error } = await supabase.from('kanban_columns').delete().eq('id', columnId);
     if (error) throw error;
     return DataService.getBoardData();
@@ -363,11 +293,15 @@ export const DataService = {
   // --- Priorities ---
 
   addPriority: async (title: string, color: string): Promise<BoardData> => {
-    const id = title.toLowerCase().replace(/\s+/g, '_');
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No user");
+
+    const id = title.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now().toString(36); // Unique ID to prevent collision
     const { error } = await supabase.from('kanban_priorities').insert({
         id,
         title,
-        color
+        color,
+        user_id: user.id
     });
     if (error) throw error;
     return DataService.getBoardData();
@@ -381,6 +315,36 @@ export const DataService = {
 
   deletePriority: async (priorityId: string): Promise<BoardData> => {
     const { error } = await supabase.from('kanban_priorities').delete().eq('id', priorityId);
+    if (error) throw error;
+    return DataService.getBoardData();
+  },
+
+  // --- Assignees (Responsibles) ---
+
+  addAssignee: async (name: string, email: string): Promise<BoardData> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No user");
+
+    const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+
+    const { error } = await supabase.from('kanban_assignees').insert({
+        name,
+        email,
+        avatar,
+        user_id: user.id
+    });
+    if (error) throw error;
+    return DataService.getBoardData();
+  },
+
+  updateAssignee: async (id: string, updates: Partial<Assignee>): Promise<BoardData> => {
+    const { error } = await supabase.from('kanban_assignees').update(updates).eq('id', id);
+    if (error) throw error;
+    return DataService.getBoardData();
+  },
+
+  deleteAssignee: async (id: string): Promise<BoardData> => {
+    const { error } = await supabase.from('kanban_assignees').delete().eq('id', id);
     if (error) throw error;
     return DataService.getBoardData();
   }

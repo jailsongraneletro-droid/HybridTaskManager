@@ -2,8 +2,7 @@ import React from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { BoardData, Task } from '../types';
 import { PriorityBadge, TaskAge, Avatar } from '../components/Shared';
-import { MOCK_USERS } from '../constants';
-import { Calendar, MoreHorizontal, Trash2, Edit2 } from 'lucide-react';
+import { Calendar, Trash2 } from 'lucide-react';
 
 interface KanbanBoardProps {
   data: BoardData;
@@ -16,13 +15,12 @@ interface TaskCardProps {
   task: Task;
   index: number;
   priorityData: any;
+  assigneeData: any;
   onClick: () => void;
   onDelete: (e: React.MouseEvent) => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, onClick, onDelete }) => {
-  const assignee = MOCK_USERS.find(u => u.id === task.assigneeId);
-
+const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assigneeData, onClick, onDelete }) => {
   return (
     <Draggable draggableId={task.id} index={index}>
       {(provided, snapshot) => (
@@ -62,7 +60,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, onClick,
              </div>
              <div className="flex items-center gap-2">
                 <TaskAge createdAt={task.createdAt} />
-                {assignee && <Avatar name={assignee.name} url={assignee.avatar} />}
+                {assigneeData && <Avatar name={assigneeData.name} url={assigneeData.avatar} />}
              </div>
           </div>
         </div>
@@ -106,6 +104,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                         task={task} 
                         index={index} 
                         priorityData={data.priorities.find(p => p.id === task.priority)}
+                        assigneeData={data.assignees.find(a => a.id === task.assigneeId)}
                         onClick={() => onEditTask(task)} 
                         onDelete={(e) => { e.stopPropagation(); onDeleteTask(task.id); }}
                       />

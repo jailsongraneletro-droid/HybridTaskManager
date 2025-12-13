@@ -180,7 +180,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
 
   // Delete Confirmation State
-  const [deleteIntent, setDeleteIntent] = useState<{ type: 'task' | 'column' | 'priority', id: string } | null>(null);
+  const [deleteIntent, setDeleteIntent] = useState<{ type: 'task' | 'column' | 'priority' | 'assignee', id: string } | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -317,6 +317,10 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     setDeleteIntent({ type: 'priority', id: priorityId });
   };
 
+  const requestDeleteAssignee = (assigneeId: string) => {
+    setDeleteIntent({ type: 'assignee', id: assigneeId });
+  };
+
   const executeDelete = async () => {
     if (!deleteIntent) return;
     
@@ -329,6 +333,8 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
              newData = await DataService.deleteColumn(deleteIntent.id);
         } else if (deleteIntent.type === 'priority') {
              newData = await DataService.deletePriority(deleteIntent.id);
+        } else if (deleteIntent.type === 'assignee') {
+             newData = await DataService.deleteAssignee(deleteIntent.id);
         }
 
         if (newData) setData(newData);
@@ -344,6 +350,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
         case 'task': return t('confirmDeleteTaskTitle');
         case 'column': return t('confirmDeleteCategoryTitle');
         case 'priority': return t('confirmDeletePriorityTitle');
+        case 'assignee': return "Excluir Responsável";
         default: return t('confirmDeleteTitle');
     }
   };
@@ -353,6 +360,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
         case 'task': return t('confirmDeleteTaskMessage');
         case 'column': return t('confirmDeleteCategoryMessage');
         case 'priority': return t('confirmDeletePriorityMessage');
+        case 'assignee': return "Tem certeza que deseja remover este responsável?";
         default: return t('confirmDeleteMessage');
     }
   };
@@ -403,6 +411,16 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     setAppError('');
     try {
         const newData = await DataService.updatePriority(id, updates);
+        setData(newData);
+    } catch (e: any) {
+        setAppError("Error: " + e.message);
+    }
+  };
+
+  const handleAddAssignee = async (name: string, email: string) => {
+    setAppError('');
+    try {
+        const newData = await DataService.addAssignee(name, email);
         setData(newData);
     } catch (e: any) {
         setAppError("Error: " + e.message);
@@ -596,6 +614,8 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                   onAddPriority={handleAddPriority}
                   onUpdatePriority={handleUpdatePriority}
                   onDeletePriority={requestDeletePriority}
+                  onAddAssignee={handleAddAssignee}
+                  onDeleteAssignee={requestDeleteAssignee}
                 />
               } />
               <Route path="*" element={<Navigate to="/" replace />} />
@@ -632,54 +652,56 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   );
 };
 
-const AppContent = () => {
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const init = async () => {
-            try {
-                const currentUser = await DataService.getCurrentUser();
-                setUser(currentUser);
-            } catch (e) {
-                console.error("Auth check failed", e);
-            } finally {
-                setLoading(false);
-            }
-        };
-        init();
-    }, []);
-
-    const handleLogin = (loggedInUser: User) => {
-        setUser(loggedInUser);
-    };
-
-    const handleLogout = async () => {
-        await DataService.logout();
-        setUser(null);
-    };
-
-    const handleUpdateUser = (updatedUser: User) => {
-        setUser(prev => prev ? { ...prev, ...updatedUser } : null);
-    };
-
-    if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-500">Loading...</div>;
-    }
-
-    if (!user) {
-        return <Login onLogin={handleLogin} />;
-    }
-
-    return <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />;
-};
-
 const App = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const currentUser = await DataService.getCurrentUser();
+        setUser(currentUser);
+      } catch (e) {
+        console.error("No user found or session expired");
+        // User remains null
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkUser();
+  }, []);
+
+  const handleLogin = (loggedInUser: User) => {
+    setUser(loggedInUser);
+  };
+
+  const handleLogout = async () => {
+    await DataService.logout();
+    setUser(null);
+  };
+
+  const handleUpdateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+  };
+
+  if (loading) {
     return (
-        <LanguageProvider>
-            <AppContent />
-        </LanguageProvider>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-4">
+        <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        <p className="text-sm font-medium">Loading...</p>
+      </div>
     );
+  }
+
+  return (
+    <LanguageProvider>
+      {user ? (
+        <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />
+      ) : (
+        <Login onLogin={handleLogin} />
+      )}
+    </LanguageProvider>
+  );
 };
 
 export default App;
