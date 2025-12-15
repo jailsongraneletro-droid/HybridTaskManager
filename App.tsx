@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X } from 'lucide-react';
+import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X, RefreshCw } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
 import { KanbanBoard } from './views/KanbanBoard';
@@ -270,6 +270,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [appError, setAppError] = useState<string>('');
+  const [isRetryLoading, setIsRetryLoading] = useState(false);
   
   // Modals
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -280,21 +281,25 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   // Delete Confirmation State
   const [deleteIntent, setDeleteIntent] = useState<{ type: 'task' | 'column' | 'priority' | 'assignee', id: string } | null>(null);
 
-  useEffect(() => {
-    if (!user.id) return;
+  const loadData = async () => {
+    setAppError('');
+    setIsRetryLoading(true);
+    try {
+      const boardData = await DataService.getBoardData();
+      setData(boardData);
+    } catch (e: any) {
+      console.error("Failed to load board data", e);
+      setAppError(e.message || "Failed to connect to database. Please check your connection.");
+    } finally {
+      setIsRetryLoading(false);
+    }
+  };
 
-    const load = async () => {
-      setAppError('');
-      try {
-        const boardData = await DataService.getBoardData();
-        setData(boardData);
-      } catch (e: any) {
-        console.error("Failed to load board data", e);
-        setAppError(e.message || "Failed to connect to database. Please check your connection.");
-      }
-    };
-    load();
-  }, [user.id]); // Reload when user ID changes
+  useEffect(() => {
+    if (user.id) {
+        loadData();
+    }
+  }, [user.id]);
 
   // Notifications Logic
   const notifications = useMemo(() => {
@@ -549,7 +554,37 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
       }
   };
 
-  if (!data) return <div className="flex items-center justify-center h-screen text-slate-500">Connecting to database...</div>;
+  // ERROR HANDLING BLOCK - Show before checking for 'data'
+  if (appError && !data) {
+    return (
+        <div className="flex h-screen items-center justify-center bg-slate-100 p-4">
+            <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full text-center">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
+                    <AlertTriangle size={24} />
+                </div>
+                <h2 className="text-xl font-bold text-slate-800 mb-2">Erro de Conexão</h2>
+                <p className="text-slate-500 mb-6">{appError}</p>
+                <button 
+                    onClick={loadData}
+                    disabled={isRetryLoading}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 mx-auto disabled:opacity-50"
+                >
+                    <RefreshCw size={18} className={isRetryLoading ? "animate-spin" : ""} />
+                    {isRetryLoading ? "Reconectando..." : "Tentar Novamente"}
+                </button>
+            </div>
+        </div>
+    );
+  }
+
+  if (!data) {
+      return (
+        <div className="flex items-center justify-center h-screen bg-slate-100 text-slate-500 flex-col gap-3">
+             <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+             <p className="text-sm font-medium">Carregando seus dados...</p>
+        </div>
+      );
+  }
 
   return (
     <HashRouter>

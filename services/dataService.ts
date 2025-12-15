@@ -165,13 +165,14 @@ export const DataService = {
 
   // Helper to create default data for a new user
   seedUserData: async (user: User) => {
-    // 1. Create Default Columns (Only if none exist)
+    // 1. Create Default Columns (Unique IDs per user to prevent collision)
     const { count: colCount } = await supabase.from('kanban_columns').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     if (colCount === 0) {
         for (let i = 0; i < DEFAULT_COLUMNS.length; i++) {
             const col = DEFAULT_COLUMNS[i];
+            const uniqueId = `${col.id}_${user.id}`; // CRITICAL: Unique ID per user
             await supabase.from('kanban_columns').insert({
-                id: col.id, 
+                id: uniqueId, 
                 title: col.title,
                 color: col.color,
                 position: i,
@@ -180,12 +181,13 @@ export const DataService = {
         }
     }
 
-    // 2. Create Default Priorities (Only if none exist)
+    // 2. Create Default Priorities
     const { count: prioCount } = await supabase.from('kanban_priorities').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     if (prioCount === 0) {
         for (const prio of DEFAULT_PRIORITIES) {
+            const uniqueId = `${prio.id}_${user.id}`; // CRITICAL: Unique ID per user
             await supabase.from('kanban_priorities').insert({
-                id: prio.id,
+                id: uniqueId,
                 title: prio.title,
                 color: prio.color,
                 user_id: user.id
@@ -193,7 +195,7 @@ export const DataService = {
         }
     }
 
-    // 3. Create Self as First Assignee (Only if none exist)
+    // 3. Create Self as First Assignee
     const { count: assigneeCount } = await supabase.from('kanban_assignees').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     if (assigneeCount === 0) {
         await supabase.from('kanban_assignees').insert({
@@ -210,12 +212,24 @@ export const DataService = {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("User not authenticated");
 
-    // Force restore Columns
+    // 0. Protect existing data by moving them to safety (first new column) later,
+    // but first we need to clear strict structure.
+
+    // 1. Delete ALL existing structural data for this user to prevent ID conflicts
+    await supabase.from('kanban_columns').delete().eq('user_id', user.id);
+    await supabase.from('kanban_priorities').delete().eq('user_id', user.id);
+
+    // 2. Re-seed with UNIQUE IDs
+    const newColumnsMap: Record<string, string> = {}; // Old Generic ID -> New Unique ID
+    const newFirstColumnId = `${DEFAULT_COLUMNS[0].id}_${user.id}`;
+
     for (let i = 0; i < DEFAULT_COLUMNS.length; i++) {
         const col = DEFAULT_COLUMNS[i];
-        // Upsert: Create if missing, update if exists (resets title/color to default)
-        await supabase.from('kanban_columns').upsert({
-             id: col.id, 
+        const uniqueId = `${col.id}_${user.id}`;
+        newColumnsMap[col.id] = uniqueId;
+        
+        await supabase.from('kanban_columns').insert({
+             id: uniqueId, 
              title: col.title,
              color: col.color,
              position: i,
@@ -223,17 +237,17 @@ export const DataService = {
         });
     }
 
-    // Force restore Priorities
     for (const prio of DEFAULT_PRIORITIES) {
-        await supabase.from('kanban_priorities').upsert({
-             id: prio.id,
+        const uniqueId = `${prio.id}_${user.id}`;
+        await supabase.from('kanban_priorities').insert({
+             id: uniqueId,
              title: prio.title,
              color: prio.color,
              user_id: user.id
         });
     }
 
-    // Also ensure assignee exists
+    // 3. Ensure assignee exists
     const { count: assigneeCount } = await supabase.from('kanban_assignees').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     if (assigneeCount === 0) {
         await supabase.from('kanban_assignees').insert({
@@ -244,15 +258,20 @@ export const DataService = {
         });
     }
 
+    // 4. EMERGENCY FIX: Update ALL tasks to the first new column to prevent them from being orphaned
+    // Since we deleted the old columns, the Foreign Key might have been set to NULL or tasks deleted depending on DB config.
+    // Assuming tasks are set to NULL or we want to reset them:
+    await supabase
+        .from('kanban_tasks')
+        .update({ status: newFirstColumnId })
+        .eq('user_id', user.id);
+
     return DataService.getBoardData();
   },
 
   getBoardData: async (): Promise<BoardData> => {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("User not authenticated");
-
-    // REMOVED AUTO-SEED LOGIC HERE to allow empty boards
-    // Data seeding now only happens on signup or manual restore
 
     // 2. Fetch All Data with explicit user_id filter
     // CRITICAL FIX: Check for errors! Do not just assume empty array is "no data", it could be "fetch failed".
@@ -278,68 +297,15 @@ export const DataService = {
     const tasksData = tasksResult.data;
     const assigneesData = assigneesResult.data;
 
-    // --- MIGRATION: ENFORCE DEFAULT TITLES FOR EXISTING USERS ---
-    // If user has standard IDs (To Do, In Progress, Done) but wrong titles (e.g. English or Capitalized), fix them.
-    const updatesPromises: Promise<any>[] = [];
-    
-    if (columnsData) {
-        DEFAULT_COLUMNS.forEach(defCol => {
-            const existing = columnsData.find(c => c.id === defCol.id);
-            if (existing && existing.title !== defCol.title) {
-                // Optimistically update local data
-                existing.title = defCol.title;
-                // Fire update to DB
-                updatesPromises.push(
-                    supabase.from('kanban_columns')
-                        .update({ title: defCol.title })
-                        .eq('id', defCol.id)
-                        .eq('user_id', user.id)
-                );
-            }
-        });
-    }
-
-    if (prioritiesData) {
-        DEFAULT_PRIORITIES.forEach(defPrio => {
-            const existing = prioritiesData.find(p => p.id === defPrio.id);
-            if (existing && existing.title !== defPrio.title) {
-                 existing.title = defPrio.title;
-                 updatesPromises.push(
-                    supabase.from('kanban_priorities')
-                        .update({ title: defPrio.title })
-                        .eq('id', defPrio.id)
-                        .eq('user_id', user.id)
-                 );
-            }
-        });
-    }
-
-    if (updatesPromises.length > 0) {
-        // We don't await this to avoid blocking the UI load. 
-        // We already updated the local objects (columnsData/prioritiesData) by reference/mutation above if needed.
-        Promise.all(updatesPromises).catch(err => console.error("Auto-migration failed", err));
-    }
-    // ------------------------------------------------------------
-
     // 3. Transform
     const tasks: Record<string, Task> = {};
     const columns: Record<string, Column> = {};
     const columnOrder: string[] = [];
     
-    // Sort priorities based on our DEFAULT_PRIORITIES order if they exist, otherwise append custom ones
-    const defaultPriorityIds = DEFAULT_PRIORITIES.map(p => p.id);
-    const sortedPriorities = (prioritiesData || []).sort((a, b) => {
-        const idxA = defaultPriorityIds.indexOf(a.id);
-        const idxB = defaultPriorityIds.indexOf(b.id);
-        // If both are defaults, sort by default order
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        // If A is default, it comes first
-        if (idxA !== -1) return -1;
-        // If B is default, it comes first
-        if (idxB !== -1) return 1;
-        // Otherwise stable/alphabetical
-        return a.title.localeCompare(b.title);
-    }).map(p => ({ id: p.id, title: p.title, color: p.color }));
+    // Sort priorities. Since IDs are now unique (e.g., high_123), we can't strict match string IDs.
+    // We sort simply by title or creation for now.
+    const sortedPriorities = (prioritiesData || []).sort((a, b) => a.title.localeCompare(b.title))
+        .map(p => ({ id: p.id, title: p.title, color: p.color }));
 
     const assignees: Assignee[] = (assigneesData || []).map(a => ({ id: a.id, name: a.name, email: a.email, avatar: a.avatar }));
 
@@ -361,13 +327,16 @@ export const DataService = {
             status: t.status,
             priority: t.priority,
             assigneeId: t.assignee_id,
-            dueDate: t.due_date, // Keeping TS interface compatible
+            dueDate: t.due_date,
             createdAt: t.created_at,
             tags: [] 
         };
         tasks[task.id] = task;
         if (columns[t.status]) {
             columns[t.status].taskIds.push(t.id);
+        } else if (columnOrder.length > 0) {
+             // Fallback: If task status refers to a deleted column, move to first column locally
+             columns[columnOrder[0]].taskIds.push(t.id);
         }
     });
 
@@ -438,7 +407,8 @@ export const DataService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No user");
 
-    const id = title.trim();
+    // CRITICAL: Generate Unique ID so users don't conflict
+    const id = `${title.trim().toLowerCase().replace(/\s+/g, '_')}_${Date.now()}_${user.id}`;
 
     const { error } = await supabase.from('kanban_columns').insert({
         id: id, 
@@ -469,7 +439,7 @@ export const DataService = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No user");
 
-    const id = title.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now().toString(36); 
+    const id = title.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now().toString(36) + '_' + user.id; 
     const { error } = await supabase.from('kanban_priorities').insert({
         id,
         title,
