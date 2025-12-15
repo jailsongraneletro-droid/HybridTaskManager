@@ -39,12 +39,25 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
     try {
       if (mode === 'login') {
         if (!email || !password) throw new Error(t('fillAllFields'));
-        const user = await DataService.login(email, password);
+        
+        // Race condition protection: Login must complete in 10s or fail
+        const loginPromise = DataService.login(email, password);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Timeout: O servidor demorou muito para responder.")), 10000)
+        );
+
+        const user = await Promise.race([loginPromise, timeoutPromise]) as User;
         onLogin(user);
 
       } else if (mode === 'signup') {
         if (!name || !email || !password) throw new Error(t('fillAllFields'));
-        const user = await DataService.signup(name, email, password);
+        
+        const signupPromise = DataService.signup(name, email, password);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Timeout: O cadastro demorou muito.")), 10000)
+        );
+
+        const user = await Promise.race([signupPromise, timeoutPromise]) as User;
         onLogin(user);
 
       } else if (mode === 'direct_reset') {
@@ -77,6 +90,7 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
           }
       }
     } finally {
+      // Ensure loading state is turned off regardless of success or error
       setLoading(false);
     }
   };

@@ -46,7 +46,7 @@ const supabaseAnonKey = getEnvVar(
 const supabaseServiceRoleKey = getEnvVar(
   'REACT_APP_SUPABASE_SERVICE_KEY',
   'VITE_SUPABASE_SERVICE_KEY',
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybWxwZHdieWdnendjYnRha25yIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTU4NjE2NCwiZXhwIjoyMDgxMTYyMTY0fQ.by6YllE9177aaw4hfjFs515RyMX4nlV1EcUBcxuq7vo" // <--- COLE SUA CHAVE SERVICE_ROLE AQUI DENTRO DAS ASPAS SE NÃO USAR ENV VARS
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybWxwZHdieWdnendjYnRha25yIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTU4NjE2NCwiZXhwIjoyMDgxMTYyMTY0fQ.by6YllE9177aaw4hfjFs515RyMX4nlV1EcUBcxuq7vo" 
 );
 
 if (!supabaseUrl || !supabaseAnonKey) {
@@ -54,15 +54,22 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Client padrão para operações normais (respeita regras de segurança)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Configurações adicionadas para evitar "Multiple GoTrueClient" e problemas de hash na URL
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    detectSessionInUrl: false, // Desabilita detecção automática na URL para evitar conflitos
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
 
 // Client Admin para reset de senha forçado (ignora regras de segurança)
-// Só será criado se a chave estiver presente
 export const supabaseAdmin = supabaseServiceRoleKey 
   ? createClient(supabaseUrl, supabaseServiceRoleKey, {
       auth: {
         autoRefreshToken: false,
-        persistSession: false
+        persistSession: false,
+        detectSessionInUrl: false
       }
     })
   : null;

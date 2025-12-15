@@ -17,12 +17,12 @@ export const DataService = {
 
         if (!session?.user) return null;
         
-        // Fetch profile data
+        // Fetch profile data safely
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle to prevent error if no profile
 
         if (profile) {
             return {
@@ -48,25 +48,43 @@ export const DataService = {
   login: async (email: string, password?: string): Promise<User> => {
     if (!password) throw new Error("Password required");
     
+    // 1. Attempt Supabase Auth
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
+       console.error("Supabase Login Error:", error);
        if (error.message.includes("Invalid login credentials")) throw new Error("Email ou senha inválidos.");
        if (error.message.includes("Email not confirmed")) throw new Error("Por favor, confirme seu email.");
        throw error;
     }
 
     if (data.user) {
-        // Fetch profile
-        const { data: profile } = await supabase.from('profiles').select('*').eq('id', data.user.id).single();
-        return {
-            id: data.user.id,
-            name: profile?.name || data.user.user_metadata.name || email,
-            email: data.user.email!,
-            avatar: profile?.avatar || data.user.user_metadata.avatar
-        };
+        // 2. Fetch Profile (Safely)
+        try {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', data.user.id)
+                .maybeSingle();
+
+            return {
+                id: data.user.id,
+                name: profile?.name || data.user.user_metadata.name || email,
+                email: data.user.email!,
+                avatar: profile?.avatar || data.user.user_metadata.avatar
+            };
+        } catch (profileError) {
+             console.warn("Error fetching profile, falling back to auth data", profileError);
+             // Fallback to basic auth data so login succeeds even if profile fetch fails
+             return {
+                 id: data.user.id,
+                 name: data.user.user_metadata.name || email,
+                 email: data.user.email!,
+                 avatar: data.user.user_metadata.avatar
+             };
+        }
     }
-    throw new Error("Login failed");
+    throw new Error("Login failed: No user data returned.");
   },
 
   signup: async (name: string, email: string, password: string): Promise<User> => {
@@ -212,9 +230,6 @@ export const DataService = {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("User not authenticated");
 
-    // 0. Protect existing data by moving them to safety (first new column) later,
-    // but first we need to clear strict structure.
-
     // 1. Delete ALL existing structural data for this user to prevent ID conflicts
     await supabase.from('kanban_columns').delete().eq('user_id', user.id);
     await supabase.from('kanban_priorities').delete().eq('user_id', user.id);
@@ -259,8 +274,6 @@ export const DataService = {
     }
 
     // 4. EMERGENCY FIX: Update ALL tasks to the first new column to prevent them from being orphaned
-    // Since we deleted the old columns, the Foreign Key might have been set to NULL or tasks deleted depending on DB config.
-    // Assuming tasks are set to NULL or we want to reset them:
     await supabase
         .from('kanban_tasks')
         .update({ status: newFirstColumnId })
