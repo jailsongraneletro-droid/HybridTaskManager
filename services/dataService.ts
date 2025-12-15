@@ -8,39 +8,51 @@ export const DataService = {
 
   getCurrentUser: async (): Promise<User | null> => {
     try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // 1. Check for active session first (Fast, hits LocalStorage)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-            console.error("Session check error:", error);
+        if (sessionError) {
+            console.error("Session check error:", sessionError);
             return null;
         }
 
         if (!session?.user) return null;
         
-        // Fetch profile data safely
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle(); // Use maybeSingle to prevent error if no profile
+        // 2. Try to fetch extended profile data
+        try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .maybeSingle();
 
-        if (profile) {
-            return {
-                id: profile.id,
-                name: profile.name,
-                email: profile.email,
-                avatar: profile.avatar
-            };
+            if (profileError) {
+                console.warn("Profile fetch warning (using fallback):", profileError.message);
+            }
+
+            if (profile) {
+                return {
+                    id: profile.id,
+                    name: profile.name,
+                    email: profile.email,
+                    avatar: profile.avatar
+                };
+            }
+        } catch (innerError) {
+            console.warn("Network error fetching profile, using session data:", innerError);
         }
         
+        // 3. Fallback: If profile missing or fetch failed, return User based on Auth Session
+        // This ensures the user stays logged in even if the DB is slow.
         return {
             id: session.user.id,
             name: session.user.user_metadata.name || session.user.email,
             email: session.user.email!,
             avatar: session.user.user_metadata.avatar
         };
+
     } catch (e) {
-        console.error("Unexpected error in getCurrentUser:", e);
+        console.error("Critical error in getCurrentUser:", e);
         return null;
     }
   },

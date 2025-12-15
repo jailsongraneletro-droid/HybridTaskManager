@@ -879,30 +879,40 @@ const App = () => {
   useEffect(() => {
     let mounted = true;
 
-    // Safety timeout to prevent infinite loading on refresh (F5)
-    // If Supabase auth doesn't respond in 3 seconds, we stop loading
-    const safetyTimeout = setTimeout(() => {
-        if (mounted && loading) {
-            console.warn("Auth check timed out, forcing load completion");
-            setLoading(false);
-        }
-    }, 3000);
-
     const init = async () => {
       try {
-        // Try getting user directly first (validate token with server)
-        const { data: { user }, error } = await supabase.auth.getUser();
+        // 1. FAST CHECK: Check Local Storage first via getSession()
+        // This is immediate and prevents the "flicker" of the login screen on refresh.
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user && mounted) {
+             // Optimistically set user from session data
+             setUser({
+                 id: session.user.id,
+                 name: session.user.user_metadata.name || session.user.email,
+                 email: session.user.email!,
+                 avatar: session.user.user_metadata.avatar
+             });
+             // We can stop loading immediately because we have a user
+             setLoading(false);
+        }
+
+        // 2. BACKGROUND VALIDATION: Fetch full profile
+        // Even if we already let them in, we fetch the latest profile data to ensure consistency.
+        const currentUser = await DataService.getCurrentUser();
         
         if (mounted) {
-            if (user && !error) {
-                // Manually map to our User type
-                const currentUser = await DataService.getCurrentUser();
+            if (currentUser) {
                 setUser(currentUser);
+            } else if (!session?.user) {
+                // Only set user to null if BOTH session is missing AND getCurrentUser failed
+                setUser(null);
             }
             setLoading(false);
         }
+
       } catch (error) {
-        console.debug("No active session or error", error);
+        console.debug("Auth Init Error", error);
         if (mounted) setLoading(false);
       }
     };
@@ -911,7 +921,6 @@ const App = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-             // Re-fetch to be safe
              const currentUser = await DataService.getCurrentUser();
              if (mounted) {
                  setUser(currentUser);
@@ -927,7 +936,6 @@ const App = () => {
 
     return () => {
         mounted = false;
-        clearTimeout(safetyTimeout);
         subscription.unsubscribe();
     };
   }, []);
