@@ -46,9 +46,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
 
     // Date Validation
     if (dueDate) {
-        const selectedDate = new Date(dueDate);
+        // Fix for timezone issues: Parse the YYYY-MM-DD string into local date components
+        // This ensures we are comparing Local Midnight vs Local Midnight
+        const [year, month, day] = dueDate.split('-').map(Number);
+        const selectedDate = new Date(year, month - 1, day);
+        selectedDate.setHours(0, 0, 0, 0);
+
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+        today.setHours(0, 0, 0, 0); 
         
         // We allow selecting today, so we check if strict less than today
         if (selectedDate.getTime() < today.getTime()) {
@@ -57,6 +62,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
         }
     }
 
+    // When saving, we want to ensure the date is preserved correctly. 
+    // Creating a Date object from the string and converting to ISO might shift it to UTC previous day depending on timezone.
+    // Ideally, for a due date, we might want to store it as noon to avoid display shifts, 
+    // but to keep consistency with existing logic, we stick to standard ISO conversion or just fix the object creation.
+    // Using simple new Date(dueDate) creates UTC midnight. 
+    
     onSubmit({
       title,
       description,
