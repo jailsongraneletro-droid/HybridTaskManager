@@ -865,26 +865,44 @@ const App = () => {
   useEffect(() => {
     let mounted = true;
 
-    const fetchAndSetUser = async () => {
-      try {
-        const currentUser = await DataService.getCurrentUser();
-        if (mounted) setUser(currentUser);
-      } catch (error) {
-        console.debug("No active session or error", error);
-      }
-    };
+    // Safety timeout to prevent infinite loading on refresh (F5)
+    // If Supabase auth doesn't respond in 3 seconds, we stop loading
+    const safetyTimeout = setTimeout(() => {
+        if (mounted && loading) {
+            console.warn("Auth check timed out, forcing load completion");
+            setLoading(false);
+        }
+    }, 3000);
 
     const init = async () => {
-      await fetchAndSetUser();
-      if (mounted) setLoading(false);
+      try {
+        // Try getting user directly first (validate token with server)
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (mounted) {
+            if (user && !error) {
+                // Manually map to our User type
+                const currentUser = await DataService.getCurrentUser();
+                setUser(currentUser);
+            }
+            setLoading(false);
+        }
+      } catch (error) {
+        console.debug("No active session or error", error);
+        if (mounted) setLoading(false);
+      }
     };
 
     init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-             await fetchAndSetUser();
-             if (mounted) setLoading(false);
+             // Re-fetch to be safe
+             const currentUser = await DataService.getCurrentUser();
+             if (mounted) {
+                 setUser(currentUser);
+                 setLoading(false);
+             }
         } else if (event === 'SIGNED_OUT') {
              if (mounted) {
                setUser(null);
@@ -895,6 +913,7 @@ const App = () => {
 
     return () => {
         mounted = false;
+        clearTimeout(safetyTimeout);
         subscription.unsubscribe();
     };
   }, []);
