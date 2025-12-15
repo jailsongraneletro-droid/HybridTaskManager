@@ -281,17 +281,20 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const [deleteIntent, setDeleteIntent] = useState<{ type: 'task' | 'column' | 'priority' | 'assignee', id: string } | null>(null);
 
   useEffect(() => {
+    if (!user.id) return;
+
     const load = async () => {
+      setAppError('');
       try {
         const boardData = await DataService.getBoardData();
         setData(boardData);
-      } catch (e) {
+      } catch (e: any) {
         console.error("Failed to load board data", e);
-        setAppError("Failed to connect to database. Please check your connection.");
+        setAppError(e.message || "Failed to connect to database. Please check your connection.");
       }
     };
     load();
-  }, []);
+  }, [user.id]); // Reload when user ID changes
 
   // Notifications Logic
   const notifications = useMemo(() => {
@@ -629,8 +632,13 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
           </nav>
 
           <div className="p-4 border-t border-slate-800">
-             <div className="flex flex-col gap-4">
-                 <div className={`flex items-center gap-3 px-2 cursor-pointer hover:bg-slate-800 p-2 rounded-lg transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`} onClick={() => setIsProfileModalOpen(true)}>
+             <div className="flex flex-col gap-2">
+                 {/* Profile Button */}
+                 <button 
+                    onClick={() => setIsProfileModalOpen(true)}
+                    className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors hover:bg-slate-800 text-left w-full ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                    title={user.name}
+                 >
                     {user.avatar ? (
                         <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full border border-indigo-500/30 object-cover shrink-0" />
                     ) : (
@@ -639,16 +647,21 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                         </div>
                     )}
                     
-                    <div className={`overflow-hidden animate-in fade-in duration-300 ${isSidebarCollapsed ? 'md:hidden' : 'block'}`}>
-                         <p className="text-sm font-medium text-white truncate w-24">{user.name}</p>
-                         <button 
-                            onClick={(e) => { e.stopPropagation(); onLogout(); }} 
-                            className="text-xs text-slate-500 hover:text-slate-300 flex items-center gap-1 mt-0.5"
-                         >
-                           <LogOut size={10} /> {t('logout')}
-                         </button>
+                    <div className={`overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'md:hidden' : 'block'}`}>
+                         <p className="text-sm font-medium text-white truncate w-32">{user.name}</p>
+                         <p className="text-xs text-slate-500">{t('editProfile')}</p>
                     </div>
-                 </div>
+                 </button>
+
+                 {/* Logout Button */}
+                 <button 
+                    onClick={onLogout}
+                    className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors text-red-400 hover:bg-slate-800 hover:text-red-300 w-full ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                    title={t('logout')}
+                 >
+                   <LogOut size={20} className="shrink-0" />
+                   <span className={`font-medium ${isSidebarCollapsed ? 'md:hidden' : 'block'}`}>{t('logout')}</span>
+                 </button>
              </div>
           </div>
         </aside>
@@ -843,8 +856,13 @@ const App = () => {
   }, []);
 
   const handleLogout = async () => {
-    await DataService.logout();
+    // Optimistically clear user state immediately to avoid loop/lag
     setUser(null);
+    try {
+        await DataService.logout();
+    } catch (e) {
+        console.error("Logout error", e);
+    }
   };
 
   const handleUpdateUser = (updatedUser: User) => {

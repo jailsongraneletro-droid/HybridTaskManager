@@ -244,17 +244,28 @@ export const DataService = {
     // Data seeding now only happens on signup or manual restore
 
     // 2. Fetch All Data with explicit user_id filter
+    // CRITICAL FIX: Check for errors! Do not just assume empty array is "no data", it could be "fetch failed".
     const [
-        { data: columnsData },
-        { data: prioritiesData },
-        { data: tasksData },
-        { data: assigneesData }
+        columnsResult,
+        prioritiesResult,
+        tasksResult,
+        assigneesResult
     ] = await Promise.all([
         supabase.from('kanban_columns').select('*').eq('user_id', user.id).order('position'),
         supabase.from('kanban_priorities').select('*').eq('user_id', user.id),
         supabase.from('kanban_tasks').select('*').eq('user_id', user.id).order('position'),
         supabase.from('kanban_assignees').select('*').eq('user_id', user.id).order('created_at')
     ]);
+
+    if (columnsResult.error) throw new Error("Erro ao buscar colunas: " + columnsResult.error.message);
+    if (prioritiesResult.error) throw new Error("Erro ao buscar prioridades: " + prioritiesResult.error.message);
+    if (tasksResult.error) throw new Error("Erro ao buscar tarefas: " + tasksResult.error.message);
+    if (assigneesResult.error) throw new Error("Erro ao buscar responsáveis: " + assigneesResult.error.message);
+
+    const columnsData = columnsResult.data;
+    const prioritiesData = prioritiesResult.data;
+    const tasksData = tasksResult.data;
+    const assigneesData = assigneesResult.data;
 
     // --- MIGRATION: ENFORCE DEFAULT TITLES FOR EXISTING USERS ---
     // If user has standard IDs (To Do, In Progress, Done) but wrong titles (e.g. English or Capitalized), fix them.
@@ -339,7 +350,7 @@ export const DataService = {
             status: t.status,
             priority: t.priority,
             assigneeId: t.assignee_id,
-            dueDate: t.due_date,
+            dueDate: t.due_date, // Keeping TS interface compatible
             createdAt: t.created_at,
             tags: [] 
         };
