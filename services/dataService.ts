@@ -1,5 +1,5 @@
 import { BoardData, Column, Task, User, Priority, Assignee } from '../types';
-import { supabase } from '../utils/supabaseClient';
+import { supabase, supabaseAdmin } from '../utils/supabaseClient';
 import { DEFAULT_PRIORITIES, DEFAULT_COLUMNS } from '../constants';
 
 export const DataService = {
@@ -79,10 +79,55 @@ export const DataService = {
              email: email,
              avatar: avatarUrl
          });
+         
+         // Create default User object
+         const newUser: User = { id: data.user.id, name, email, avatar: avatarUrl };
 
-         return { id: data.user.id, name, email, avatar: avatarUrl };
+         // IMPORTANT: Seed default data IMMEDIATELY so new users have columns/status
+         try {
+            await DataService.seedUserData(newUser);
+         } catch (seedError) {
+             console.error("Error seeding initial data:", seedError);
+             // Proceed anyway, getBoardData will retry later
+         }
+
+         return newUser;
     }
     throw new Error("Signup failed");
+  },
+
+  // --- NEW: DIRECT ADMIN RESET ---
+  adminForcePasswordReset: async (email: string, newPassword: string) => {
+    if (!supabaseAdmin) {
+        throw new Error("Chave de Admin (service_role) não configurada no supabaseClient.ts");
+    }
+
+    // 1. Find User ID by Email (using the Profiles table which is readable)
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+    if (profileError || !profile) {
+        throw new Error("Usuário não encontrado com este e-mail.");
+    }
+
+    // 2. Force Update Password using Admin Client
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        profile.id,
+        { password: newPassword }
+    );
+
+    if (updateError) throw updateError;
+    
+    return true;
+  },
+
+  // 3. Update Password (used after OTP verification)
+  updatePassword: async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
   },
 
   updateCurrentUser: async (userId: string, updates: Partial<User>): Promise<User> => {
@@ -109,50 +154,94 @@ export const DataService = {
 
   // Helper to create default data for a new user
   seedUserData: async (user: User) => {
-    // 1. Create Default Columns
+    // 1. Create Default Columns (Only if none exist)
+    const { count: colCount } = await supabase.from('kanban_columns').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    if (colCount === 0) {
+        for (let i = 0; i < DEFAULT_COLUMNS.length; i++) {
+            const col = DEFAULT_COLUMNS[i];
+            await supabase.from('kanban_columns').insert({
+                id: col.id, 
+                title: col.title,
+                color: col.color,
+                position: i,
+                user_id: user.id
+            });
+        }
+    }
+
+    // 2. Create Default Priorities (Only if none exist)
+    const { count: prioCount } = await supabase.from('kanban_priorities').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    if (prioCount === 0) {
+        for (const prio of DEFAULT_PRIORITIES) {
+            await supabase.from('kanban_priorities').insert({
+                id: prio.id,
+                title: prio.title,
+                color: prio.color,
+                user_id: user.id
+            });
+        }
+    }
+
+    // 3. Create Self as First Assignee (Only if none exist)
+    const { count: assigneeCount } = await supabase.from('kanban_assignees').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    if (assigneeCount === 0) {
+        await supabase.from('kanban_assignees').insert({
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            user_id: user.id
+        });
+    }
+  },
+
+  // Manually restore defaults - Useful for users with broken/empty boards
+  restoreDefaults: async (): Promise<BoardData> => {
+    const user = await DataService.getCurrentUser();
+    if (!user) throw new Error("User not authenticated");
+
+    // Force restore Columns
     for (let i = 0; i < DEFAULT_COLUMNS.length; i++) {
         const col = DEFAULT_COLUMNS[i];
-        await supabase.from('kanban_columns').insert({
-            id: col.id, 
-            title: col.title,
-            color: col.color,
-            position: i,
-            user_id: user.id
+        // Upsert: Create if missing, update if exists (resets title/color to default)
+        await supabase.from('kanban_columns').upsert({
+             id: col.id, 
+             title: col.title,
+             color: col.color,
+             position: i,
+             user_id: user.id
         });
     }
 
-    // 2. Create Default Priorities
+    // Force restore Priorities
     for (const prio of DEFAULT_PRIORITIES) {
-        await supabase.from('kanban_priorities').insert({
-            id: prio.id,
-            title: prio.title,
-            color: prio.color,
+        await supabase.from('kanban_priorities').upsert({
+             id: prio.id,
+             title: prio.title,
+             color: prio.color,
+             user_id: user.id
+        });
+    }
+
+    // Also ensure assignee exists
+    const { count: assigneeCount } = await supabase.from('kanban_assignees').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    if (assigneeCount === 0) {
+        await supabase.from('kanban_assignees').insert({
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
             user_id: user.id
         });
     }
 
-    // 3. Create Self as First Assignee
-    await supabase.from('kanban_assignees').insert({
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        user_id: user.id
-    });
+    return DataService.getBoardData();
   },
 
   getBoardData: async (): Promise<BoardData> => {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("User not authenticated");
 
-    // 1. Check if user has columns. If not, seed data.
-    const { count } = await supabase
-        .from('kanban_columns')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-    
-    if (count === 0) {
-        await DataService.seedUserData(user);
-    }
+    // REMOVED AUTO-SEED LOGIC HERE to allow empty boards
+    // Data seeding now only happens on signup or manual restore
 
     // 2. Fetch All Data with explicit user_id filter
     const [
@@ -167,11 +256,69 @@ export const DataService = {
         supabase.from('kanban_assignees').select('*').eq('user_id', user.id).order('created_at')
     ]);
 
+    // --- MIGRATION: ENFORCE DEFAULT TITLES FOR EXISTING USERS ---
+    // If user has standard IDs (To Do, In Progress, Done) but wrong titles (e.g. English or Capitalized), fix them.
+    const updatesPromises: Promise<any>[] = [];
+    
+    if (columnsData) {
+        DEFAULT_COLUMNS.forEach(defCol => {
+            const existing = columnsData.find(c => c.id === defCol.id);
+            if (existing && existing.title !== defCol.title) {
+                // Optimistically update local data
+                existing.title = defCol.title;
+                // Fire update to DB
+                updatesPromises.push(
+                    supabase.from('kanban_columns')
+                        .update({ title: defCol.title })
+                        .eq('id', defCol.id)
+                        .eq('user_id', user.id)
+                );
+            }
+        });
+    }
+
+    if (prioritiesData) {
+        DEFAULT_PRIORITIES.forEach(defPrio => {
+            const existing = prioritiesData.find(p => p.id === defPrio.id);
+            if (existing && existing.title !== defPrio.title) {
+                 existing.title = defPrio.title;
+                 updatesPromises.push(
+                    supabase.from('kanban_priorities')
+                        .update({ title: defPrio.title })
+                        .eq('id', defPrio.id)
+                        .eq('user_id', user.id)
+                 );
+            }
+        });
+    }
+
+    if (updatesPromises.length > 0) {
+        // We don't await this to avoid blocking the UI load. 
+        // We already updated the local objects (columnsData/prioritiesData) by reference/mutation above if needed.
+        Promise.all(updatesPromises).catch(err => console.error("Auto-migration failed", err));
+    }
+    // ------------------------------------------------------------
+
     // 3. Transform
     const tasks: Record<string, Task> = {};
     const columns: Record<string, Column> = {};
     const columnOrder: string[] = [];
-    const priorities: Priority[] = (prioritiesData || []).map(p => ({ id: p.id, title: p.title, color: p.color }));
+    
+    // Sort priorities based on our DEFAULT_PRIORITIES order if they exist, otherwise append custom ones
+    const defaultPriorityIds = DEFAULT_PRIORITIES.map(p => p.id);
+    const sortedPriorities = (prioritiesData || []).sort((a, b) => {
+        const idxA = defaultPriorityIds.indexOf(a.id);
+        const idxB = defaultPriorityIds.indexOf(b.id);
+        // If both are defaults, sort by default order
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        // If A is default, it comes first
+        if (idxA !== -1) return -1;
+        // If B is default, it comes first
+        if (idxB !== -1) return 1;
+        // Otherwise stable/alphabetical
+        return a.title.localeCompare(b.title);
+    }).map(p => ({ id: p.id, title: p.title, color: p.color }));
+
     const assignees: Assignee[] = (assigneesData || []).map(a => ({ id: a.id, name: a.name, email: a.email, avatar: a.avatar }));
 
     (columnsData || []).forEach(col => {
@@ -202,7 +349,7 @@ export const DataService = {
         }
     });
 
-    return { tasks, columns, columnOrder, priorities, assignees };
+    return { tasks, columns, columnOrder, priorities: sortedPriorities, assignees };
   },
 
   // --- Tasks ---
@@ -328,6 +475,20 @@ export const DataService = {
   addAssignee: async (name: string, email: string): Promise<BoardData> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("No user");
+
+    // Check for duplicate
+    if (email) {
+        const { data: existing } = await supabase
+            .from('kanban_assignees')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('email', email)
+            .maybeSingle();
+        
+        if (existing) {
+            throw new Error("Já existe um responsável cadastrado com este e-mail.");
+        }
+    }
 
     const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
 

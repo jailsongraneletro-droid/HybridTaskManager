@@ -23,6 +23,7 @@ const translations = {
     addPriority: 'Adicionar Prioridade',
     deletePriority: 'Excluir Prioridade',
     editProfile: 'Editar Perfil',
+    restoreDefaults: 'Restaurar Padrões',
     
     // Fields
     title: 'Nome da Tarefa',
@@ -62,6 +63,10 @@ const translations = {
     newPriorityName: 'Nome da Nova Prioridade',
     colorTag: 'Etiqueta de Cor',
     permissions: 'Como Funcionam as Permissões',
+    troubleshooting: 'Solução de Problemas',
+    restoreDefaultsDesc: 'Se suas colunas ou prioridades sumiram, use este botão para recriar os itens padrão (A fazer, Em andamento, Concluído, etc).',
+    restoring: 'Restaurando...',
+    restoreSuccess: 'Padrões restaurados com sucesso!',
     
     // Table View
     searchPlaceholder: 'Filtrar tarefas...',
@@ -114,7 +119,27 @@ const translations = {
     fillAllFields: "Por favor, preencha todos os campos.",
     profileSettings: 'Configurações de Perfil',
     updateProfile: 'Atualizar Perfil',
-    checkEmail: 'Cadastro realizado! Verifique seu email para ativar a conta antes de entrar.'
+    checkEmail: 'Cadastro realizado! Verifique seu email para ativar a conta antes de entrar.',
+    forgotPassword: 'Esqueci minha senha',
+    forgotPasswordTitle: 'Recuperar Senha',
+    forgotPasswordDesc: 'Enviaremos um código para seu email.',
+    sendResetLink: 'Enviar Código',
+    sending: 'Enviando...',
+    backToLogin: 'Voltar para o Login',
+    resetLinkSent: 'Código enviado! Verifique seu email.',
+    
+    // Password Reset (OTP Flow)
+    enterCodeTitle: 'Digitar Código',
+    enterCodeDesc: 'Insira o código de 6 dígitos enviado para seu email. (Se houver link, pode ignorar).',
+    codeLabel: 'Código de Verificação',
+    verifyCode: 'Validar Código',
+    verifying: 'Validando...',
+    setNewPassword: 'Definir Nova Senha',
+    newPasswordDesc: 'Código validado. Crie sua nova senha.',
+    newPassword: 'Nova Senha',
+    updatePassword: 'Alterar Senha e Entrar',
+    passwordUpdated: 'Senha alterada com sucesso!',
+    otpError: 'Código inválido ou expirado.',
 };
 
 interface LanguageContextType {

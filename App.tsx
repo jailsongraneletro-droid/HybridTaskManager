@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List } from 'lucide-react';
+import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
 import { KanbanBoard } from './views/KanbanBoard';
@@ -9,14 +9,17 @@ import { Dashboard } from './views/Dashboard';
 import { SettingsView } from './views/SettingsView';
 import { TaskModal } from './components/TaskModal';
 import { ProfileModal } from './components/ProfileModal';
-import { ConfirmationModal } from './components/Shared';
+import { ConfirmationModal, Modal } from './components/Shared';
 import { DropResult } from '@hello-pangea/dnd';
 import { LanguageProvider, useLanguage } from './utils/i18n';
+import { supabase } from './utils/supabaseClient';
 
-// -- Login / Signup Component --
+// -- Login / Signup / Direct Reset Flow --
+type AuthMode = 'login' | 'signup' | 'direct_reset';
+
 const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const { t } = useLanguage();
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<AuthMode>('login');
   
   // Form State
   const [name, setName] = useState('');
@@ -34,40 +37,122 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        if (!email || !password) {
-             throw new Error(t('fillAllFields'));
-        }
+      if (mode === 'login') {
+        if (!email || !password) throw new Error(t('fillAllFields'));
         const user = await DataService.login(email, password);
         onLogin(user);
-      } else {
-        if (!name || !email || !password) {
-            throw new Error(t('fillAllFields'));
-        }
+
+      } else if (mode === 'signup') {
+        if (!name || !email || !password) throw new Error(t('fillAllFields'));
         const user = await DataService.signup(name, email, password);
-        // Signup success (auto-login scenario)
         onLogin(user);
+
+      } else if (mode === 'direct_reset') {
+        // Direct Database Update (Internal Mode)
+        if (!email || !password) throw new Error(t('fillAllFields'));
+        if (password.length < 6) throw new Error("A senha deve ter pelo menos 6 caracteres.");
+
+        // Call the admin bypass
+        await DataService.adminForcePasswordReset(email, password);
+        
+        setSuccessMsg("Senha alterada com sucesso! Você pode fazer login agora.");
+        // Clear fields and go back to login after delay
+        setTimeout(() => {
+            setMode('login');
+            setPassword('');
+        }, 2000);
       }
+      
     } catch (err: any) {
       if (err.message === 'CONFIRM_EMAIL') {
-          // Special case: Signup successful, but email confirmation required
           setSuccessMsg(t('checkEmail'));
-          setIsLogin(true); // Switch back to login
-          setPassword(''); // Clear password
+          setMode('login'); 
+          setPassword('');
       } else {
-          setError(isLogin ? t('loginError') : (err.message || t('signupError')));
+          // Improve error message if Service Key is missing
+          if (err.message.includes("Service Role")) {
+              setError("Erro de Configuração: Adicione a chave Service Role no arquivo supabaseClient.ts");
+          } else {
+              setError(err.message || t('loginError'));
+          }
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleMode = () => {
-    setIsLogin(!isLogin);
+  const toggleMode = (newMode: AuthMode) => {
+    setMode(newMode);
     setError('');
     setSuccessMsg('');
+    setPassword('');
   };
 
+  // --- Sub-Components for Direct Reset ---
+
+  // Direct Password Reset View
+  if (mode === 'direct_reset') {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 relative">
+          <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md animate-in fade-in zoom-in-95 duration-300">
+             <div className="mb-6">
+                <button 
+                    onClick={() => toggleMode('login')}
+                    className="flex items-center gap-1 text-slate-500 hover:text-slate-800 text-sm mb-4 transition-colors"
+                >
+                    <ArrowLeft size={16} /> Voltar para Login
+                </button>
+                <div className="flex items-center gap-2 text-indigo-600 mb-2">
+                    <ShieldAlert size={24} />
+                    <h1 className="text-2xl font-bold text-slate-900">Redefinir Senha</h1>
+                </div>
+                <p className="text-slate-500 mt-2 text-sm">
+                    Modo Interno: Digite seu e-mail e a nova senha desejada. O sistema verificará se o cadastro existe e atualizará a senha imediatamente.
+                </p>
+             </div>
+
+             <form onSubmit={handleSubmit} className="space-y-4">
+                 <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder={t('email')}
+                      required
+                    />
+                 </div>
+
+                 <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input 
+                      type="password" 
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder="Nova Senha"
+                      required
+                      minLength={6}
+                    />
+                 </div>
+
+                 <button 
+                    disabled={loading}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center shadow-md shadow-indigo-100"
+                 >
+                    {loading ? 'Atualizando...' : 'Alterar Senha Agora'}
+                 </button>
+             </form>
+             
+             {error && <div className="mt-4 text-red-500 text-sm text-center bg-red-50 py-2 rounded-lg border border-red-100">{error}</div>}
+             {successMsg && <div className="mt-4 text-green-600 text-sm text-center bg-green-50 py-2 rounded-lg border border-green-100">{successMsg}</div>}
+          </div>
+        </div>
+    );
+  }
+
+  // Standard Login/Signup View
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 relative">
       <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md animate-in fade-in zoom-in-95 duration-300">
@@ -77,14 +162,14 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
           </div>
           <h1 className="text-2xl font-bold text-slate-900">HybridTaskManager</h1>
           <p className="text-slate-500 mt-2">
-            {isLogin ? t('welcomeBack') : t('enterDetails')}
+            {mode === 'login' ? t('welcomeBack') : t('enterDetails')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
           {/* Signup: Name Field */}
-          {!isLogin && (
+          {mode === 'signup' && (
             <div className="relative">
                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                <input 
@@ -93,7 +178,7 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
                  onChange={e => setName(e.target.value)}
                  className="w-full pl-10 pr-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                  placeholder={t('name')}
-                 required={!isLogin}
+                 required={mode === 'signup'}
                />
             </div>
           )}
@@ -124,6 +209,18 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
              />
           </div>
 
+          {mode === 'login' && (
+             <div className="flex justify-end">
+                <button 
+                  type="button"
+                  onClick={() => toggleMode('direct_reset')}
+                  className="text-sm text-indigo-600 hover:text-indigo-700 hover:underline"
+                >
+                    {t('forgotPassword')}
+                </button>
+             </div>
+          )}
+
           {successMsg && (
             <div className="text-green-600 text-sm flex items-start gap-2 bg-green-50 p-3 rounded-lg border border-green-100">
               <CheckCircle size={18} className="shrink-0 mt-0.5" />
@@ -142,20 +239,20 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center shadow-md shadow-indigo-100 mt-2"
           >
             {loading 
-              ? (isLogin ? t('signingIn') : t('signingUp')) 
-              : (isLogin ? t('signIn') : t('signUp'))
+              ? (mode === 'login' ? t('signingIn') : t('signingUp')) 
+              : (mode === 'login' ? t('signIn') : t('signUp'))
             }
           </button>
         </form>
 
         <div className="text-center mt-6">
           <p className="text-sm text-slate-500">
-            {isLogin ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
+            {mode === 'login' ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
             <button 
-              onClick={toggleMode} 
+              onClick={() => toggleMode(mode === 'login' ? 'signup' : 'login')} 
               className="text-indigo-600 font-semibold hover:text-indigo-700 hover:underline"
             >
-              {isLogin ? t('signUp') : t('signIn')}
+              {mode === 'login' ? t('signUp') : t('signIn')}
             </button>
           </p>
         </div>
@@ -171,6 +268,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const [data, setData] = useState<BoardData | null>(null);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [appError, setAppError] = useState<string>('');
   
   // Modals
@@ -437,44 +535,96 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     }
   };
 
+  // --- Restore Defaults ---
+  const handleRestoreDefaults = async () => {
+      setAppError('');
+      try {
+          const newData = await DataService.restoreDefaults();
+          setData(newData);
+      } catch (e: any) {
+          setAppError("Erro ao restaurar padrões: " + e.message);
+      }
+  };
+
   if (!data) return <div className="flex items-center justify-center h-screen text-slate-500">Connecting to database...</div>;
 
   return (
     <HashRouter>
-      <div className="flex h-screen bg-slate-100 text-slate-900 font-sans overflow-hidden">
+      <div className="flex h-screen bg-slate-100 text-slate-900 font-sans overflow-hidden relative">
+        
+        {/* Mobile Sidebar Backdrop */}
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-30 md:hidden animate-in fade-in"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className={`${isSidebarCollapsed ? 'w-20' : 'w-64'} bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-20 transition-all duration-300 relative`}>
-          <div className={`p-6 flex items-center gap-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-             <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
-               <Layout className="text-white w-5 h-5" />
+        <aside className={`
+            fixed inset-y-0 left-0 z-40 bg-slate-900 text-slate-300 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out
+            ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            md:relative md:translate-x-0
+            ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}
+            w-64
+        `}>
+          <div className={`p-6 flex items-center justify-between gap-3 ${isSidebarCollapsed ? 'md:justify-center' : ''}`}>
+             <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
+                  <Layout className="text-white w-5 h-5" />
+                </div>
+                <span className={`font-bold text-white tracking-tight animate-in fade-in duration-300 ${isSidebarCollapsed ? 'md:hidden' : 'block'}`}>HybridTask</span>
              </div>
-             {!isSidebarCollapsed && <span className="font-bold text-white tracking-tight animate-in fade-in duration-300">HybridTask</span>}
+             {/* Mobile Close Button */}
+             <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-slate-400 hover:text-white">
+                <X size={20} />
+             </button>
           </div>
 
           <button 
             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            className="absolute top-8 -right-3 bg-indigo-600 text-white p-1 rounded-full border-2 border-slate-900 z-50 hover:bg-indigo-700 shadow-md transition-transform hover:scale-105"
+            className="hidden md:flex absolute top-8 -right-3 bg-indigo-600 text-white p-1 rounded-full border-2 border-slate-900 z-50 hover:bg-indigo-700 shadow-md transition-transform hover:scale-105"
             title={isSidebarCollapsed ? "Expandir Menu" : "Recolher Menu"}
           >
             {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>
 
           <nav className="flex-1 px-3 space-y-1 mt-6">
-            <NavLink to="/" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <LayoutDashboard size={18} title={isSidebarCollapsed ? t('dashboard') : ''} />
-              {!isSidebarCollapsed && <span>{t('dashboard')}</span>}
+            <NavLink 
+                to="/" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                title={isSidebarCollapsed ? t('dashboard') : ''} 
+                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <LayoutDashboard size={18} />
+              <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('dashboard')}</span>
             </NavLink>
-            <NavLink to="/board" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <Kanban size={18} title={isSidebarCollapsed ? t('kanban') : ''} />
-              {!isSidebarCollapsed && <span>{t('kanban')}</span>}
+            <NavLink 
+                to="/board" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                title={isSidebarCollapsed ? t('kanban') : ''} 
+                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <Kanban size={18} />
+              <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('kanban')}</span>
             </NavLink>
-            <NavLink to="/table" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <List size={18} title={isSidebarCollapsed ? t('table') : ''} />
-              {!isSidebarCollapsed && <span>{t('table')}</span>}
+            <NavLink 
+                to="/table" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                title={isSidebarCollapsed ? t('table') : ''} 
+                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <List size={18} />
+              <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('table')}</span>
             </NavLink>
-            <NavLink to="/settings" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-              <Settings size={18} title={isSidebarCollapsed ? t('settings') : ''} />
-              {!isSidebarCollapsed && <span>{t('settings')}</span>}
+            <NavLink 
+                to="/settings" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                title={isSidebarCollapsed ? t('settings') : ''} 
+                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <Settings size={18} />
+              <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('settings')}</span>
             </NavLink>
           </nav>
 
@@ -489,8 +639,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                         </div>
                     )}
                     
-                    {!isSidebarCollapsed && (
-                       <div className="overflow-hidden animate-in fade-in duration-300">
+                    <div className={`overflow-hidden animate-in fade-in duration-300 ${isSidebarCollapsed ? 'md:hidden' : 'block'}`}>
                          <p className="text-sm font-medium text-white truncate w-24">{user.name}</p>
                          <button 
                             onClick={(e) => { e.stopPropagation(); onLogout(); }} 
@@ -498,8 +647,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                          >
                            <LogOut size={10} /> {t('logout')}
                          </button>
-                       </div>
-                    )}
+                    </div>
                  </div>
              </div>
           </div>
@@ -507,13 +655,22 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shadow-sm z-10">
-             <h2 className="text-xl font-semibold text-slate-800">{t('projectOverview')}</h2>
+          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm z-10">
+             <div className="flex items-center gap-3">
+                 {/* Mobile Menu Button */}
+                 <button 
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                 >
+                    <Menu size={24} />
+                 </button>
+                 <h2 className="text-xl font-semibold text-slate-800 truncate">{t('projectOverview')}</h2>
+             </div>
              
-             <div className="flex items-center gap-4">
+             <div className="flex items-center gap-2 md:gap-4">
                 {/* Error Banner */}
                 {appError && (
-                    <div className="flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-100 animate-in slide-in-from-top-2">
+                    <div className="hidden md:flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-100 animate-in slide-in-from-top-2">
                         <AlertTriangle size={14} />
                         <span>{appError}</span>
                         <button onClick={() => setAppError('')} className="ml-1 hover:text-red-800 font-bold">×</button>
@@ -579,15 +736,15 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
 
                 <button 
                 onClick={openNewTask}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md shadow-indigo-200 transition-all active:scale-95"
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 md:px-4 py-2 rounded-lg text-sm font-medium shadow-md shadow-indigo-200 transition-all active:scale-95"
                 >
                 <Plus size={18} />
-                {t('newTask')}
+                <span className="hidden sm:inline">{t('newTask')}</span>
                 </button>
              </div>
           </header>
 
-          <div className="flex-1 overflow-auto p-8 relative">
+          <div className="flex-1 overflow-auto p-4 md:p-8 relative">
             <Routes>
               <Route path="/" element={<Dashboard data={data} />} />
               <Route path="/board" element={
@@ -616,6 +773,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                   onDeletePriority={requestDeletePriority}
                   onAddAssignee={handleAddAssignee}
                   onDeleteAssignee={requestDeleteAssignee}
+                  onRestoreDefaults={handleRestoreDefaults}
                 />
               } />
               <Route path="*" element={<Navigate to="/" replace />} />
@@ -657,23 +815,32 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
+    const initAuth = async () => {
       try {
         const currentUser = await DataService.getCurrentUser();
         setUser(currentUser);
-      } catch (e) {
-        console.error("No user found or session expired");
-        // User remains null
+      } catch (error) {
+        console.debug("No active session");
       } finally {
         setLoading(false);
       }
     };
-    checkUser();
-  }, []);
 
-  const handleLogin = (loggedInUser: User) => {
-    setUser(loggedInUser);
-  };
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN') {
+             const currentUser = await DataService.getCurrentUser();
+             setUser(currentUser);
+        } else if (event === 'SIGNED_OUT') {
+             setUser(null);
+        }
+    });
+
+    return () => {
+        subscription.unsubscribe();
+    };
+  }, []);
 
   const handleLogout = async () => {
     await DataService.logout();
@@ -681,25 +848,27 @@ const App = () => {
   };
 
   const handleUpdateUser = (updatedUser: User) => {
-    setUser(updatedUser);
+     setUser(prev => prev ? ({ ...prev, ...updatedUser }) : null);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-4">
-        <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-        <p className="text-sm font-medium">Loading...</p>
-      </div>
+        <div className="min-h-screen flex items-center justify-center bg-slate-100 text-slate-500">
+            <div className="flex flex-col items-center gap-2">
+                <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                <p className="text-sm font-medium">Carregando...</p>
+            </div>
+        </div>
     );
   }
 
   return (
     <LanguageProvider>
-      {user ? (
-        <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />
-      ) : (
-        <Login onLogin={handleLogin} />
-      )}
+       {user ? (
+         <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />
+       ) : (
+         <Login onLogin={setUser} />
+       )}
     </LanguageProvider>
   );
 };

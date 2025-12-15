@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BoardData, Assignee } from '../types';
-import { Plus, Trash2, User } from 'lucide-react';
+import { Plus, Trash2, User, AlertCircle, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 
 interface SettingsViewProps {
@@ -13,6 +13,7 @@ interface SettingsViewProps {
   onDeletePriority: (id: string) => void;
   onAddAssignee: (name: string, email: string) => void;
   onDeleteAssignee: (id: string) => void;
+  onRestoreDefaults: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ 
@@ -24,7 +25,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onUpdatePriority,
   onDeletePriority,
   onAddAssignee,
-  onDeleteAssignee
+  onDeleteAssignee,
+  onRestoreDefaults
 }) => {
   const { t } = useLanguage();
   
@@ -39,7 +41,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   // Assignee State
   const [newAssigneeName, setNewAssigneeName] = useState('');
   const [newAssigneeEmail, setNewAssigneeEmail] = useState('');
+  const [assigneeError, setAssigneeError] = useState('');
   
+  // Restore State
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreSuccess, setRestoreSuccess] = useState('');
+
   const handleAddColumnSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newColTitle.trim()) {
@@ -58,11 +65,35 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
   const handleAddAssigneeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setAssigneeError('');
+
     if (newAssigneeName.trim()) {
+      // Basic duplicate check
+      if (newAssigneeEmail) {
+          const exists = data.assignees.some(a => a.email === newAssigneeEmail);
+          if (exists) {
+              setAssigneeError('Este e-mail já está cadastrado.');
+              return;
+          }
+      }
+
       onAddAssignee(newAssigneeName, newAssigneeEmail);
       setNewAssigneeName('');
       setNewAssigneeEmail('');
     }
+  };
+
+  const handleRestore = async () => {
+      setIsRestoring(true);
+      setRestoreSuccess('');
+      try {
+          await onRestoreDefaults();
+          setRestoreSuccess(t('restoreSuccess'));
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setIsRestoring(false);
+      }
   };
 
   return (
@@ -211,6 +242,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
         
         <div className="p-6 space-y-6">
+           {assigneeError && (
+               <div className="bg-red-50 text-red-600 p-3 rounded-lg flex items-center gap-2 text-sm border border-red-100">
+                   <AlertCircle size={16} />
+                   {assigneeError}
+               </div>
+           )}
+
            <div className="space-y-3">
              {data.assignees.map(a => (
                 <div key={a.id} className="flex items-center gap-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
@@ -243,8 +281,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                <input 
                  type="email" 
                  value={newAssigneeEmail}
-                 onChange={(e) => setNewAssigneeEmail(e.target.value)}
-                 className="w-full px-3 py-2 bg-white text-slate-900 rounded-lg border border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                 onChange={(e) => {
+                     setNewAssigneeEmail(e.target.value);
+                     setAssigneeError('');
+                 }}
+                 className={`w-full px-3 py-2 bg-white text-slate-900 rounded-lg border outline-none ${assigneeError ? 'border-red-300 focus:ring-red-200' : 'border-indigo-200 focus:ring-indigo-500 focus:ring-2'}`}
                  placeholder="Opcional"
                />
              </div>
@@ -253,6 +294,32 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                Adicionar
              </button>
           </form>
+        </div>
+      </section>
+
+      {/* Restore Defaults (Troubleshooting) */}
+      <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="font-semibold text-lg text-slate-800">{t('troubleshooting')}</h3>
+        </div>
+        <div className="p-6">
+            <p className="text-sm text-slate-500 mb-4">{t('restoreDefaultsDesc')}</p>
+            
+            <button 
+                onClick={handleRestore}
+                disabled={isRestoring}
+                className="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 font-medium rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+            >
+                <RefreshCw size={18} className={isRestoring ? 'animate-spin' : ''} />
+                {isRestoring ? t('restoring') : t('restoreDefaults')}
+            </button>
+
+            {restoreSuccess && (
+                <div className="mt-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm flex items-center gap-2 border border-green-100 animate-in fade-in">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    {restoreSuccess}
+                </div>
+            )}
         </div>
       </section>
 

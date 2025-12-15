@@ -72,7 +72,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEditTask, onDeleteTask }) => {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex h-full overflow-x-auto gap-6 pb-4">
+      <div className="flex h-full overflow-x-auto gap-4 md:gap-6 pb-4 px-1 md:px-0">
         {data.columnOrder.map((columnId) => {
           const column = data.columns[columnId];
           const tasks = column.taskIds.map(taskId => data.tasks[taskId]);

@@ -365,6 +365,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
           {/* Table Body */}
           <div className="pb-4">
              {Object.entries(groupedTasks).map(([groupKey, tasks]) => {
+                const currentTasks = tasks as Task[];
                 const isCollapsed = collapsedGroups[groupKey];
                 
                 return (
@@ -379,7 +380,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                              <h4 className="font-semibold text-sm text-slate-700 flex items-center gap-2">
                                 {getGroupTitle(groupKey)}
                                 <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs font-normal">
-                                    {tasks.length}
+                                    {currentTasks.length}
                                 </span>
                              </h4>
                           </div>
@@ -388,7 +389,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                       {/* Rows */}
                       {!isCollapsed && (
                           <div className={groupBy !== 'none' ? 'divide-y divide-slate-100 border-b border-slate-200' : 'divide-y divide-slate-100'}>
-                              {tasks.map(task => (
+                              {currentTasks.map(task => (
                                   <TaskRow 
                                     key={task.id} 
                                     task={task} 
