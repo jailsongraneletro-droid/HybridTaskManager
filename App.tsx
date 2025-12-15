@@ -828,29 +828,38 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
+    let mounted = true;
+
+    const fetchAndSetUser = async () => {
       try {
         const currentUser = await DataService.getCurrentUser();
-        setUser(currentUser);
+        if (mounted) setUser(currentUser);
       } catch (error) {
-        console.debug("No active session");
-      } finally {
-        setLoading(false);
+        console.debug("No active session or error", error);
       }
     };
 
-    initAuth();
+    const init = async () => {
+      await fetchAndSetUser();
+      if (mounted) setLoading(false);
+    };
+
+    init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN') {
-             const currentUser = await DataService.getCurrentUser();
-             setUser(currentUser);
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+             await fetchAndSetUser();
+             if (mounted) setLoading(false);
         } else if (event === 'SIGNED_OUT') {
-             setUser(null);
+             if (mounted) {
+               setUser(null);
+               setLoading(false);
+             }
         }
     });
 
     return () => {
+        mounted = false;
         subscription.unsubscribe();
     };
   }, []);
