@@ -21,5 +21,6 @@ export const INITIAL_DATA: BoardData = {
   columns: {},
   columnOrder: [],
   priorities: [],
-  assignees: []
+  assignees: [],
+  notes: []
 };

@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X, RefreshCw } from 'lucide-react';
+import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X, RefreshCw, StickyNote } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
 import { KanbanBoard } from './views/KanbanBoard';
 import { TableView } from './views/TableView';
 import { Dashboard } from './views/Dashboard';
 import { SettingsView } from './views/SettingsView';
+import { NotesView } from './views/NotesView';
 import { TaskModal } from './components/TaskModal';
 import { ProfileModal } from './components/ProfileModal';
 import { ConfirmationModal, Modal } from './components/Shared';
@@ -670,6 +671,15 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
               <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('table')}</span>
             </NavLink>
             <NavLink 
+                to="/notes" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                title={isSidebarCollapsed ? t('notes') : ''} 
+                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
+            >
+              <StickyNote size={18} />
+              <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('notes')}</span>
+            </NavLink>
+            <NavLink 
                 to="/settings" 
                 onClick={() => setIsMobileMenuOpen(false)}
                 title={isSidebarCollapsed ? t('settings') : ''} 
@@ -824,6 +834,12 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                   onDeleteTask={requestDeleteTask}
                 />
               } />
+              <Route path="/notes" element={
+                <NotesView 
+                  data={data} 
+                  onUpdate={loadData}
+                />
+              } />
               <Route path="/settings" element={
                 <SettingsView 
                   data={data} 
@@ -872,42 +888,40 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   );
 };
 
-// -- App Component --
 const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for active session
-    DataService.getCurrentUser().then(user => {
-      setUser(user);
-      setLoading(false);
+    const init = async () => {
+        const u = await DataService.getCurrentUser();
+        setUser(u);
+        setLoading(false);
+    };
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+             const u = await DataService.getCurrentUser();
+             setUser(u);
+        } else if (event === 'SIGNED_OUT') {
+            setUser(null);
+        }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
-
-  const handleLogout = async () => {
-    await DataService.logout();
-    setUser(null);
-  };
-
-  if (loading) {
-    return (
-       <div className="flex items-center justify-center h-screen bg-slate-100">
-           <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-       </div>
-    );
-  }
 
   return (
     <LanguageProvider>
-      {user ? (
-        <MainApp 
-          user={user} 
-          onLogout={handleLogout} 
-          onUpdateUser={setUser}
-        />
-      ) : (
+      {loading ? (
+        <div className="flex items-center justify-center h-screen bg-slate-100">
+           <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        </div>
+      ) : !user ? (
         <Login onLogin={setUser} />
+      ) : (
+        <MainApp user={user} onLogout={() => DataService.logout()} onUpdateUser={setUser} />
       )}
     </LanguageProvider>
   );

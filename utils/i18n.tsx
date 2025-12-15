@@ -6,6 +6,7 @@ const translations = {
     dashboard: 'Painel',
     kanban: 'Quadro Kanban',
     table: 'Tabela',
+    notes: 'Anotações',
     settings: 'Configurações',
     logout: 'Sair',
     projectOverview: 'Visão Geral',
@@ -34,6 +35,12 @@ const translations = {
     taskAge: 'Tempo de Vida',
     description: 'Descrição',
     actions: 'Ações',
+    
+    // Notes
+    takeANote: 'Criar uma nota...',
+    noteTitle: 'Título',
+    noteContent: 'Criar uma nota...',
+    deleteNoteConfirm: 'Tem certeza que deseja excluir esta nota?',
     
     // Dashboard
     completionRate: 'Taxa de Conclusão',

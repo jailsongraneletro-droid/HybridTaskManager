@@ -12,17 +12,40 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const { t } = useLanguage();
   const tasks = Object.values(data.tasks) as Task[];
   
-  // Stats Calculation
+  // Dynamic Calculation to find "Done" column
+  // Logic: 1. Look for common 'Done' variations in title (case insensitive)
+  //        2. Fallback to the last column in the list
+  const doneColumnId = data.columnOrder.find(id => {
+      const colTitle = data.columns[id].title.toLowerCase().trim();
+      return ['done', 'concluído', 'concluido', 'finalizado', 'complete', 'completed'].includes(colTitle);
+  }) || (data.columnOrder.length > 0 ? data.columnOrder[data.columnOrder.length - 1] : 'Done');
+
   const totalTasks = tasks.length;
-  // Note: We check if status string includes 'Done' or check against the column title if we wanted to be more strict, 
-  // but for now relying on string id 'Done' or similar is safer for this MVP.
-  // Actually, let's assume the 'Done' column is the last one or explicitly named 'Done'.
-  const completedTasks = tasks.filter(t => t.status === 'Done').length;
-  const overdueTasks = tasks.filter(t => new Date(t.dueDate) < new Date() && t.status !== 'Done').length;
-  const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const completedTasks = tasks.filter(t => t.status === doneColumnId).length;
+  
+  // Date check for overdue
+  const overdueTasks = tasks.filter(t => {
+      // Is it done?
+      if (t.status === doneColumnId) return false;
+      
+      // Is due date valid and in past?
+      if (!t.dueDate) return false;
+      const due = new Date(t.dueDate);
+      
+      // Compare dates strictly
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      const dueDateObj = new Date(due);
+      dueDateObj.setHours(0,0,0,0); 
+      
+      // If task due date is strictly before today, it's overdue
+      return dueDateObj.getTime() < today.getTime();
+  }).length;
+
+  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   // Pie Chart Data (Status)
-  // Dynamically map from columns
   const statusData = data.columnOrder.map(colId => {
       const col = data.columns[colId];
       return {
@@ -59,7 +82,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
           value={`${completionRate}%`} 
           icon={CheckCircle} 
           color="bg-green-500" 
-          subtext={`${completedTasks} of ${totalTasks} ${t('completedTasks')}`}
+          subtext={`${completedTasks} de ${totalTasks} ${t('completedTasks')}`}
         />
         <StatCard 
           title={t('overdueTasks')}

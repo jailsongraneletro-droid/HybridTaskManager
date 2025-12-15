@@ -53,10 +53,19 @@ export interface Column {
   taskIds: string[];
 }
 
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  color: string;
+  createdAt: string;
+}
+
 export interface BoardData {
   tasks: Record<string, Task>;
   columns: Record<string, Column>;
   columnOrder: string[];
   priorities: Priority[]; // Added dynamic priorities
   assignees: Assignee[]; // Added dynamic assignees
+  notes: Note[]; // Added notes
 }

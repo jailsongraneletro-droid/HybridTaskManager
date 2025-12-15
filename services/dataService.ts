@@ -1,4 +1,4 @@
-import { BoardData, Column, Task, User, Priority, Assignee } from '../types';
+import { BoardData, Column, Task, User, Priority, Assignee, Note } from '../types';
 import { supabase, supabaseAdmin } from '../utils/supabaseClient';
 import { DEFAULT_PRIORITIES, DEFAULT_COLUMNS } from '../constants';
 
@@ -299,28 +299,32 @@ export const DataService = {
     if (!user) throw new Error("User not authenticated");
 
     // 2. Fetch All Data with explicit user_id filter
-    // CRITICAL FIX: Check for errors! Do not just assume empty array is "no data", it could be "fetch failed".
     const [
         columnsResult,
         prioritiesResult,
         tasksResult,
-        assigneesResult
+        assigneesResult,
+        notesResult
     ] = await Promise.all([
         supabase.from('kanban_columns').select('*').eq('user_id', user.id).order('position'),
         supabase.from('kanban_priorities').select('*').eq('user_id', user.id),
         supabase.from('kanban_tasks').select('*').eq('user_id', user.id).order('position'),
-        supabase.from('kanban_assignees').select('*').eq('user_id', user.id).order('created_at')
+        supabase.from('kanban_assignees').select('*').eq('user_id', user.id).order('created_at'),
+        supabase.from('kanban_notes').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
     ]);
 
     if (columnsResult.error) throw new Error("Erro ao buscar colunas: " + columnsResult.error.message);
     if (prioritiesResult.error) throw new Error("Erro ao buscar prioridades: " + prioritiesResult.error.message);
     if (tasksResult.error) throw new Error("Erro ao buscar tarefas: " + tasksResult.error.message);
     if (assigneesResult.error) throw new Error("Erro ao buscar responsáveis: " + assigneesResult.error.message);
+    // Not throwing on notes error to allow app to work without table migration initially
+    if (notesResult.error) console.warn("Notes table may not exist yet:", notesResult.error.message);
 
     const columnsData = columnsResult.data;
     const prioritiesData = prioritiesResult.data;
     const tasksData = tasksResult.data;
     const assigneesData = assigneesResult.data;
+    const notesData = notesResult.data || [];
 
     // 3. Transform
     const tasks: Record<string, Task> = {};
@@ -333,6 +337,14 @@ export const DataService = {
         .map(p => ({ id: p.id, title: p.title, color: p.color }));
 
     const assignees: Assignee[] = (assigneesData || []).map(a => ({ id: a.id, name: a.name, email: a.email, avatar: a.avatar }));
+
+    const notes: Note[] = notesData.map(n => ({
+      id: n.id,
+      title: n.title,
+      content: n.content,
+      color: n.color,
+      createdAt: n.created_at
+    }));
 
     (columnsData || []).forEach(col => {
         columns[col.id] = {
@@ -365,7 +377,7 @@ export const DataService = {
         }
     });
 
-    return { tasks, columns, columnOrder, priorities: sortedPriorities, assignees };
+    return { tasks, columns, columnOrder, priorities: sortedPriorities, assignees, notes };
   },
 
   // --- Tasks ---
@@ -527,6 +539,46 @@ export const DataService = {
 
   deleteAssignee: async (id: string): Promise<BoardData> => {
     const { error } = await supabase.from('kanban_assignees').delete().eq('id', id);
+    if (error) throw error;
+    return DataService.getBoardData();
+  },
+
+  // --- Notes ---
+
+  addNote: async (note: Partial<Note>): Promise<BoardData> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("No user");
+
+    const id = `note_${Date.now()}_${user.id}`;
+    
+    const { error } = await supabase.from('kanban_notes').insert({
+        id: id,
+        title: note.title,
+        content: note.content,
+        color: note.color,
+        user_id: user.id
+    });
+    
+    if (error) throw error;
+    return DataService.getBoardData();
+  },
+
+  updateNote: async (note: Note): Promise<BoardData> => {
+    const { error } = await supabase
+        .from('kanban_notes')
+        .update({
+            title: note.title,
+            content: note.content,
+            color: note.color
+        })
+        .eq('id', note.id);
+    
+    if (error) throw error;
+    return DataService.getBoardData();
+  },
+
+  deleteNote: async (id: string): Promise<BoardData> => {
+    const { error } = await supabase.from('kanban_notes').delete().eq('id', id);
     if (error) throw error;
     return DataService.getBoardData();
   }
