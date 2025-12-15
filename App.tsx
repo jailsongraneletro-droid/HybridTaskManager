@@ -872,106 +872,43 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   );
 };
 
+// -- App Component --
 const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
-    const init = async () => {
-      try {
-        // 1. FAST CHECK: Check Local Storage first via getSession()
-        // This is immediate and prevents the "flicker" of the login screen on refresh.
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user && mounted) {
-             // Optimistically set user from session data
-             setUser({
-                 id: session.user.id,
-                 name: session.user.user_metadata.name || session.user.email,
-                 email: session.user.email!,
-                 avatar: session.user.user_metadata.avatar
-             });
-             // We can stop loading immediately because we have a user
-             setLoading(false);
-        }
-
-        // 2. BACKGROUND VALIDATION: Fetch full profile
-        // Even if we already let them in, we fetch the latest profile data to ensure consistency.
-        const currentUser = await DataService.getCurrentUser();
-        
-        if (mounted) {
-            if (currentUser) {
-                setUser(currentUser);
-            } else if (!session?.user) {
-                // Only set user to null if BOTH session is missing AND getCurrentUser failed
-                setUser(null);
-            }
-            setLoading(false);
-        }
-
-      } catch (error) {
-        console.debug("Auth Init Error", error);
-        if (mounted) setLoading(false);
-      }
-    };
-
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-             const currentUser = await DataService.getCurrentUser();
-             if (mounted) {
-                 setUser(currentUser);
-                 setLoading(false);
-             }
-        } else if (event === 'SIGNED_OUT') {
-             if (mounted) {
-               setUser(null);
-               setLoading(false);
-             }
-        }
+    // Check for active session
+    DataService.getCurrentUser().then(user => {
+      setUser(user);
+      setLoading(false);
     });
-
-    return () => {
-        mounted = false;
-        subscription.unsubscribe();
-    };
   }, []);
 
   const handleLogout = async () => {
-    // Optimistically clear user state immediately to avoid loop/lag
+    await DataService.logout();
     setUser(null);
-    try {
-        await DataService.logout();
-    } catch (e) {
-        console.error("Logout error", e);
-    }
-  };
-
-  const handleUpdateUser = (updatedUser: User) => {
-     setUser(prev => prev ? ({ ...prev, ...updatedUser }) : null);
   };
 
   if (loading) {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100 text-slate-500">
-            <div className="flex flex-col items-center gap-2">
-                <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-                <p className="text-sm font-medium">Carregando...</p>
-            </div>
-        </div>
+       <div className="flex items-center justify-center h-screen bg-slate-100">
+           <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+       </div>
     );
   }
 
   return (
     <LanguageProvider>
-       {user ? (
-         <MainApp user={user} onLogout={handleLogout} onUpdateUser={handleUpdateUser} />
-       ) : (
-         <Login onLogin={setUser} />
-       )}
+      {user ? (
+        <MainApp 
+          user={user} 
+          onLogout={handleLogout} 
+          onUpdateUser={setUser}
+        />
+      ) : (
+        <Login onLogin={setUser} />
+      )}
     </LanguageProvider>
   );
 };
