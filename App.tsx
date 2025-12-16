@@ -41,24 +41,13 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
       if (mode === 'login') {
         if (!email || !password) throw new Error(t('fillAllFields'));
         
-        // Race condition protection: Login must complete in 10s or fail
-        const loginPromise = DataService.login(email, password);
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Timeout: O servidor demorou muito para responder.")), 10000)
-        );
-
-        const user = await Promise.race([loginPromise, timeoutPromise]) as User;
+        const user = await DataService.login(email, password);
         onLogin(user);
 
       } else if (mode === 'signup') {
         if (!name || !email || !password) throw new Error(t('fillAllFields'));
         
-        const signupPromise = DataService.signup(name, email, password);
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Timeout: O cadastro demorou muito.")), 10000)
-        );
-
-        const user = await Promise.race([signupPromise, timeoutPromise]) as User;
+        const user = await DataService.signup(name, email, password);
         onLogin(user);
 
       } else if (mode === 'direct_reset') {
@@ -91,7 +80,6 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
           }
       }
     } finally {
-      // Ensure loading state is turned off regardless of success or error
       setLoading(false);
     }
   };
@@ -604,15 +592,14 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   return (
     <HashRouter>
       <div className="flex h-screen bg-slate-100 text-slate-900 font-sans overflow-hidden relative">
-        
-        {/* Mobile Sidebar Backdrop */}
+        {/* ... (Existing Layout) ... */}
         {isMobileMenuOpen && (
           <div 
             className="fixed inset-0 bg-black/50 z-30 md:hidden animate-in fade-in"
             onClick={() => setIsMobileMenuOpen(false)}
           />
         )}
-
+        
         {/* Sidebar */}
         <aside className={`
             fixed inset-y-0 left-0 z-40 bg-slate-900 text-slate-300 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out
@@ -621,14 +608,14 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
             ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}
             w-64
         `}>
-          <div className={`p-6 flex items-center justify-between gap-3 ${isSidebarCollapsed ? 'md:justify-center' : ''}`}>
+          {/* ... (Existing Sidebar Content) ... */}
+           <div className={`p-6 flex items-center justify-between gap-3 ${isSidebarCollapsed ? 'md:justify-center' : ''}`}>
              <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
                   <Layout className="text-white w-5 h-5" />
                 </div>
                 <span className={`font-bold text-white tracking-tight animate-in fade-in duration-300 ${isSidebarCollapsed ? 'md:hidden' : 'block'}`}>HybridTask</span>
              </div>
-             {/* Mobile Close Button */}
              <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden text-slate-400 hover:text-white">
                 <X size={20} />
              </button>
@@ -643,48 +630,23 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
           </button>
 
           <nav className="flex-1 px-3 space-y-1 mt-6">
-            <NavLink 
-                to="/" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                title={isSidebarCollapsed ? t('dashboard') : ''} 
-                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
-            >
+            <NavLink to="/" onClick={() => setIsMobileMenuOpen(false)} title={isSidebarCollapsed ? t('dashboard') : ''} className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
               <LayoutDashboard size={18} />
               <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('dashboard')}</span>
             </NavLink>
-            <NavLink 
-                to="/board" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                title={isSidebarCollapsed ? t('kanban') : ''} 
-                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
-            >
+            <NavLink to="/board" onClick={() => setIsMobileMenuOpen(false)} title={isSidebarCollapsed ? t('kanban') : ''} className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
               <Kanban size={18} />
               <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('kanban')}</span>
             </NavLink>
-            <NavLink 
-                to="/table" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                title={isSidebarCollapsed ? t('table') : ''} 
-                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
-            >
+            <NavLink to="/table" onClick={() => setIsMobileMenuOpen(false)} title={isSidebarCollapsed ? t('table') : ''} className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
               <List size={18} />
               <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('table')}</span>
             </NavLink>
-            <NavLink 
-                to="/notes" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                title={isSidebarCollapsed ? t('notes') : ''} 
-                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
-            >
+            <NavLink to="/notes" onClick={() => setIsMobileMenuOpen(false)} title={isSidebarCollapsed ? t('notes') : ''} className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
               <StickyNote size={18} />
               <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('notes')}</span>
             </NavLink>
-            <NavLink 
-                to="/settings" 
-                onClick={() => setIsMobileMenuOpen(false)}
-                title={isSidebarCollapsed ? t('settings') : ''} 
-                className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}
-            >
+            <NavLink to="/settings" onClick={() => setIsMobileMenuOpen(false)} title={isSidebarCollapsed ? t('settings') : ''} className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
               <Settings size={18} />
               <span className={isSidebarCollapsed ? 'md:hidden' : ''}>{t('settings')}</span>
             </NavLink>
@@ -692,12 +654,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
 
           <div className="p-4 border-t border-slate-800">
              <div className="flex flex-col gap-2">
-                 {/* Profile Button */}
-                 <button 
-                    onClick={() => setIsProfileModalOpen(true)}
-                    className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors hover:bg-slate-800 text-left w-full ${isSidebarCollapsed ? 'justify-center' : ''}`}
-                    title={user.name}
-                 >
+                 <button onClick={() => setIsProfileModalOpen(true)} className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors hover:bg-slate-800 text-left w-full ${isSidebarCollapsed ? 'justify-center' : ''}`} title={user.name}>
                     {user.avatar ? (
                         <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full border border-indigo-500/30 object-cover shrink-0" />
                     ) : (
@@ -705,19 +662,12 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                             {user.name.charAt(0)}
                         </div>
                     )}
-                    
                     <div className={`overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'md:hidden' : 'block'}`}>
                          <p className="text-sm font-medium text-white truncate w-32">{user.name}</p>
                          <p className="text-xs text-slate-500">{t('editProfile')}</p>
                     </div>
                  </button>
-
-                 {/* Logout Button */}
-                 <button 
-                    onClick={onLogout}
-                    className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors text-red-400 hover:bg-slate-800 hover:text-red-300 w-full ${isSidebarCollapsed ? 'justify-center' : ''}`}
-                    title={t('logout')}
-                 >
+                 <button onClick={onLogout} className={`flex items-center gap-3 px-2 py-2 rounded-lg transition-colors text-red-400 hover:bg-slate-800 hover:text-red-300 w-full ${isSidebarCollapsed ? 'justify-center' : ''}`} title={t('logout')}>
                    <LogOut size={20} className="shrink-0" />
                    <span className={`font-medium ${isSidebarCollapsed ? 'md:hidden' : 'block'}`}>{t('logout')}</span>
                  </button>
@@ -725,22 +675,15 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 flex flex-col h-full overflow-hidden relative">
           <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 shadow-sm z-10">
              <div className="flex items-center gap-3">
-                 {/* Mobile Menu Button */}
-                 <button 
-                    onClick={() => setIsMobileMenuOpen(true)}
-                    className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg"
-                 >
+                 <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden p-2 -ml-2 text-slate-600 hover:bg-slate-100 rounded-lg">
                     <Menu size={24} />
                  </button>
                  <h2 className="text-xl font-semibold text-slate-800 truncate">{t('projectOverview')}</h2>
              </div>
-             
              <div className="flex items-center gap-2 md:gap-4">
-                {/* Error Banner */}
                 {appError && (
                     <div className="hidden md:flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-medium border border-red-100 animate-in slide-in-from-top-2">
                         <AlertTriangle size={14} />
@@ -748,19 +691,13 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                         <button onClick={() => setAppError('')} className="ml-1 hover:text-red-800 font-bold">×</button>
                     </div>
                 )}
-
-                {/* Notifications Bell */}
                 <div className="relative">
-                    <button 
-                        onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                        className={`p-2 rounded-full transition-colors relative ${isNotificationsOpen ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-100 text-slate-500'}`}
-                    >
+                    <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className={`p-2 rounded-full transition-colors relative ${isNotificationsOpen ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-100 text-slate-500'}`}>
                         <Bell size={20} />
                         {notifications.length > 0 && (
                             <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
                         )}
                     </button>
-
                     {isNotificationsOpen && (
                         <>
                             <div className="fixed inset-0 z-40" onClick={() => setIsNotificationsOpen(false)}></div>
@@ -776,14 +713,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                                     ) : (
                                         <div className="divide-y divide-slate-100">
                                             {notifications.map((n, idx) => (
-                                                <div 
-                                                    key={idx} 
-                                                    onClick={() => {
-                                                        openEditTask(n.task);
-                                                        setIsNotificationsOpen(false);
-                                                    }}
-                                                    className="p-3 hover:bg-slate-50 cursor-pointer transition-colors"
-                                                >
+                                                <div key={idx} onClick={() => { openEditTask(n.task); setIsNotificationsOpen(false); }} className="p-3 hover:bg-slate-50 cursor-pointer transition-colors">
                                                     <div className="flex items-start gap-3">
                                                         <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${n.type === 'today' || n.type === 'overdue' ? 'bg-red-500' : 'bg-amber-400'}`}></div>
                                                         <div>
@@ -805,13 +735,9 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                         </>
                     )}
                 </div>
-
-                <button 
-                onClick={openNewTask}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 md:px-4 py-2 rounded-lg text-sm font-medium shadow-md shadow-indigo-200 transition-all active:scale-95"
-                >
-                <Plus size={18} />
-                <span className="hidden sm:inline">{t('newTask')}</span>
+                <button onClick={openNewTask} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 md:px-4 py-2 rounded-lg text-sm font-medium shadow-md shadow-indigo-200 transition-all active:scale-95">
+                  <Plus size={18} />
+                  <span className="hidden sm:inline">{t('newTask')}</span>
                 </button>
              </div>
           </header>
@@ -819,109 +745,64 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
           <div className="flex-1 overflow-auto p-4 md:p-8 relative">
             <Routes>
               <Route path="/" element={<Dashboard data={data} />} />
-              <Route path="/board" element={
-                <KanbanBoard 
-                  data={data} 
-                  onDragEnd={handleDragEnd} 
-                  onEditTask={openEditTask} 
-                  onDeleteTask={requestDeleteTask}
-                />
-              } />
-              <Route path="/table" element={
-                <TableView 
-                  data={data} 
-                  onEditTask={openEditTask} 
-                  onDeleteTask={requestDeleteTask}
-                />
-              } />
-              <Route path="/notes" element={
-                <NotesView 
-                  data={data} 
-                  onUpdate={loadData}
-                />
-              } />
-              <Route path="/settings" element={
-                <SettingsView 
-                  data={data} 
-                  onAddColumn={handleAddColumn}
-                  onUpdateColumn={handleUpdateColumn}
-                  onDeleteColumn={requestDeleteColumn}
-                  onAddPriority={handleAddPriority}
-                  onUpdatePriority={handleUpdatePriority}
-                  onDeletePriority={requestDeletePriority}
-                  onAddAssignee={handleAddAssignee}
-                  onDeleteAssignee={requestDeleteAssignee}
-                  onRestoreDefaults={handleRestoreDefaults}
-                />
-              } />
+              <Route path="/board" element={<KanbanBoard data={data} onDragEnd={handleDragEnd} onEditTask={openEditTask} onDeleteTask={requestDeleteTask} />} />
+              <Route path="/table" element={<TableView data={data} onEditTask={openEditTask} onDeleteTask={requestDeleteTask} />} />
+              <Route path="/notes" element={<NotesView data={data} onUpdate={loadData} />} />
+              <Route path="/settings" element={<SettingsView data={data} onAddColumn={handleAddColumn} onUpdateColumn={handleUpdateColumn} onDeleteColumn={requestDeleteColumn} onAddPriority={handleAddPriority} onUpdatePriority={handleUpdatePriority} onDeletePriority={requestDeletePriority} onAddAssignee={handleAddAssignee} onDeleteAssignee={requestDeleteAssignee} onRestoreDefaults={handleRestoreDefaults} />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </main>
       </div>
-
-      <TaskModal 
-        isOpen={isTaskModalOpen} 
-        onClose={() => setIsTaskModalOpen(false)} 
-        onSubmit={handleSaveTask}
-        onDelete={requestDeleteTask}
-        initialData={editingTask}
-        boardData={data}
-      />
-
-      <ProfileModal 
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        user={user}
-        onUpdate={handleUpdateProfile}
-      />
-
-      {/* Global Confirmation Modal */}
-      <ConfirmationModal 
-        isOpen={!!deleteIntent}
-        onClose={() => setDeleteIntent(null)}
-        onConfirm={executeDelete}
-        title={getConfirmationTitle()}
-        message={getConfirmationMessage()}
-      />
+      <TaskModal isOpen={isTaskModalOpen} onClose={() => setIsTaskModalOpen(false)} onSubmit={handleSaveTask} onDelete={requestDeleteTask} initialData={editingTask} boardData={data} />
+      <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} user={user} onUpdate={handleUpdateProfile} />
+      <ConfirmationModal isOpen={!!deleteIntent} onClose={() => setDeleteIntent(null)} onConfirm={executeDelete} title={getConfirmationTitle()} message={getConfirmationMessage()} />
     </HashRouter>
   );
 };
 
+// App Component Definition
 const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const init = async () => {
-        const u = await DataService.getCurrentUser();
-        setUser(u);
+    const initSession = async () => {
+      try {
+        const currentUser = await DataService.getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        console.error("Session initialization error:", error);
+      } finally {
         setLoading(false);
+      }
     };
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-             const u = await DataService.getCurrentUser();
-             setUser(u);
-        } else if (event === 'SIGNED_OUT') {
-            setUser(null);
-        }
-    });
-
-    return () => subscription.unsubscribe();
+    initSession();
   }, []);
+
+  const handleLogin = (user: User) => {
+    setUser(user);
+  };
+
+  const handleLogout = async () => {
+    await DataService.logout();
+    setUser(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-slate-50">
+         <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <LanguageProvider>
-      {loading ? (
-        <div className="flex items-center justify-center h-screen bg-slate-100">
-           <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-        </div>
-      ) : !user ? (
-        <Login onLogin={setUser} />
+      {user ? (
+        <MainApp user={user} onLogout={handleLogout} onUpdateUser={setUser} />
       ) : (
-        <MainApp user={user} onLogout={() => DataService.logout()} onUpdateUser={setUser} />
+        <Login onLogin={handleLogin} />
       )}
     </LanguageProvider>
   );

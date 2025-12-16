@@ -43,27 +43,28 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // SINGLETON PATTERN FIX
 // We attach the client to the global window object in development to prevent 
-// creating multiple instances during hot-reloads, which causes the "GoTrueClient" warning.
+// creating multiple instances during hot-reloads.
 const globalAny: any = typeof window !== 'undefined' ? window : {};
 let client: SupabaseClient;
+
+// Custom storage key to prevent collisions with other apps or stuck locks from previous versions
+const STORAGE_KEY = 'hybrid-task-manager-v2-auth';
 
 if (globalAny._supabaseInstance) {
   client = globalAny._supabaseInstance;
 } else {
   client = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
+      storageKey: STORAGE_KEY, // Explicit unique key
       detectSessionInUrl: false,
       persistSession: true,
       autoRefreshToken: true,
       lock: false, // Explicitly disable locking to prevent hangs
-      // storageKey removed to use default 'sb-...' key for better compatibility
     }
   });
   
-  // Save instance globally if not in production
-  if (process.env.NODE_ENV !== 'production') {
-    globalAny._supabaseInstance = client;
-  }
+  // Save instance globally immediately to prevent duplicates in all envs
+  globalAny._supabaseInstance = client;
 }
 
 export const supabase = client;
