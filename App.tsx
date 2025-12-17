@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X, RefreshCw, StickyNote } from 'lucide-react';
+import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
 import { KanbanBoard } from './views/KanbanBoard';
@@ -67,13 +67,16 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
       }
       
     } catch (err: any) {
+      console.error("Login Error:", err);
       if (err.message === 'CONFIRM_EMAIL') {
           setSuccessMsg(t('checkEmail'));
           setMode('login'); 
           setPassword('');
+      } else if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+          setError("Falha na conexão. Verifique sua internet ou se o servidor está acessível.");
       } else {
           // Improve error message if Service Key is missing
-          if (err.message.includes("Service Role")) {
+          if (err.message?.includes("Service Role")) {
               setError("Erro de Configuração: Adicione a chave Service Role no arquivo supabaseClient.ts");
           } else {
               setError(err.message || t('loginError'));
@@ -232,17 +235,18 @@ const Login = ({ onLogin }: { onLogin: (user: User) => void }) => {
           )}
 
           {error && (
-            <div className="text-red-500 text-sm text-center bg-red-50 py-2 rounded-lg border border-red-100">
-              {error}
+            <div className="text-red-600 bg-red-50 text-sm flex items-start gap-2 p-3 rounded-lg border border-red-100">
+              <WifiOff size={16} className="shrink-0 mt-0.5" />
+              <span>{error}</span>
             </div>
           )}
 
           <button 
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center shadow-md shadow-indigo-100 mt-2"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center shadow-md shadow-indigo-100 mt-2 disabled:opacity-70"
           >
             {loading 
-              ? (mode === 'login' ? t('signingIn') : t('signingUp')) 
+              ? <RefreshCw className="animate-spin" size={20} />
               : (mode === 'login' ? t('signIn') : t('signUp'))
             }
           </button>
@@ -767,17 +771,37 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const initSession = async () => {
+      // FORCE TIMEOUT: If Supabase takes more than 4 seconds, we assume it's hanging/offline
+      // and we stop the loading screen to let the user try logging in manually.
+      const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve('TIMEOUT'), 4000));
+      
       try {
-        const currentUser = await DataService.getCurrentUser();
-        setUser(currentUser);
+        const result = await Promise.race([
+            DataService.getCurrentUser(),
+            timeoutPromise
+        ]);
+
+        if (mounted) {
+            if (result === 'TIMEOUT') {
+                console.warn("Supabase auth check timed out - defaulting to logout.");
+                setUser(null);
+            } else {
+                setUser(result as User | null);
+            }
+        }
       } catch (error) {
         console.error("Session initialization error:", error);
+        if (mounted) setUser(null);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
     initSession();
+
+    return () => { mounted = false; };
   }, []);
 
   const handleLogin = (user: User) => {
@@ -791,8 +815,9 @@ const App = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-50">
-         <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center h-screen bg-slate-50 flex-col gap-4">
+         <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+         <p className="text-slate-400 text-sm font-medium animate-pulse">Iniciando...</p>
       </div>
     );
   }

@@ -9,8 +9,11 @@ export const DataService = {
   getCurrentUser: async (): Promise<User | null> => {
     try {
         // 1. Check for active session first (Fast, hits LocalStorage)
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // We catch errors here to prevent "Failed to fetch" from crashing the app init
+        const { data, error: sessionError } = await supabase.auth.getSession().catch(() => ({ data: { session: null }, error: null }));
         
+        const session = data?.session;
+
         if (sessionError) {
             console.error("Session check error:", sessionError);
             return null;
@@ -52,7 +55,8 @@ export const DataService = {
         };
 
     } catch (e) {
-        console.error("Critical error in getCurrentUser:", e);
+        // Critical: catch network errors (Failed to fetch) and return null to force login screen
+        console.error("Critical error in getCurrentUser (Network/Timeout):", e);
         return null;
     }
   },
