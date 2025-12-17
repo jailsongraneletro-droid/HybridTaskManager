@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Task, BoardData } from '../types';
 import { Modal } from './Shared';
-import { Trash2, AlertCircle } from 'lucide-react';
+import { Trash2, AlertCircle, Settings } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
+import { Link } from 'react-router-dom';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
   const [description, setDescription] = useState(initialData?.description || '');
   
   // Use first priority as default if data is not loaded yet
-  const defaultPriority = boardData?.priorities[0]?.id || 'low';
+  const defaultPriority = boardData?.priorities[0]?.id || '';
   const [priority, setPriority] = useState<string>(initialData?.priority || defaultPriority);
   
   const [status, setStatus] = useState<string>(initialData?.status || (boardData?.columnOrder[0] || ''));
@@ -28,11 +29,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
 
   const [validationError, setValidationError] = useState('');
 
+  // Check if board configuration is missing
+  const isConfigMissing = !boardData || boardData.columnOrder.length === 0 || boardData.priorities.length === 0;
+
   React.useEffect(() => {
     if (isOpen) {
         setTitle(initialData?.title || '');
         setDescription(initialData?.description || '');
-        setPriority(initialData?.priority || (boardData?.priorities[0]?.id || 'low'));
+        setPriority(initialData?.priority || (boardData?.priorities[0]?.id || ''));
         setStatus(initialData?.status || (boardData?.columnOrder[0] || ''));
         setAssigneeId(initialData?.assigneeId || '');
         setDueDate(initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : '');
@@ -43,6 +47,16 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError('');
+
+    if (isConfigMissing) {
+        setValidationError("Você precisa criar Categorias e Prioridades nas Configurações antes de criar uma tarefa.");
+        return;
+    }
+
+    if (!status || !priority) {
+        setValidationError("Status e Prioridade são obrigatórios.");
+        return;
+    }
 
     // Date Validation
     if (dueDate) {
@@ -62,12 +76,6 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
         }
     }
 
-    // When saving, we want to ensure the date is preserved correctly. 
-    // Creating a Date object from the string and converting to ISO might shift it to UTC previous day depending on timezone.
-    // Ideally, for a due date, we might want to store it as noon to avoid display shifts, 
-    // but to keep consistency with existing logic, we stick to standard ISO conversion or just fix the object creation.
-    // Using simple new Date(dueDate) creates UTC midnight. 
-    
     onSubmit({
       title,
       description,
@@ -90,6 +98,30 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={initialData ? t('edit') : t('newTask')}>
+      {isConfigMissing ? (
+        <div className="flex flex-col items-center justify-center p-6 text-center space-y-4">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                <AlertCircle size={32} />
+            </div>
+            <h3 className="text-lg font-bold text-slate-800">Configuração Incompleta</h3>
+            <p className="text-slate-500">
+                Seu quadro está vazio. Para criar tarefas, você precisa primeiro definir as <b>Categorias</b> (ex: A Fazer, Concluído) e as <b>Prioridades</b>.
+            </p>
+            <div className="flex gap-3 mt-4">
+                <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium">
+                    Cancelar
+                </button>
+                <Link 
+                    to="/settings" 
+                    onClick={onClose}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium flex items-center gap-2"
+                >
+                    <Settings size={18} />
+                    Ir para Configurações
+                </Link>
+            </div>
+        </div>
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-4">
         
         {validationError && (
@@ -115,6 +147,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t('status')}</label>
             <select
+              required
               className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
@@ -127,6 +160,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t('priority')}</label>
             <select
+              required
               className="w-full px-3 py-2 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none"
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
@@ -194,6 +228,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
           </div>
         </div>
       </form>
+      )}
     </Modal>
   );
 };
