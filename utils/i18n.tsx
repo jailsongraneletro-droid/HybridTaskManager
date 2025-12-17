@@ -147,6 +147,12 @@ const translations = {
     updatePassword: 'Alterar Senha e Entrar',
     passwordUpdated: 'Senha alterada com sucesso!',
     otpError: 'Código inválido ou expirado.',
+
+    // Session Timeout
+    sessionExpiring: 'Sessão Expirando',
+    sessionExpiringDesc: 'Você esteve inativo por 30 minutos. Para sua segurança, sua sessão será encerrada em:',
+    stayLoggedIn: 'Continuar Logado',
+    loggingOut: 'Saindo...',
 };
 
 interface LanguageContextType {

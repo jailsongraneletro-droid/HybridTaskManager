@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff } from 'lucide-react';
+import { Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, Lock, Mail, Bell, Calendar, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff, Clock } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
 import { KanbanBoard } from './views/KanbanBoard';
@@ -287,6 +287,66 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
 
   // Delete Confirmation State
   const [deleteIntent, setDeleteIntent] = useState<{ type: 'task' | 'column' | 'priority' | 'assignee', id: string } | null>(null);
+
+  // --- IDLE TIMEOUT LOGIC ---
+  const IDLE_LIMIT = 30 * 60 * 1000; // 30 Minutes
+  const WARNING_DURATION = 60; // 60 Seconds
+  const [isIdleWarningOpen, setIsIdleWarningOpen] = useState(false);
+  const [idleCountdown, setIdleCountdown] = useState(WARNING_DURATION);
+  const idleTimerRef = useRef<any>(null);
+
+  const resetIdleTimer = () => {
+    // If warning is already open, do not reset automatically on movement.
+    // User must click "Stay Logged In".
+    if (isIdleWarningOpen) return;
+
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+    }
+
+    idleTimerRef.current = setTimeout(() => {
+      setIsIdleWarningOpen(true);
+      setIdleCountdown(WARNING_DURATION);
+    }, IDLE_LIMIT);
+  };
+
+  const handleStayLoggedIn = () => {
+    setIsIdleWarningOpen(false);
+    resetIdleTimer();
+  };
+
+  // Activity Listeners
+  useEffect(() => {
+    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    const handler = () => resetIdleTimer();
+
+    events.forEach(event => window.addEventListener(event, handler));
+    resetIdleTimer(); // Start timer on mount
+
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      events.forEach(event => window.removeEventListener(event, handler));
+    };
+  }, [isIdleWarningOpen]); // Re-bind if warning state changes to ensure logic holds
+
+  // Countdown Logic
+  useEffect(() => {
+    let interval: any;
+    if (isIdleWarningOpen) {
+      interval = setInterval(() => {
+        setIdleCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            onLogout(); // Logout when time hits 0
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isIdleWarningOpen, onLogout]);
+  // -------------------------
 
   const loadData = async () => {
     setAppError('');
@@ -758,9 +818,40 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
           </div>
         </main>
       </div>
+
       <TaskModal isOpen={isTaskModalOpen} onClose={() => setIsTaskModalOpen(false)} onSubmit={handleSaveTask} onDelete={requestDeleteTask} initialData={editingTask} boardData={data} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} user={user} onUpdate={handleUpdateProfile} />
       <ConfirmationModal isOpen={!!deleteIntent} onClose={() => setDeleteIntent(null)} onConfirm={executeDelete} title={getConfirmationTitle()} message={getConfirmationMessage()} />
+      
+      {/* Idle Warning Modal */}
+      {isIdleWarningOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in">
+           <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-6 border-t-4 border-amber-500">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600">
+                  <Clock size={32} />
+              </div>
+              <h2 className="text-xl font-bold text-slate-800 mb-2">{t('sessionExpiring')}</h2>
+              <p className="text-slate-600 mb-6 text-sm">{t('sessionExpiringDesc')}</p>
+              
+              <div className="text-4xl font-mono font-bold text-slate-800 mb-6">
+                 00:{idleCountdown.toString().padStart(2, '0')}
+              </div>
+
+              <button 
+                 onClick={handleStayLoggedIn}
+                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-colors shadow-lg shadow-indigo-200 mb-3"
+              >
+                 {t('stayLoggedIn')}
+              </button>
+              <button
+                 onClick={onLogout}
+                 className="text-sm text-slate-500 hover:text-slate-700 font-medium"
+              >
+                 {t('loggingOut')}
+              </button>
+           </div>
+        </div>
+      )}
     </HashRouter>
   );
 };
