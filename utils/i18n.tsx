@@ -2,6 +2,40 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Simplified to just string map since we only support PT-BR now
 const translations = {
+    // Landing Page SEO & Content
+    landingHeroTitle: 'Gerenciador de Projetos e Tarefas Inteligente',
+    landingHeroSub: 'A solução definitiva que combina Quadro Kanban, Tabela Dinâmica, Notas Ricas e Analytics para elevar a sua produtividade ao nível máximo.',
+    landingStartBtn: 'Começar Agora Gratuitamente',
+    landingLoginBtn: 'Entrar na Conta',
+    landingBackToHome: 'Voltar ao Início',
+
+    // Landing Page Features (SEO Optimized)
+    landingFeature1Title: 'Gestão Visual com Kanban',
+    landingFeature1Desc: 'Organize seu fluxo de trabalho com arrastar e soltar. Ideal para metodologias Ágeis e Scrum.',
+    landingFeature2Title: 'Analytics e BI Integrado',
+    landingFeature2Desc: 'Visualize o desempenho do projeto com gráficos de carga de trabalho e taxas de conclusão em tempo real.',
+    landingFeature3Title: 'Tabelas e Planilhas Dinâmicas',
+    landingFeature3Desc: 'Gerencie centenas de tarefas simultâneas com filtros avançados e agrupamentos inteligentes.',
+    landingFeature4Title: 'Bloco de Notas Estruturado',
+    landingFeature4Desc: 'Documente ideias e atas de reunião com editor Rich Text diretamente vinculado aos seus projetos.',
+
+    // New Landing Sections
+    landingBenefitsTitle: 'Por que escolher o HybridTask para sua Gestão?',
+    landingBenefit1Title: 'Interface Intuitiva',
+    landingBenefit1Desc: 'Diga adeus à curva de aprendizado. Nossa interface foi desenhada para ser simples e poderosa.',
+    landingBenefit2Title: 'Dados em Nuvem Seguros',
+    landingBenefit2Desc: 'Seus projetos e notas são sincronizados instantaneamente e protegidos com criptografia de ponta.',
+    landingBenefit3Title: 'Foco em Resultados',
+    landingBenefit3Desc: 'Nossos Dashboards ajudam a identificar gargalos antes que eles se tornem problemas críticos.',
+
+    landingFaqTitle: 'Perguntas Frequentes (FAQ)',
+    landingFaq1Q: 'O HybridTask é realmente gratuito?',
+    landingFaq1A: 'Sim! Oferecemos um plano gratuito robusto para indivíduos e pequenas equipes organizarem seus projetos sem custos.',
+    landingFaq2Q: 'Posso usar no celular?',
+    landingFaq2A: 'Sim, o HybridTask é totalmente responsivo e funciona perfeitamente em smartphones e tablets via navegador.',
+    landingFaq3Q: 'Como funciona a segurança dos dados?',
+    landingFaq3A: 'Utilizamos a infraestrutura do Supabase para garantir que seus dados estejam always seguros, privados e acessíveis.',
+
     // Nav
     dashboard: 'Painel',
     kanban: 'Quadro Kanban',
@@ -105,7 +139,7 @@ const translations = {
     dateInPastError: 'A data de vencimento não pode ser anterior à data atual.',
 
     // Auth & Profile
-    welcomeBack: 'Bem-vindo de volta! Por favor, insira seus dados.',
+    welcomeBack: 'Bem-vindo de volta!',
     createAccount: 'Criar uma Conta',
     enterDetails: 'Insira seus dados para se cadastrar.',
     name: 'Nome Completo',
@@ -162,7 +196,6 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children?: ReactNode }) => {
-  // We strictly use translations object which is PT-BR
   const t = (key: keyof typeof translations) => {
     return translations[key] || key;
   };
