@@ -5,7 +5,7 @@ import {
   Lock, Mail, Bell, Calendar, CheckCircle, Circle, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, 
   ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff, Clock, BarChart3,
   Layers, ChevronDown, Rocket, CheckCircle2, Zap, ShieldCheck, TrendingUp, AlertCircle, CheckCircle2 as CheckIcon,
-  Download
+  Download, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
@@ -660,6 +660,13 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
               </div>
               {(!isSidebarCollapsed || isMobileMenuOpen) && <span className="font-bold text-white tracking-tight">HybridTask</span>}
             </div>
+            {/* Desktop Collapse Toggle */}
+            <button 
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="hidden md:flex p-1.5 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-colors ml-auto"
+            >
+              {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
             {/* Mobile Close Button */}
             <button 
               onClick={() => setIsMobileMenuOpen(false)}
@@ -669,37 +676,37 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
             </button>
           </div>
           <nav className="flex-1 px-3 space-y-1 mt-6">
-            <NavLink to="/" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
+            <NavLink to="/" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
               <LayoutDashboard size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('dashboard')}</span>}
             </NavLink>
-            <NavLink to="/board" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
+            <NavLink to="/board" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
               <Kanban size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('kanban')}</span>}
             </NavLink>
-            <NavLink to="/table" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
+            <NavLink to="/table" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
               <List size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('table')}</span>}
             </NavLink>
-            <NavLink to="/notes" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
+            <NavLink to="/notes" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
               <StickyNote size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('notes')}</span>}
             </NavLink>
-            <NavLink to="/settings" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
+            <NavLink to="/settings" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
               <Settings size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('settings')}</span>}
             </NavLink>
             {/* PWA Install Button (Mobile/Desktop Prompt) */}
             {deferredPrompt && (
               <button 
                 onClick={handleInstallClick}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-emerald-400 hover:bg-slate-800 w-full text-left transition-colors border border-emerald-500/20 mt-4"
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-emerald-400 hover:bg-slate-800 w-full text-left transition-colors border border-emerald-500/20 mt-4 ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}
               >
                 <Download size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span className="font-semibold text-sm">Instalar App</span>}
               </button>
             )}
           </nav>
           <div className="p-4 border-t border-slate-800">
-             <button onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 w-full text-left">
-                {user.avatar ? <img src={user.avatar} className="w-8 h-8 rounded-full" /> : <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center font-bold">{user.name.charAt(0)}</div>}
+             <button onClick={() => setIsProfileModalOpen(true)} className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 w-full text-left ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
+                {user.avatar ? <img src={user.avatar} className="w-8 h-8 rounded-full shrink-0" /> : <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center font-bold shrink-0">{user.name.charAt(0)}</div>}
                 {(!isSidebarCollapsed || isMobileMenuOpen) && <div className="truncate"><p className="text-sm font-medium text-white">{user.name}</p></div>}
              </button>
-             <button onClick={onLogout} className="flex items-center gap-3 px-2 py-2 mt-2 rounded-lg text-red-400 hover:bg-slate-800 w-full">
+             <button onClick={onLogout} className={`flex items-center gap-3 px-2 py-2 mt-2 rounded-lg text-red-400 hover:bg-slate-800 w-full ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
                <LogOut size={20} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('logout')}</span>}
              </button>
           </div>
