@@ -596,6 +596,12 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     } catch (e: any) { setAppError("Error deleting: " + e.message); } finally { setDeleteIntent(null); }
   };
 
+  // Close mobile menu on navigate
+  const location = useLocation();
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
   if (appError && !data) {
     return (
         <div className="flex h-screen items-center justify-center bg-slate-100 p-4 text-center">
@@ -614,62 +620,81 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   if (!data) return <div className="flex h-screen items-center justify-center">Carregando...</div>;
 
   return (
-    <HashRouter>
-      <div className="flex h-screen bg-slate-100 text-slate-900 font-sans overflow-hidden">
+    <div className="flex h-screen bg-slate-100 text-slate-900 font-sans overflow-hidden">
+        {/* Mobile Backdrop */}
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <aside className={`fixed inset-y-0 left-0 z-40 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'} w-64`}>
+        <aside className={`fixed inset-y-0 left-0 z-40 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'} w-64 shadow-2xl md:shadow-none`}>
           <div className="p-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
                 <Layout className="text-white w-5 h-5" />
               </div>
-              {!isSidebarCollapsed && <span className="font-bold text-white tracking-tight">HybridTask</span>}
+              {(!isSidebarCollapsed || isMobileMenuOpen) && <span className="font-bold text-white tracking-tight">HybridTask</span>}
             </div>
+            {/* Mobile Close Button */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
           <nav className="flex-1 px-3 space-y-1 mt-6">
             <NavLink to="/" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
-              <LayoutDashboard size={18} /> {!isSidebarCollapsed && <span>{t('dashboard')}</span>}
+              <LayoutDashboard size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('dashboard')}</span>}
             </NavLink>
             <NavLink to="/board" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
-              <Kanban size={18} /> {!isSidebarCollapsed && <span>{t('kanban')}</span>}
+              <Kanban size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('kanban')}</span>}
             </NavLink>
             <NavLink to="/table" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
-              <List size={18} /> {!isSidebarCollapsed && <span>{t('table')}</span>}
+              <List size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('table')}</span>}
             </NavLink>
             <NavLink to="/notes" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
-              <StickyNote size={18} /> {!isSidebarCollapsed && <span>{t('notes')}</span>}
+              <StickyNote size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('notes')}</span>}
             </NavLink>
             <NavLink to="/settings" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
-              <Settings size={18} /> {!isSidebarCollapsed && <span>{t('settings')}</span>}
+              <Settings size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('settings')}</span>}
             </NavLink>
           </nav>
           <div className="p-4 border-t border-slate-800">
              <button onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 w-full text-left">
                 {user.avatar ? <img src={user.avatar} className="w-8 h-8 rounded-full" /> : <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center font-bold">{user.name.charAt(0)}</div>}
-                {!isSidebarCollapsed && <div className="truncate"><p className="text-sm font-medium text-white">{user.name}</p></div>}
+                {(!isSidebarCollapsed || isMobileMenuOpen) && <div className="truncate"><p className="text-sm font-medium text-white">{user.name}</p></div>}
              </button>
              <button onClick={onLogout} className="flex items-center gap-3 px-2 py-2 mt-2 rounded-lg text-red-400 hover:bg-slate-800 w-full">
-               <LogOut size={20} /> {!isSidebarCollapsed && <span>{t('logout')}</span>}
+               <LogOut size={20} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('logout')}</span>}
              </button>
           </div>
         </aside>
 
         <main className="flex-1 flex flex-col h-full overflow-hidden">
-          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6">
              <div className="flex items-center gap-3">
-                 <button onClick={() => setIsMobileMenuOpen(true)} className="md:hidden"><Menu /></button>
-                 <h2 className="text-xl font-semibold">{t('projectOverview')}</h2>
-             </div>
-             <div className="flex items-center gap-4">
-                <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 relative hover:bg-slate-100 rounded-full">
-                    <Bell size={20} /> {notifications.length > 0 && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+                 <button 
+                  onClick={() => setIsMobileMenuOpen(true)} 
+                  className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <Menu size={24} />
                 </button>
-                <button onClick={() => { setEditingTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                  <Plus size={18} /> <span>{t('newTask')}</span>
+                 <h2 className="text-lg md:text-xl font-semibold truncate">{t('projectOverview')}</h2>
+             </div>
+             <div className="flex items-center gap-2 md:gap-4">
+                <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 relative hover:bg-slate-100 rounded-full">
+                    <Bell size={20} /> {notifications.length > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+                </button>
+                <button onClick={() => { setEditingTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-sm hover:bg-indigo-700 active:scale-95 transition-all">
+                  <Plus size={18} /> <span className="hidden sm:inline">{t('newTask')}</span>
                 </button>
              </div>
           </header>
-          <div className="flex-1 overflow-auto p-8">
+          <div className="flex-1 overflow-auto p-4 md:p-8">
             <Routes>
               <Route path="/" element={<Dashboard data={data} />} />
               <Route path="/board" element={<KanbanBoard data={data} onDragEnd={handleDragEnd} onEditTask={setEditingTask} onDeleteTask={id => setDeleteIntent({type:'task',id})} />} />
@@ -679,11 +704,10 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
             </Routes>
           </div>
         </main>
-      </div>
       <TaskModal isOpen={isTaskModalOpen || !!editingTask} onClose={() => {setIsTaskModalOpen(false); setEditingTask(undefined);}} onSubmit={handleSaveTask} initialData={editingTask} boardData={data} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} user={user} onUpdate={async (id, d) => onUpdateUser(await DataService.updateCurrentUser(id, d))} />
       <ConfirmationModal isOpen={!!deleteIntent} onClose={() => setDeleteIntent(null)} onConfirm={executeDelete} title="Confirmar" message="Deseja excluir?" />
-    </HashRouter>
+    </div>
   );
 };
 
@@ -700,9 +724,15 @@ const App = () => {
     });
   }, []);
 
-  if (loading) return <div className="flex h-screen items-center justify-center">Iniciando...</div>;
+  if (loading) return <div className="flex h-screen items-center justify-center bg-slate-50">Iniciando...</div>;
 
-  if (user) return <LanguageProvider><MainApp user={user} onLogout={() => setUser(null)} onUpdateUser={setUser} /></LanguageProvider>;
+  if (user) return (
+    <HashRouter>
+      <LanguageProvider>
+        <MainApp user={user} onLogout={() => setUser(null)} onUpdateUser={setUser} />
+      </LanguageProvider>
+    </HashRouter>
+  );
 
   return (
     <LanguageProvider>
