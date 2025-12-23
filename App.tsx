@@ -4,7 +4,8 @@ import {
   Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, User as UserIcon, 
   Lock, Mail, Bell, Calendar, CheckCircle, Circle, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, 
   ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff, Clock, BarChart3,
-  Layers, ChevronDown, Rocket, CheckCircle2, Zap, ShieldCheck, TrendingUp, AlertCircle, CheckCircle2 as CheckIcon
+  Layers, ChevronDown, Rocket, CheckCircle2, Zap, ShieldCheck, TrendingUp, AlertCircle, CheckCircle2 as CheckIcon,
+  Download
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
@@ -455,6 +456,9 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const [appError, setAppError] = useState<string>('');
   const [isRetryLoading, setIsRetryLoading] = useState(false);
   
+  // PWA Install State
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
@@ -465,6 +469,24 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const [isIdleWarningOpen, setIsIdleWarningOpen] = useState(false);
   const [idleCountdown, setIdleCountdown] = useState(WARNING_DURATION);
   const idleTimerRef = useRef<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   const resetIdleTimer = () => {
     if (isIdleWarningOpen) return;
@@ -662,6 +684,15 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
             <NavLink to="/settings" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'}`}>
               <Settings size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('settings')}</span>}
             </NavLink>
+            {/* PWA Install Button (Mobile/Desktop Prompt) */}
+            {deferredPrompt && (
+              <button 
+                onClick={handleInstallClick}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-emerald-400 hover:bg-slate-800 w-full text-left transition-colors border border-emerald-500/20 mt-4"
+              >
+                <Download size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span className="font-semibold text-sm">Instalar App</span>}
+              </button>
+            )}
           </nav>
           <div className="p-4 border-t border-slate-800">
              <button onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 w-full text-left">
