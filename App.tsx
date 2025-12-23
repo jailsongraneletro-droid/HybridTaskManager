@@ -5,7 +5,7 @@ import {
   Lock, Mail, Bell, Calendar, CheckCircle, Circle, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, 
   ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff, Clock, BarChart3,
   Layers, ChevronDown, Rocket, CheckCircle2, Zap, ShieldCheck, TrendingUp, AlertCircle, CheckCircle2 as CheckIcon,
-  Download, ChevronLeft, ChevronRight
+  Download, ChevronLeft, ChevronRight, Edit3
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
@@ -547,7 +547,9 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const tasks = (Object.values(data.tasks) as Task[]).filter(task => {
-        const isDone = task.status.toLowerCase().includes('done') || task.status === 'Done';
+        const col = data.columns[task.status];
+        const colTitle = col?.title.toLowerCase().trim() || '';
+        const isDone = ['done', 'concluído', 'concluido', 'finalizado', 'complete', 'completed'].includes(colTitle);
         return !isDone; 
     });
     return tasks.map(task => {
@@ -622,6 +624,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const location = useLocation();
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsNotificationsOpen(false);
   }, [location.pathname]);
 
   if (appError && !data) {
@@ -713,7 +716,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
         </aside>
 
         <main className="flex-1 flex flex-col h-full overflow-hidden">
-          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6">
+          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 relative">
              <div className="flex items-center gap-3">
                  <button 
                   onClick={() => setIsMobileMenuOpen(true)} 
@@ -724,9 +727,82 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                  <h2 className="text-lg md:text-xl font-semibold truncate">{t('projectOverview')}</h2>
              </div>
              <div className="flex items-center gap-2 md:gap-4">
-                <button onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} className="p-2 relative hover:bg-slate-100 rounded-full">
-                    <Bell size={20} /> {notifications.length > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
-                </button>
+                {/* Notifications Button */}
+                <div className="relative">
+                    <button 
+                        onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} 
+                        className={`p-2 relative hover:bg-slate-100 rounded-full transition-colors ${isNotificationsOpen ? 'bg-slate-100' : ''}`}
+                    >
+                        <Bell size={20} className={isNotificationsOpen ? 'text-indigo-600' : 'text-slate-600'} /> 
+                        {notifications.length > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+                    </button>
+
+                    {/* Notifications Dropdown */}
+                    {isNotificationsOpen && (
+                        <>
+                            <div className="fixed inset-0 z-20" onClick={() => setIsNotificationsOpen(false)}></div>
+                            <div className="absolute top-full right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 z-30 flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                                    <h3 className="font-bold text-slate-800">{t('notifications')}</h3>
+                                    <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">{notifications.length}</span>
+                                </div>
+                                <div className="overflow-y-auto max-h-[400px]">
+                                    {notifications.length === 0 ? (
+                                        <div className="p-8 text-center flex flex-col items-center gap-3">
+                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
+                                                <Bell size={24} />
+                                            </div>
+                                            <p className="text-sm text-slate-500">{t('noNotifications')}</p>
+                                        </div>
+                                    ) : (
+                                        <div className="divide-y divide-slate-100">
+                                            {notifications.map((n, idx) => (
+                                                <div 
+                                                    key={idx} 
+                                                    className="p-4 hover:bg-slate-50 transition-colors flex items-start gap-3 group cursor-pointer"
+                                                    onClick={() => { setEditingTask(n.task); setIsNotificationsOpen(false); }}
+                                                >
+                                                    <div className={`mt-1 p-1.5 rounded-lg shrink-0 ${
+                                                        n.type === 'overdue' ? 'bg-red-50 text-red-600' : 
+                                                        n.type === 'today' ? 'bg-amber-50 text-amber-600' : 
+                                                        'bg-indigo-50 text-indigo-600'
+                                                    }`}>
+                                                        {n.type === 'overdue' ? <AlertCircle size={14} /> : 
+                                                         n.type === 'today' ? <Clock size={14} /> : 
+                                                         <Calendar size={14} />}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-xs font-bold uppercase mb-0.5 tracking-wider truncate">
+                                                            {n.type === 'overdue' ? `${t('daysOverdue')}: ${n.days}` : 
+                                                             n.type === 'today' ? t('dueToday') : 
+                                                             `${t('dueInDays')} ${n.days} ${t('daysOld')}`}
+                                                        </p>
+                                                        <p className="text-sm font-semibold text-slate-800 truncate mb-1">{n.task.title}</p>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-xs text-slate-500">{new Date(n.task.dueDate).toLocaleDateString()}</span>
+                                                            <Edit3 size={12} className="text-slate-300 group-hover:text-indigo-500" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                {notifications.length > 0 && (
+                                    <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
+                                        <button 
+                                            onClick={() => setIsNotificationsOpen(false)}
+                                            className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors"
+                                        >
+                                            FECHAR ALERTAS
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+
                 <button onClick={() => { setEditingTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-sm hover:bg-indigo-700 active:scale-95 transition-all">
                   <Plus size={18} /> <span className="hidden sm:inline">{t('newTask')}</span>
                 </button>
