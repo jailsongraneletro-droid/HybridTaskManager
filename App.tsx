@@ -5,7 +5,7 @@ import {
   Lock, Mail, Bell, Calendar, CheckCircle, Circle, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, 
   ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff, Clock, BarChart3,
   Layers, ChevronDown, Rocket, CheckCircle2, Zap, ShieldCheck, TrendingUp, AlertCircle, CheckCircle2 as CheckIcon,
-  Download, ChevronLeft, ChevronRight, Edit3, Volume2
+  Download, ChevronLeft, ChevronRight, Edit3, Volume2, MousePointer2, Sparkles, Smartphone, Shield
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
@@ -29,29 +29,29 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 scroll-smooth">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 px-6 py-4">
+      <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200">
+            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-xl shadow-indigo-100">
               <Layout className="text-white w-5 h-5" />
             </div>
-            <span className="font-bold text-xl tracking-tight text-slate-900">HybridTask</span>
+            <span className="font-extrabold text-xl tracking-tight text-slate-900">HybridTask</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-             <a href="#features" className="hover:text-indigo-600 transition-colors">Funcionalidades</a>
-             <a href="#benefits" className="hover:text-indigo-600 transition-colors">Benefícios</a>
-             <a href="#faq" className="hover:text-indigo-600 transition-colors">FAQ</a>
+          <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500 uppercase tracking-widest">
+             <a href="#ferramentas" className="hover:text-indigo-600 transition-colors">Ferramentas</a>
+             <a href="#beneficios" className="hover:text-indigo-600 transition-colors">Vantagens</a>
+             <a href="#faq" className="hover:text-indigo-600 transition-colors">Suporte</a>
           </div>
           <div className="flex items-center gap-4">
             <button 
               onClick={onGoToLogin}
-              className="text-slate-600 font-medium hover:text-indigo-600 transition-colors px-4 py-2"
+              className="text-slate-600 font-bold hover:text-indigo-600 transition-colors px-4 py-2"
             >
               {t('signIn')}
             </button>
             <button 
               onClick={onGoToSignup}
-              className="bg-indigo-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 active:scale-95"
+              className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 active:scale-95"
             >
               {t('signUp')}
             </button>
@@ -60,171 +60,208 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-40 pb-20 px-6 relative overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-10">
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500 rounded-full blur-[120px]"></div>
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-500 rounded-full blur-[120px]"></div>
-        </div>
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold mb-6 animate-bounce">
-            <Rocket size={14} /> NOVO: DASHBOARDS EM TEMPO REAL
+      <section className="pt-48 pb-20 px-6 relative">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black tracking-[0.2em] mb-8 animate-in fade-in slide-in-from-bottom-2">
+            <Sparkles size={14} /> TUDO EM UM SÓ LUGAR
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
-            {t('landingHeroTitle')} <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-500">Totalmente Online e Grátis.</span>
+          <h1 className="text-6xl md:text-8xl font-black text-slate-900 mb-8 tracking-tighter leading-[0.95] animate-in fade-in slide-in-from-bottom-4 duration-700">
+            A gestão que o seu <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500">projeto merece.</span>
           </h1>
-          <p className="text-xl text-slate-500 max-w-3xl mx-auto mb-10 leading-relaxed">
-            {t('landingHeroSub')}
+          <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
+            Deixe as planilhas confusas no passado. O HybridTask une Kanban, Calendário, Tabelas e Notas em uma única interface poderosa e gratuita.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <button 
               onClick={onGoToSignup}
-              className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:-translate-y-1"
+              className="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-100 hover:-translate-y-1 active:scale-95 flex items-center gap-3"
             >
-              {t('landingStartBtn')}
+              {t('landingStartBtn')} <ArrowRight size={20} />
             </button>
-            <div className="flex items-center gap-2 text-slate-400 text-sm">
-              <CheckCircle2 size={16} className="text-green-500" /> Sem cartão de crédito necessário
+            <div className="flex items-center gap-3 text-slate-400 font-bold text-sm">
+              <CheckCircle2 size={20} className="text-green-500" /> Sem cartões. Grátis para sempre.
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section id="features" className="py-24 bg-slate-50">
+      {/* Features Showcase Section */}
+      <section id="ferramentas" className="py-24 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Funcionalidades de um Gerenciador Profissional</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto">Tudo o que você precisa para gerenciar projetos, desde o planejamento até a análise final de resultados.</p>
+          <div className="text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">Explore o Poder do HybridTask</h2>
+            <p className="text-slate-500 font-bold max-w-xl mx-auto">Uma suíte completa de ferramentas que trabalham em harmonia para o seu sucesso.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <FeatureCard 
-              icon={<Kanban size={24} />}
-              title={t('landingFeature1Title')}
-              desc={t('landingFeature1Desc')}
-            />
-            <FeatureCard 
-              icon={<BarChart3 size={24} />}
-              title={t('landingFeature2Title')}
-              desc={t('landingFeature2Desc')}
-            />
-            <FeatureCard 
-              icon={<Layers size={24} />}
-              title={t('landingFeature3Title')}
-              desc={t('landingFeature3Desc')}
-            />
-            <FeatureCard 
-              icon={<StickyNote size={24} />}
-              title={t('landingFeature4Title')}
-              desc={t('landingFeature4Desc')}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section (SEO Rich) */}
-      <section id="benefits" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col lg:flex-row items-center gap-16">
-            <div className="lg:w-1/2">
-                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-8">{t('landingBenefitsTitle')}</h2>
-                <div className="space-y-8">
-                    <BenefitItem 
-                        icon={<Zap className="text-indigo-600" size={24} />}
-                        title={t('landingBenefit1Title')}
-                        desc={t('landingBenefit1Desc')}
-                    />
-                    <BenefitItem 
-                        icon={<ShieldCheck className="text-indigo-600" size={24} />}
-                        title={t('landingBenefit2Title')}
-                        desc={t('landingBenefit2Desc')}
-                    />
-                    <BenefitItem 
-                        icon={<TrendingUp className="text-indigo-600" size={24} />}
-                        title={t('landingBenefit3Title')}
-                        desc={t('landingBenefit3Desc')}
-                    />
-                </div>
-            </div>
-            {/* Visual Dashboard Mockup (Matching user's screenshot) */}
-            <div className="lg:w-1/2 w-full bg-slate-100 rounded-[2rem] p-4 md:p-6 border border-slate-200 shadow-2xl relative overflow-hidden group">
-                <div className="bg-white rounded-2xl shadow-lg h-full w-full overflow-hidden flex flex-col border border-slate-200/50">
-                    {/* Fake Header */}
-                    <div className="h-10 bg-slate-50 border-b border-slate-100 flex items-center px-4 gap-4">
-                        <div className="flex gap-1.5">
-                            <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                            <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-                            <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
-                        </div>
-                        <div className="h-5 w-32 bg-slate-200 rounded-full animate-pulse"></div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {/* Kanban Feature */}
+            <div className="group bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-indigo-50">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-100 group-hover:rotate-6 transition-transform">
+                        <Kanban size={32} />
                     </div>
-                    {/* Mock Dashboard Body */}
-                    <div className="p-4 md:p-6 space-y-4 bg-slate-50/30 flex-1 overflow-hidden">
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                <div><div className="h-2 w-12 bg-slate-100 mb-2"></div><div className="text-lg font-bold text-slate-800">33%</div></div>
-                                <div className="w-7 h-7 bg-green-500 rounded-lg flex items-center justify-center"><CheckIcon size={14} className="text-white" /></div>
-                            </div>
-                            <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                <div><div className="h-2 w-12 bg-slate-100 mb-2"></div><div className="text-lg font-bold text-slate-800">1</div></div>
-                                <div className="w-7 h-7 bg-red-500 rounded-lg flex items-center justify-center"><AlertCircle size={14} className="text-white" /></div>
-                            </div>
-                            <div className="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between">
-                                <div><div className="h-2 w-12 bg-slate-100 mb-2"></div><div className="text-lg font-bold text-slate-800">3</div></div>
-                                <div className="w-7 h-7 bg-indigo-500 rounded-lg flex items-center justify-center"><Clock size={14} className="text-white" /></div>
-                            </div>
+                    <div>
+                        <h3 className="text-2xl font-black text-slate-900">Quadro Kanban</h3>
+                        <p className="text-indigo-600 font-bold text-xs uppercase tracking-widest">Fluxo Ágil</p>
+                    </div>
+                </div>
+                <p className="text-slate-500 mb-10 leading-relaxed font-medium">Visualize o progresso com facilidade. Arraste tarefas entre colunas personalizáveis e mantenha sua equipe focada no que importa.</p>
+                <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col gap-3">
+                    <div className="h-3 w-3/4 bg-slate-100 rounded-full"></div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="h-16 bg-indigo-50 rounded-xl border-l-4 border-indigo-400 p-3">
+                            <div className="h-2 w-full bg-indigo-200/50 rounded-full mb-2"></div>
+                            <div className="h-2 w-1/2 bg-indigo-200/50 rounded-full"></div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 h-48">
-                            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center justify-center">
-                                <div className="h-2 w-24 bg-slate-100 mb-4 self-start"></div>
-                                <div className="w-28 h-28 rounded-full border-[10px] border-slate-100 relative flex items-center justify-center">
-                                    <div className="absolute inset-0 border-[10px] border-green-500 rounded-full border-t-transparent border-l-transparent -rotate-45"></div>
-                                </div>
-                            </div>
-                            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex flex-col justify-end gap-1">
-                                <div className="h-2 w-24 bg-slate-100 mb-8 self-start"></div>
-                                <div className="flex items-end gap-2 h-full px-2">
-                                    <div className="w-full bg-indigo-500 rounded-t-md h-[80%]"></div>
-                                    <div className="w-full bg-slate-100 rounded-t-md h-[10%]"></div>
-                                    <div className="w-full bg-slate-100 rounded-t-md h-[15%]"></div>
-                                </div>
-                            </div>
+                        <div className="h-16 bg-green-50 rounded-xl border-l-4 border-green-400 p-3">
+                            <div className="h-2 w-full bg-green-200/50 rounded-full mb-2"></div>
+                            <div className="h-2 w-1/2 bg-green-200/50 rounded-full"></div>
                         </div>
                     </div>
                 </div>
-                {/* Visual Accent */}
-                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full"></div>
+            </div>
+
+            {/* Calendar Feature */}
+            <div className="group bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-indigo-50">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 bg-violet-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-violet-100 group-hover:-rotate-6 transition-transform">
+                        <Calendar size={32} />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-black text-slate-900">Calendário</h3>
+                        <p className="text-violet-600 font-bold text-xs uppercase tracking-widest">Visão Temporal</p>
+                    </div>
+                </div>
+                <p className="text-slate-500 mb-10 leading-relaxed font-medium">Nunca perca um prazo. Visualize suas tarefas em visões mensais, semanais ou diárias com um design limpo e intuitivo.</p>
+                <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                        {[...Array(7)].map((_, i) => <div key={i} className="h-1 bg-slate-100 rounded-full"></div>)}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                        {[...Array(21)].map((_, i) => (
+                            <div key={i} className={`h-8 rounded-lg flex items-center justify-center text-[8px] font-bold ${i === 10 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-300'}`}>
+                                {i + 1}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Table Feature */}
+            <div className="group bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-indigo-50">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100 group-hover:scale-110 transition-transform">
+                        <List size={32} />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-black text-slate-900">Tabelas</h3>
+                        <p className="text-blue-600 font-bold text-xs uppercase tracking-widest">Controle de Dados</p>
+                    </div>
+                </div>
+                <p className="text-slate-500 mb-10 leading-relaxed font-medium">Para quando você precisa de precisão. Agrupe por status, prioridade ou responsável e filtre milhares de tarefas em segundos.</p>
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden text-[10px] font-bold">
+                    <div className="bg-slate-50 p-2 border-b border-slate-200 flex justify-between">
+                        <div className="w-1/2 bg-slate-200 h-2 rounded-full"></div>
+                        <div className="w-1/4 bg-slate-200 h-2 rounded-full"></div>
+                    </div>
+                    <div className="p-2 space-y-2">
+                        <div className="flex justify-between border-b border-slate-50 pb-1">
+                            <div className="w-1/3 bg-slate-100 h-2 rounded-full"></div>
+                            <div className="w-1/5 bg-indigo-100 h-2 rounded-full"></div>
+                        </div>
+                        <div className="flex justify-between">
+                            <div className="w-2/5 bg-slate-100 h-2 rounded-full"></div>
+                            <div className="w-1/6 bg-amber-100 h-2 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Notes Feature */}
+            <div className="group bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-indigo-50">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-amber-100 group-hover:-rotate-3 transition-transform">
+                        <StickyNote size={32} />
+                    </div>
+                    <div>
+                        <h3 className="text-2xl font-black text-slate-900">Bloco de Notas</h3>
+                        <p className="text-amber-600 font-bold text-xs uppercase tracking-widest">Documentação</p>
+                    </div>
+                </div>
+                <p className="text-slate-500 mb-10 leading-relaxed font-medium">Capture ideias, atas de reunião e referências. Notas coloridas com editor Rich Text integradas ao seu ambiente de trabalho.</p>
+                <div className="flex gap-2">
+                    <div className="flex-1 h-20 bg-amber-100 rounded-2xl border border-amber-200 p-3">
+                        <div className="h-1.5 w-full bg-amber-300/50 rounded-full mb-2"></div>
+                        <div className="h-1.5 w-3/4 bg-amber-300/50 rounded-full"></div>
+                    </div>
+                    <div className="flex-1 h-20 bg-blue-100 rounded-2xl border border-blue-200 p-3">
+                        <div className="h-1.5 w-full bg-blue-300/50 rounded-full mb-2"></div>
+                        <div className="h-1.5 w-1/2 bg-blue-300/50 rounded-full"></div>
+                    </div>
+                </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FAQ Section (SEO Snippets) */}
-      <section id="faq" className="py-24 bg-slate-50">
-        <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">{t('landingFaqTitle')}</h2>
-            <div className="space-y-6">
-                <FaqItem question={t('landingFaq1Q')} answer={t('landingFaq1A')} />
-                <FaqItem question={t('landingFaq2Q')} answer={t('landingFaq2A')} />
-                <FaqItem question={t('landingFaq3Q')} answer={t('landingFaq3A')} />
+      {/* Trust & Stats Section */}
+      <section id="beneficios" className="py-24 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-16 text-center">
+                <div className="space-y-4">
+                    <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <ShieldCheck size={32} />
+                    </div>
+                    <h4 className="text-4xl font-black">100% Seguro</h4>
+                    <p className="text-slate-400 font-medium">Dados criptografados e hospedados com a tecnologia Supabase.</p>
+                </div>
+                <div className="space-y-4">
+                    <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Zap size={32} />
+                    </div>
+                    <h4 className="text-4xl font-black">Instantâneo</h4>
+                    <p className="text-slate-400 font-medium">Sincronização em tempo real entre todos os seus dispositivos.</p>
+                </div>
+                <div className="space-y-4">
+                    <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Smartphone size={32} />
+                    </div>
+                    <h4 className="text-4xl font-black">Instalável</h4>
+                    <p className="text-slate-400 font-medium">Funciona como App no seu celular através da tecnologia PWA.</p>
+                </div>
             </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 border-t border-slate-100 bg-white">
+      {/* CTA Footer Section */}
+      <section className="py-32 bg-white relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/5 rounded-full blur-[120px] -z-10"></div>
+        <div className="max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-5xl md:text-7xl font-black text-slate-900 mb-10 tracking-tighter">Pronto para ser produtivo de verdade?</h2>
+            <button 
+                onClick={onGoToSignup}
+                className="px-12 py-6 bg-slate-900 text-white rounded-[2rem] font-black text-2xl hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-300 hover:scale-105 active:scale-95"
+            >
+                Criar Minha Conta Grátis
+            </button>
+            <p className="mt-8 text-slate-400 font-bold uppercase tracking-widest text-xs">Junte-se a centenas de usuários organizados</p>
+        </div>
+      </section>
+
+      {/* Simple Footer */}
+      <footer className="py-12 border-t border-slate-100 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <Layout className="text-white w-4 h-4" />
             </div>
-            <span className="font-bold text-lg text-slate-900">HybridTask</span>
+            <span className="font-extrabold text-lg text-slate-900">HybridTask</span>
           </div>
-          <p className="text-slate-400 text-sm">© 2024 HybridTask Manager. Desenvolvido para máxima produtividade.</p>
-          <div className="flex gap-6 text-sm text-slate-500">
-              <a href="#" className="hover:text-indigo-600">Privacidade</a>
-              <a href="#" className="hover:text-indigo-600">Termos</a>
-              <a href="#" className="hover:text-indigo-600">Contato</a>
+          <p className="text-slate-400 text-sm font-medium">© 2024 HybridTask Manager. A próxima geração da produtividade.</p>
+          <div className="flex gap-8 text-xs font-black text-slate-400 uppercase tracking-widest">
+              <a href="#" className="hover:text-indigo-600 transition-colors">Privacidade</a>
+              <a href="#" className="hover:text-indigo-600 transition-colors">Termos</a>
           </div>
         </div>
       </footer>
@@ -232,45 +269,9 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
   );
 };
 
-const FeatureCard = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
-  <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 hover:-translate-y-2 group">
-    <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white group-hover:scale-110 transition-all duration-500 group-hover:shadow-lg group-hover:shadow-indigo-200">
-      {icon}
-    </div>
-    <h3 className="text-xl font-bold text-slate-800 mb-3 group-hover:text-indigo-600 transition-colors duration-300">{title}</h3>
-    <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
-  </div>
+const ArrowRight = ({ size }: { size: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
 );
-
-const BenefitItem = ({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) => (
-  <div className="flex gap-5">
-    <div className="shrink-0 mt-1">{icon}</div>
-    <div>
-        <h4 className="text-lg font-bold text-slate-900 mb-1">{title}</h4>
-        <p className="text-slate-500 leading-relaxed">{desc}</p>
-    </div>
-  </div>
-);
-
-const FaqItem = ({ question, answer }: { question: string, answer: string }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <button 
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-slate-50 transition-colors"
-            >
-                <span className="font-bold text-slate-800">{question}</span>
-                <ChevronDown size={20} className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {isOpen && (
-                <div className="px-6 pb-5 text-slate-500 animate-in slide-in-from-top-1 duration-300">
-                    {answer}
-                </div>
-            )}
-        </div>
-    );
-};
 
 // -- Login / Signup / Direct Reset Flow --
 type AuthMode = 'login' | 'signup' | 'direct_reset';
