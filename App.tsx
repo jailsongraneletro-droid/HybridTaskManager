@@ -5,7 +5,7 @@ import {
   Lock, Mail, Bell, Calendar, CheckCircle, Circle, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, 
   ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff, Clock, BarChart3,
   Layers, ChevronDown, Rocket, CheckCircle2, Zap, ShieldCheck, TrendingUp, AlertCircle, CheckCircle2 as CheckIcon,
-  Download, ChevronLeft, ChevronRight, Edit3
+  Download, ChevronLeft, ChevronRight, Edit3, Volume2
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
@@ -14,6 +14,7 @@ import { TableView } from './views/TableView';
 import { Dashboard } from './views/Dashboard';
 import { SettingsView } from './views/SettingsView';
 import { NotesView } from './views/NotesView';
+import { CalendarView } from './views/CalendarView';
 import { TaskModal } from './components/TaskModal';
 import { ProfileModal } from './components/ProfileModal';
 import { ConfirmationModal, Modal } from './components/Shared';
@@ -455,6 +456,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [appError, setAppError] = useState<string>('');
   const [isRetryLoading, setIsRetryLoading] = useState(false);
+  const [lastNotifiedTaskId, setLastNotifiedTaskId] = useState<string | null>(null);
   
   // PWA Install State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -462,6 +464,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
+  const [prefilledDate, setPrefilledDate] = useState<string | undefined>(undefined);
   const [deleteIntent, setDeleteIntent] = useState<{ type: 'task' | 'column' | 'priority' | 'assignee', id: string } | null>(null);
 
   const IDLE_LIMIT = 30 * 60 * 1000;
@@ -478,6 +481,39 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
+
+  // Alert System Logic
+  useEffect(() => {
+    if (!data) return;
+    const interval = setInterval(() => {
+        const now = new Date();
+        const tasks = Object.values(data.tasks) as Task[];
+        
+        const dueTask = tasks.find(task => {
+            if (!task.dueDate) return false;
+            const dueDate = new Date(task.dueDate);
+            const diff = Math.abs(dueDate.getTime() - now.getTime());
+            // Se falta menos de 1 minuto e não notificamos ainda
+            return diff < 60000 && lastNotifiedTaskId !== task.id;
+        });
+
+        if (dueTask) {
+            setLastNotifiedTaskId(dueTask.id);
+            // Play Sound
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            audio.play().catch(e => console.log('Audio blocked'));
+            
+            // Show Notification if permitted
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("HybridTask: Prazo atingido!", {
+                    body: `A tarefa "${dueTask.title}" vence agora.`,
+                    icon: 'https://ui-avatars.com/api/?name=H+T&background=4f46e5&color=fff&size=512'
+                });
+            }
+        }
+    }, 10000); // Check every 10s
+    return () => clearInterval(interval);
+  }, [data, lastNotifiedTaskId]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
@@ -531,6 +567,11 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
     try {
       const boardData = await DataService.getBoardData();
       setData(boardData);
+      
+      // Request notifications
+      if ("Notification" in window && Notification.permission !== "granted") {
+          Notification.requestPermission();
+      }
     } catch (e: any) {
       setAppError(e.message || "Failed to connect to database.");
     } finally {
@@ -605,6 +646,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
         setData(newData);
       }
       setEditingTask(undefined);
+      setPrefilledDate(undefined);
     } catch (e: any) { setAppError("Error saving task: " + e.message); }
   };
 
@@ -687,6 +729,9 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
             </NavLink>
             <NavLink to="/table" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
               <List size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('table')}</span>}
+            </NavLink>
+            <NavLink to="/calendar" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
+              <Calendar size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('calendar')}</span>}
             </NavLink>
             <NavLink to="/notes" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
               <StickyNote size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('notes')}</span>}
@@ -803,7 +848,7 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
                     )}
                 </div>
 
-                <button onClick={() => { setEditingTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-sm hover:bg-indigo-700 active:scale-95 transition-all">
+                <button onClick={() => { setEditingTask(undefined); setPrefilledDate(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-sm hover:bg-indigo-700 active:scale-95 transition-all">
                   <Plus size={18} /> <span className="hidden sm:inline">{t('newTask')}</span>
                 </button>
              </div>
@@ -813,12 +858,19 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
               <Route path="/" element={<Dashboard data={data} />} />
               <Route path="/board" element={<KanbanBoard data={data} onDragEnd={handleDragEnd} onEditTask={setEditingTask} onDeleteTask={id => setDeleteIntent({type:'task',id})} />} />
               <Route path="/table" element={<TableView data={data} onEditTask={setEditingTask} onDeleteTask={id => setDeleteIntent({type:'task',id})} />} />
+              <Route path="/calendar" element={<CalendarView data={data} onEditTask={setEditingTask} onAddTaskOnDate={(date) => { setPrefilledDate(date); setIsTaskModalOpen(true); }} />} />
               <Route path="/notes" element={<NotesView data={data} onUpdate={loadData} />} />
               <Route path="/settings" element={<SettingsView data={data} onAddColumn={DataService.addColumn} onUpdateColumn={DataService.updateColumn} onDeleteColumn={id => setDeleteIntent({type:'column',id})} onAddPriority={DataService.addPriority} onUpdatePriority={DataService.updatePriority} onDeletePriority={id => setDeleteIntent({type:'priority',id})} onAddAssignee={DataService.addAssignee} onDeleteAssignee={id => setDeleteIntent({type:'assignee',id})} onRestoreDefaults={loadData} />} />
             </Routes>
           </div>
         </main>
-      <TaskModal isOpen={isTaskModalOpen || !!editingTask} onClose={() => {setIsTaskModalOpen(false); setEditingTask(undefined);}} onSubmit={handleSaveTask} initialData={editingTask} boardData={data} />
+      <TaskModal 
+        isOpen={isTaskModalOpen || !!editingTask} 
+        onClose={() => {setIsTaskModalOpen(false); setEditingTask(undefined); setPrefilledDate(undefined);}} 
+        onSubmit={handleSaveTask} 
+        initialData={editingTask || (prefilledDate ? { dueDate: prefilledDate } as Task : undefined)} 
+        boardData={data} 
+      />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} user={user} onUpdate={async (id, d) => onUpdateUser(await DataService.updateCurrentUser(id, d))} />
       <ConfirmationModal isOpen={!!deleteIntent} onClose={() => setDeleteIntent(null)} onConfirm={executeDelete} title="Confirmar" message="Deseja excluir?" />
     </div>

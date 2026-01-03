@@ -41,6 +41,7 @@ const translations = {
     kanban: 'Quadro Kanban',
     table: 'Tabela',
     notes: 'Anotações',
+    calendar: 'Calendário',
     settings: 'Configurações',
     logout: 'Sair',
     projectOverview: 'Visão Geral',
@@ -93,6 +94,15 @@ const translations = {
     dueInDays: 'Vence em',
     daysOverdue: 'dias de atraso',
     
+    // Calendar
+    month: 'Mês',
+    week: 'Semana',
+    day: 'Dia',
+    todayView: 'Hoje',
+    next: 'Próximo',
+    previous: 'Anterior',
+    taskDeadline: 'Prazo da Tarefa',
+
     // Settings
     projectSettings: 'Configurações do Projeto',
     customizeBoard: 'Personalize a estrutura e categorias do quadro.',
