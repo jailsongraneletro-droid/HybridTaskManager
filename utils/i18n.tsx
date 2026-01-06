@@ -19,6 +19,19 @@ const translations = {
     landingFeature4Title: 'Bloco de Notas Estruturado',
     landingFeature4Desc: 'Documente ideias e atas de reunião com editor Rich Text diretamente vinculado aos seus projetos.',
 
+    // Help & Manual Section
+    help: 'Ajuda',
+    userManualTitle: 'Manual do Usuário',
+    userManualSub: 'Aprenda a dominar o HybridTask em poucos minutos.',
+    step1Title: '1. Começando sua Jornada',
+    step1Desc: 'Crie sua conta gratuita em segundos. O sistema criará automaticamente suas primeiras colunas e prioridades para você não começar do zero.',
+    step2Title: '2. Criando sua Primeira Tarefa',
+    step2Desc: 'Use o botão "+" no topo de qualquer tela. Defina título, data de entrega e o nível de urgência. Você pode até anexar descrições detalhadas.',
+    step3Title: '3. Escolhendo sua Visualização',
+    step3Desc: 'Alterne entre Kanban (fluxo), Calendário (prazos) ou Tabela (dados). O que você muda em uma tela, reflete instantaneamente em todas as outras.',
+    step4Title: '4. Notas e Brainstorming',
+    step4Desc: 'Use o Bloco de Notas para atas de reuniões ou ideias rápidas. Personalize com cores para categorizar seus pensamentos.',
+    
     // New Landing Sections
     landingBenefitsTitle: 'Por que escolher o HybridTask para sua Gestão?',
     landingBenefit1Title: 'Interface Intuitiva',
@@ -34,7 +47,7 @@ const translations = {
     landingFaq2Q: 'Posso usar no celular?',
     landingFaq2A: 'Sim, o HybridTask é totalmente responsivo e funciona perfeitamente em smartphones e tablets via navegador.',
     landingFaq3Q: 'Como funciona a segurança dos dados?',
-    landingFaq3A: 'Utilizamos a infraestrutura do Supabase para garantir que seus dados estejam always seguros, privados e acessíveis.',
+    landingFaq3A: 'Utilizamos a infraestrutura do Supabase para garantir que seus dados estejam sempre seguros, privados e acessíveis.',
 
     // Nav
     dashboard: 'Painel',

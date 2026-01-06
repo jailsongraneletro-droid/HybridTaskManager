@@ -5,7 +5,8 @@ import {
   Lock, Mail, Bell, Calendar, CheckCircle, Circle, AlertTriangle, Kanban, List, ArrowLeft, KeyRound, Link as LinkIcon, 
   ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff, Clock, BarChart3,
   Layers, ChevronDown, Rocket, CheckCircle2, Zap, ShieldCheck, TrendingUp, AlertCircle, CheckCircle2 as CheckIcon,
-  Download, ChevronLeft, ChevronRight, Edit3, Volume2, MousePointer2, Sparkles, Smartphone, Shield
+  Download, ChevronLeft, ChevronRight, Edit3, Volume2, MousePointer2, Sparkles, Smartphone, Shield, HelpCircle, 
+  BookOpen, CheckSquare, ArrowRight, MousePointerClick, Filter, PieChart as ChartIcon, Monitor
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
@@ -29,7 +30,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 scroll-smooth">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-xl shadow-indigo-100">
@@ -39,44 +40,32 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500 uppercase tracking-widest">
              <a href="#ferramentas" className="hover:text-indigo-600 transition-colors">Ferramentas</a>
-             <a href="#beneficios" className="hover:text-indigo-600 transition-colors">Vantagens</a>
+             <a href="#manual" className="hover:text-indigo-600 transition-colors flex items-center gap-1.5"><BookOpen size={14} /> Ajuda</a>
              <a href="#faq" className="hover:text-indigo-600 transition-colors">Suporte</a>
           </div>
           <div className="flex items-center gap-4">
-            <button 
-              onClick={onGoToLogin}
-              className="text-slate-600 font-bold hover:text-indigo-600 transition-colors px-4 py-2"
-            >
-              {t('signIn')}
-            </button>
-            <button 
-              onClick={onGoToSignup}
-              className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 active:scale-95"
-            >
-              {t('signUp')}
-            </button>
+            <button onClick={onGoToLogin} className="text-slate-600 font-bold hover:text-indigo-600 transition-colors px-4 py-2">{t('signIn')}</button>
+            <button onClick={onGoToSignup} className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 active:scale-95">{t('signUp')}</button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-48 pb-20 px-6 relative">
+      <section className="pt-48 pb-20 px-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-indigo-50 rounded-full blur-[120px] -z-10"></div>
         <div className="max-w-6xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black tracking-[0.2em] mb-8 animate-in fade-in slide-in-from-bottom-2">
-            <Sparkles size={14} /> TUDO EM UM SÓ LUGAR
+            <Sparkles size={14} /> PRODUTIVIDADE REIMAGINADA
           </div>
           <h1 className="text-6xl md:text-8xl font-black text-slate-900 mb-8 tracking-tighter leading-[0.95] animate-in fade-in slide-in-from-bottom-4 duration-700">
-            A gestão que o seu <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500">projeto merece.</span>
+            Domine seus projetos <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500">com clareza total.</span>
           </h1>
           <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
-            Deixe as planilhas confusas no passado. O HybridTask une Kanban, Calendário, Tabelas e Notas em uma única interface poderosa e gratuita.
+            O único sistema que integra Kanban, Calendário, Tabelas e Notas em um fluxo de trabalho perfeito. Grátis, seguro e pronto para sua equipe.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <button 
-              onClick={onGoToSignup}
-              className="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-100 hover:-translate-y-1 active:scale-95 flex items-center gap-3"
-            >
+            <button onClick={onGoToSignup} className="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-100 hover:-translate-y-1 active:scale-95 flex items-center gap-3">
               {t('landingStartBtn')} <ArrowRight size={20} />
             </button>
             <div className="flex items-center gap-3 text-slate-400 font-bold text-sm">
@@ -86,171 +75,164 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
-      {/* Features Showcase Section */}
-      <section id="ferramentas" className="py-24 bg-white relative overflow-hidden">
+      {/* Visual Showcase: O Melhor do Sistema */}
+      <section id="ferramentas" className="py-24 bg-slate-50/50">
         <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center mb-32">
+            <div className="space-y-6">
+              <div className="w-14 h-14 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-100"><Kanban size={28} /></div>
+              <h2 className="text-4xl font-black text-slate-900 leading-tight">Quadro Kanban: <br/>O Coração do Fluxo Ágil</h2>
+              <p className="text-lg text-slate-500 font-medium">Visualize cada etapa do seu processo. Com o arraste-e-solte fluido, você move tarefas de "A Fazer" para "Concluído" com satisfação garantida.</p>
+              <ul className="space-y-3">
+                {['Colunas Personalizáveis', 'Filtros por Prioridade', 'Gestão de Responsáveis'].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 font-bold text-slate-700">
+                    <CheckCircle2 size={20} className="text-indigo-600" /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-white p-4 rounded-[2.5rem] shadow-2xl border border-slate-100 rotate-1 hover:rotate-0 transition-transform duration-500">
+               <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-3">
+                     <div className="h-4 w-20 bg-slate-100 rounded-full mb-4"></div>
+                     <div className="h-24 bg-indigo-50 rounded-2xl border-l-4 border-indigo-500 shadow-sm p-3">
+                        <div className="h-2 w-full bg-indigo-200 rounded-full mb-2"></div>
+                        <div className="h-2 w-1/2 bg-indigo-200 rounded-full"></div>
+                     </div>
+                  </div>
+                  <div className="space-y-3">
+                     <div className="h-4 w-20 bg-slate-100 rounded-full mb-4"></div>
+                     <div className="h-24 bg-amber-50 rounded-2xl border-l-4 border-amber-500 shadow-sm p-3 opacity-50"></div>
+                  </div>
+                  <div className="space-y-3">
+                     <div className="h-4 w-20 bg-slate-100 rounded-full mb-4"></div>
+                     <div className="h-24 bg-green-50 rounded-2xl border-l-4 border-green-500 shadow-sm p-3"></div>
+                  </div>
+               </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="order-2 lg:order-1 bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-100 -rotate-1 hover:rotate-0 transition-transform duration-500">
+               <div className="flex items-center gap-4 mb-6">
+                  <div className="h-10 w-10 bg-indigo-600 rounded-xl"></div>
+                  <div className="h-10 w-full bg-slate-50 rounded-xl"></div>
+               </div>
+               <div className="space-y-3">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-center gap-4 py-3 border-b border-slate-50">
+                       <div className="h-3 w-1/2 bg-slate-100 rounded-full"></div>
+                       <div className="h-6 w-16 bg-indigo-100 rounded-full ml-auto"></div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+            <div className="order-1 lg:order-2 space-y-6">
+              <div className="w-14 h-14 bg-violet-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-violet-100"><List size={28} /></div>
+              <h2 className="text-4xl font-black text-slate-900 leading-tight">Tabelas Dinâmicas: <br/>Poder Analítico Sem Limites</h2>
+              <p className="text-lg text-slate-500 font-medium">Para gestores que precisam de dados. Filtre centenas de tarefas, agrupe por responsável ou prioridade e tome decisões baseadas em fatos.</p>
+              <ul className="space-y-3">
+                {['Agrupamento Inteligente', 'Ordenação por Datas', 'Exportação e Filtros'].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 font-bold text-slate-700">
+                    <CheckCircle2 size={20} className="text-violet-600" /> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Manual de Uso: Guia Completo */}
+      <section id="manual" className="py-24 bg-white relative">
+        <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">Explore o Poder do HybridTask</h2>
-            <p className="text-slate-500 font-bold max-w-xl mx-auto">Uma suíte completa de ferramentas que trabalham em harmonia para o seu sucesso.</p>
+            <h2 className="text-5xl font-black text-slate-900 mb-6">Como usar o HybridTask?</h2>
+            <p className="text-slate-500 font-bold text-lg">Um manual rápido para você se tornar um mestre da produtividade.</p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* Kanban Feature */}
-            <div className="group bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-indigo-50">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-100 group-hover:rotate-6 transition-transform">
-                        <Kanban size={32} />
-                    </div>
-                    <div>
-                        <h3 className="text-2xl font-black text-slate-900">Quadro Kanban</h3>
-                        <p className="text-indigo-600 font-bold text-xs uppercase tracking-widest">Fluxo Ágil</p>
-                    </div>
+
+          <div className="space-y-12">
+            {/* Passo 1 */}
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 shadow-xl shadow-slate-200">1</div>
+              <div className="space-y-4">
+                <h3 className="text-2xl font-black text-slate-800">O Início: Cadastro e Workspace</h3>
+                <p className="text-slate-500 leading-relaxed font-medium">Ao criar sua conta, o sistema prepara automaticamente um quadro com as colunas essenciais: **A Fazer, Em Andamento e Concluído**. Você não precisa configurar nada para começar.</p>
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center gap-3">
+                   <Monitor size={20} className="text-indigo-600" />
+                   <span className="text-sm font-bold text-slate-600 italic">Dica: Acesse as Configurações para renomear colunas ou adicionar novas cores ao seu projeto.</span>
                 </div>
-                <p className="text-slate-500 mb-10 leading-relaxed font-medium">Visualize o progresso com facilidade. Arraste tarefas entre colunas personalizáveis e mantenha sua equipe focada no que importa.</p>
-                <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col gap-3">
-                    <div className="h-3 w-3/4 bg-slate-100 rounded-full"></div>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="h-16 bg-indigo-50 rounded-xl border-l-4 border-indigo-400 p-3">
-                            <div className="h-2 w-full bg-indigo-200/50 rounded-full mb-2"></div>
-                            <div className="h-2 w-1/2 bg-indigo-200/50 rounded-full"></div>
-                        </div>
-                        <div className="h-16 bg-green-50 rounded-xl border-l-4 border-green-400 p-3">
-                            <div className="h-2 w-full bg-green-200/50 rounded-full mb-2"></div>
-                            <div className="h-2 w-1/2 bg-green-200/50 rounded-full"></div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
 
-            {/* Calendar Feature */}
-            <div className="group bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-indigo-50">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-16 h-16 bg-violet-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-violet-100 group-hover:-rotate-6 transition-transform">
-                        <Calendar size={32} />
-                    </div>
-                    <div>
-                        <h3 className="text-2xl font-black text-slate-900">Calendário</h3>
-                        <p className="text-violet-600 font-bold text-xs uppercase tracking-widest">Visão Temporal</p>
-                    </div>
+            {/* Passo 2 */}
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 shadow-xl shadow-slate-200">2</div>
+              <div className="space-y-4">
+                <h3 className="text-2xl font-black text-slate-800">Criação de Tarefas Inteligentes</h3>
+                <p className="text-slate-500 leading-relaxed font-medium">Clique no botão <span className="text-indigo-600 font-bold px-2 py-0.5 bg-indigo-50 rounded">+ Nova Tarefa</span> no topo. Defina o título, a data de entrega (deadline) e a prioridade. O sistema irá te alertar visualmente conforme o prazo se aproxima.</p>
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                      <p className="text-xs font-black text-slate-400 uppercase mb-2">Visualizar</p>
+                      <p className="text-sm font-bold text-slate-700">As tarefas aparecem em todas as telas simultaneamente.</p>
+                   </div>
+                   <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                      <p className="text-xs font-black text-slate-400 uppercase mb-2">Anotar</p>
+                      <p className="text-sm font-bold text-slate-700">Use a descrição para detalhar requisitos e passos.</p>
+                   </div>
                 </div>
-                <p className="text-slate-500 mb-10 leading-relaxed font-medium">Nunca perca um prazo. Visualize suas tarefas em visões mensais, semanais ou diárias com um design limpo e intuitivo.</p>
-                <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-                    <div className="grid grid-cols-7 gap-1 mb-2">
-                        {[...Array(7)].map((_, i) => <div key={i} className="h-1 bg-slate-100 rounded-full"></div>)}
-                    </div>
-                    <div className="grid grid-cols-7 gap-1">
-                        {[...Array(21)].map((_, i) => (
-                            <div key={i} className={`h-8 rounded-lg flex items-center justify-center text-[8px] font-bold ${i === 10 ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-50 text-slate-300'}`}>
-                                {i + 1}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+              </div>
             </div>
 
-            {/* Table Feature */}
-            <div className="group bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-indigo-50">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100 group-hover:scale-110 transition-transform">
-                        <List size={32} />
-                    </div>
-                    <div>
-                        <h3 className="text-2xl font-black text-slate-900">Tabelas</h3>
-                        <p className="text-blue-600 font-bold text-xs uppercase tracking-widest">Controle de Dados</p>
-                    </div>
+            {/* Passo 3 */}
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 shadow-xl shadow-slate-200">3</div>
+              <div className="space-y-4">
+                <h3 className="text-2xl font-black text-slate-800">Navegando entre as Visões</h3>
+                <p className="text-slate-500 leading-relaxed font-medium">No menu lateral, você tem 4 ferramentas principais:</p>
+                <div className="space-y-3">
+                   <div className="flex items-center gap-4 group">
+                      <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors"><LayoutDashboard size={18} /></div>
+                      <div>
+                         <p className="font-bold text-slate-800">Painel (Dashboard)</p>
+                         <p className="text-sm text-slate-500">Gráficos de desempenho e taxas de conclusão.</p>
+                      </div>
+                   </div>
+                   <div className="flex items-center gap-4 group">
+                      <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-violet-600 group-hover:text-white transition-colors"><Calendar size={18} /></div>
+                      <div>
+                         <p className="font-bold text-slate-800">Calendário</p>
+                         <p className="text-sm text-slate-500">Arraste para mudar datas ou visualize por semana.</p>
+                      </div>
+                   </div>
+                   <div className="flex items-center gap-4 group">
+                      <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors"><StickyNote size={18} /></div>
+                      <div>
+                         <p className="font-bold text-slate-800">Bloco de Notas</p>
+                         <p className="text-sm text-slate-500">Registre atas de reunião e ideias sem perder o foco.</p>
+                      </div>
+                   </div>
                 </div>
-                <p className="text-slate-500 mb-10 leading-relaxed font-medium">Para quando você precisa de precisão. Agrupe por status, prioridade ou responsável e filtre milhares de tarefas em segundos.</p>
-                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden text-[10px] font-bold">
-                    <div className="bg-slate-50 p-2 border-b border-slate-200 flex justify-between">
-                        <div className="w-1/2 bg-slate-200 h-2 rounded-full"></div>
-                        <div className="w-1/4 bg-slate-200 h-2 rounded-full"></div>
-                    </div>
-                    <div className="p-2 space-y-2">
-                        <div className="flex justify-between border-b border-slate-50 pb-1">
-                            <div className="w-1/3 bg-slate-100 h-2 rounded-full"></div>
-                            <div className="w-1/5 bg-indigo-100 h-2 rounded-full"></div>
-                        </div>
-                        <div className="flex justify-between">
-                            <div className="w-2/5 bg-slate-100 h-2 rounded-full"></div>
-                            <div className="w-1/6 bg-amber-100 h-2 rounded-full"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Notes Feature */}
-            <div className="group bg-slate-50 rounded-[2.5rem] p-10 border border-slate-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-indigo-50">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="w-16 h-16 bg-amber-500 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-amber-100 group-hover:-rotate-3 transition-transform">
-                        <StickyNote size={32} />
-                    </div>
-                    <div>
-                        <h3 className="text-2xl font-black text-slate-900">Bloco de Notas</h3>
-                        <p className="text-amber-600 font-bold text-xs uppercase tracking-widest">Documentação</p>
-                    </div>
-                </div>
-                <p className="text-slate-500 mb-10 leading-relaxed font-medium">Capture ideias, atas de reunião e referências. Notas coloridas com editor Rich Text integradas ao seu ambiente de trabalho.</p>
-                <div className="flex gap-2">
-                    <div className="flex-1 h-20 bg-amber-100 rounded-2xl border border-amber-200 p-3">
-                        <div className="h-1.5 w-full bg-amber-300/50 rounded-full mb-2"></div>
-                        <div className="h-1.5 w-3/4 bg-amber-300/50 rounded-full"></div>
-                    </div>
-                    <div className="flex-1 h-20 bg-blue-100 rounded-2xl border border-blue-200 p-3">
-                        <div className="h-1.5 w-full bg-blue-300/50 rounded-full mb-2"></div>
-                        <div className="h-1.5 w-1/2 bg-blue-300/50 rounded-full"></div>
-                    </div>
-                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Trust & Stats Section */}
-      <section id="beneficios" className="py-24 bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-16 text-center">
-                <div className="space-y-4">
-                    <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <ShieldCheck size={32} />
-                    </div>
-                    <h4 className="text-4xl font-black">100% Seguro</h4>
-                    <p className="text-slate-400 font-medium">Dados criptografados e hospedados com a tecnologia Supabase.</p>
-                </div>
-                <div className="space-y-4">
-                    <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <Zap size={32} />
-                    </div>
-                    <h4 className="text-4xl font-black">Instantâneo</h4>
-                    <p className="text-slate-400 font-medium">Sincronização em tempo real entre todos os seus dispositivos.</p>
-                </div>
-                <div className="space-y-4">
-                    <div className="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <Smartphone size={32} />
-                    </div>
-                    <h4 className="text-4xl font-black">Instalável</h4>
-                    <p className="text-slate-400 font-medium">Funciona como App no seu celular através da tecnologia PWA.</p>
-                </div>
-            </div>
-        </div>
-      </section>
-
-      {/* CTA Footer Section */}
-      <section className="py-32 bg-white relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/5 rounded-full blur-[120px] -z-10"></div>
+      {/* CTA Section */}
+      <section className="py-32 bg-indigo-600 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[100px]"></div>
         <div className="max-w-4xl mx-auto px-6 text-center">
-            <h2 className="text-5xl md:text-7xl font-black text-slate-900 mb-10 tracking-tighter">Pronto para ser produtivo de verdade?</h2>
-            <button 
-                onClick={onGoToSignup}
-                className="px-12 py-6 bg-slate-900 text-white rounded-[2rem] font-black text-2xl hover:bg-indigo-600 transition-all shadow-2xl shadow-slate-300 hover:scale-105 active:scale-95"
-            >
-                Criar Minha Conta Grátis
+            <h2 className="text-5xl md:text-7xl font-black mb-10 tracking-tighter">Pronto para organizar sua vida?</h2>
+            <button onClick={onGoToSignup} className="px-12 py-6 bg-white text-indigo-600 rounded-[2rem] font-black text-2xl hover:bg-slate-50 transition-all shadow-2xl hover:scale-105 active:scale-95">
+                Começar Gratuitamente
             </button>
-            <p className="mt-8 text-slate-400 font-bold uppercase tracking-widest text-xs">Junte-se a centenas de usuários organizados</p>
+            <p className="mt-8 opacity-60 font-bold uppercase tracking-widest text-xs">Junte-se à revolução da produtividade ágil</p>
         </div>
       </section>
 
       {/* Simple Footer */}
-      <footer className="py-12 border-t border-slate-100 bg-slate-50">
+      <footer className="py-12 border-t border-slate-100 bg-white">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -258,7 +240,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
             </div>
             <span className="font-extrabold text-lg text-slate-900">HybridTask</span>
           </div>
-          <p className="text-slate-400 text-sm font-medium">© 2024 HybridTask Manager. A próxima geração da produtividade.</p>
+          <p className="text-slate-400 text-sm font-medium">© 2024 HybridTask Manager. Feito para quem faz acontecer.</p>
           <div className="flex gap-8 text-xs font-black text-slate-400 uppercase tracking-widest">
               <a href="#" className="hover:text-indigo-600 transition-colors">Privacidade</a>
               <a href="#" className="hover:text-indigo-600 transition-colors">Termos</a>
@@ -269,21 +251,13 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
   );
 };
 
-const ArrowRight = ({ size }: { size: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-);
-
-// -- Login / Signup / Direct Reset Flow --
-type AuthMode = 'login' | 'signup' | 'direct_reset';
-
-const Login = ({ onLogin, onBackToHome, initialMode = 'login' }: { onLogin: (user: User) => void, onBackToHome: () => void, initialMode?: AuthMode }) => {
+// -- Auth View (Login/Signup) --
+const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User) => void, onBackToHome: () => void, initialMode: 'login' | 'signup' }) => {
   const { t } = useLanguage();
-  const [mode, setMode] = useState<AuthMode>(initialMode);
-  
+  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -296,29 +270,16 @@ const Login = ({ onLogin, onBackToHome, initialMode = 'login' }: { onLogin: (use
 
     try {
       if (mode === 'login') {
-        if (!email || !password) throw new Error(t('fillAllFields'));
         const user = await DataService.login(email, password);
         onLogin(user);
-      } else if (mode === 'signup') {
-        if (!name || !email || !password) throw new Error(t('fillAllFields'));
+      } else {
         const user = await DataService.signup(name, email, password);
         onLogin(user);
-      } else if (mode === 'direct_reset') {
-        if (!email || !password) throw new Error(t('fillAllFields'));
-        if (password.length < 6) throw new Error("A senha deve ter pelo menos 6 caracteres.");
-        await DataService.adminForcePasswordReset(email, password);
-        setSuccessMsg("Senha alterada com sucesso! Você pode fazer login agora.");
-        setTimeout(() => {
-            setMode('login');
-            setPassword('');
-        }, 2000);
       }
     } catch (err: any) {
-      console.error("Login Error:", err);
       if (err.message === 'CONFIRM_EMAIL') {
           setSuccessMsg(t('checkEmail'));
           setMode('login'); 
-          setPassword('');
       } else {
           setError(err.message || t('loginError'));
       }
@@ -327,122 +288,50 @@ const Login = ({ onLogin, onBackToHome, initialMode = 'login' }: { onLogin: (use
     }
   };
 
-  const toggleMode = (newMode: AuthMode) => {
-    setMode(newMode);
-    setError('');
-    setSuccessMsg('');
-    setPassword('');
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 relative px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md animate-in fade-in zoom-in-95 duration-300">
-        <button 
-          onClick={onBackToHome}
-          className="flex items-center gap-1 text-slate-400 hover:text-indigo-600 text-sm mb-8 transition-colors group"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> {t('landingBackToHome')}
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+      <div className="bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md">
+        <button onClick={onBackToHome} className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 text-sm mb-8 transition-colors">
+          <ArrowLeft size={16} /> Voltar ao Início
         </button>
 
-        <div className="mb-8 text-center">
-          <div className="w-12 h-12 bg-indigo-600 rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-indigo-200">
-             <Layout className="text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            {mode === 'login' ? t('signIn') : (mode === 'signup' ? t('signUp') : 'Redefinir Senha')}
-          </h1>
-          <p className="text-slate-500 mt-2">
-            {mode === 'login' ? t('welcomeBack') : t('enterDetails')}
-          </p>
+        <div className="text-center mb-8">
+           <div className="w-12 h-12 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-xl shadow-indigo-100">
+              <Layout className="text-white" />
+           </div>
+           <h2 className="text-2xl font-black text-slate-900">{mode === 'login' ? 'Entrar na Conta' : 'Criar Nova Conta'}</h2>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
             <div className="relative">
                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-               <input 
-                 type="text" 
-                 value={name}
-                 onChange={e => setName(e.target.value)}
-                 className="w-full pl-10 pr-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                 placeholder={t('name')}
-                 required={mode === 'signup'}
-               />
+               <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Seu Nome" required />
             </div>
           )}
-
           <div className="relative">
              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-             <input 
-               type="email" 
-               value={email}
-               onChange={e => setEmail(e.target.value)}
-               className="w-full pl-10 pr-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-               placeholder={t('email')}
-               required
-             />
+             <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Seu E-mail" required />
           </div>
-
           <div className="relative">
              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-             <input 
-               type="password" 
-               value={password}
-               onChange={e => setPassword(e.target.value)}
-               className="w-full pl-10 pr-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-               placeholder={mode === 'direct_reset' ? 'Nova Senha' : t('password')}
-               required
-             />
+             <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Sua Senha" required />
           </div>
 
-          {mode === 'login' && (
-             <div className="flex justify-end">
-                <button 
-                  type="button"
-                  onClick={() => toggleMode('direct_reset')}
-                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                >
-                    {t('forgotPassword')}
-                </button>
-             </div>
-          )}
+          {error && <p className="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-lg border border-red-100">{error}</p>}
+          {successMsg && <p className="text-green-600 text-sm font-bold bg-green-50 p-3 rounded-lg border border-green-100">{successMsg}</p>}
 
-          {successMsg && (
-            <div className="text-green-600 text-sm flex items-start gap-2 bg-green-50 p-3 rounded-lg border border-green-100">
-              <CheckCircle size={18} className="shrink-0 mt-0.5" />
-              <span>{successMsg}</span>
-            </div>
-          )}
-
-          {error && (
-            <div className="text-red-600 bg-red-50 text-sm flex items-start gap-2 p-3 rounded-lg border border-red-100">
-              <WifiOff size={16} className="shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <button 
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center shadow-lg shadow-indigo-100 mt-2 disabled:opacity-70 active:scale-[0.98]"
-          >
-            {loading 
-              ? <RefreshCw className="animate-spin" size={20} />
-              : (mode === 'login' ? t('signIn') : (mode === 'signup' ? t('signUp') : 'Atualizar Senha'))
-            }
+          <button disabled={loading} className="w-full bg-indigo-600 text-white font-black py-4 rounded-xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 disabled:opacity-50">
+            {loading ? <RefreshCw className="animate-spin mx-auto" size={20} /> : (mode === 'login' ? 'Acessar Sistema' : 'Criar Agora')}
           </button>
         </form>
 
-        <div className="text-center mt-6">
-          <p className="text-sm text-slate-500">
-            {mode === 'login' ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
-            <button 
-              onClick={() => toggleMode(mode === 'login' ? 'signup' : 'login')} 
-              className="text-indigo-600 font-bold hover:text-indigo-700 hover:underline"
-            >
-              {mode === 'login' ? t('signUp') : t('signIn')}
-            </button>
-          </p>
-        </div>
+        <p className="text-center mt-6 text-slate-500 text-sm font-medium">
+          {mode === 'login' ? 'Não tem conta?' : 'Já é cadastrado?'}{' '}
+          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-indigo-600 font-bold hover:underline">
+             {mode === 'login' ? 'Cadastre-se' : 'Faça Login'}
+          </button>
+        </p>
       </div>
     </div>
   );
@@ -452,166 +341,28 @@ const Login = ({ onLogin, onBackToHome, initialMode = 'login' }: { onLogin: (use
 const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () => void, onUpdateUser: (u: User) => void }) => {
   const { t } = useLanguage();
   const [data, setData] = useState<BoardData | null>(null);
-  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [appError, setAppError] = useState<string>('');
-  const [isRetryLoading, setIsRetryLoading] = useState(false);
-  const [lastNotifiedTaskId, setLastNotifiedTaskId] = useState<string | null>(null);
-  
-  // PWA Install State
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | undefined>(undefined);
-  const [prefilledDate, setPrefilledDate] = useState<string | undefined>(undefined);
-  const [deleteIntent, setDeleteIntent] = useState<{ type: 'task' | 'column' | 'priority' | 'assignee', id: string } | null>(null);
-
-  const IDLE_LIMIT = 30 * 60 * 1000;
-  const WARNING_DURATION = 60;
-  const [isIdleWarningOpen, setIsIdleWarningOpen] = useState(false);
-  const [idleCountdown, setIdleCountdown] = useState(WARNING_DURATION);
-  const idleTimerRef = useRef<any>(null);
-
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  }, []);
-
-  // Alert System Logic
-  useEffect(() => {
-    if (!data) return;
-    const interval = setInterval(() => {
-        const now = new Date();
-        const tasks = Object.values(data.tasks) as Task[];
-        
-        const dueTask = tasks.find(task => {
-            if (!task.dueDate) return false;
-            const dueDate = new Date(task.dueDate);
-            const diff = Math.abs(dueDate.getTime() - now.getTime());
-            // Se falta menos de 1 minuto e não notificamos ainda
-            return diff < 60000 && lastNotifiedTaskId !== task.id;
-        });
-
-        if (dueTask) {
-            setLastNotifiedTaskId(dueTask.id);
-            // Play Sound
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-            audio.play().catch(e => console.log('Audio blocked'));
-            
-            // Show Notification if permitted
-            if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("HybridTask: Prazo atingido!", {
-                    body: `A tarefa "${dueTask.title}" vence agora.`,
-                    icon: 'https://ui-avatars.com/api/?name=H+T&background=4f46e5&color=fff&size=512'
-                });
-            }
-        }
-    }, 10000); // Check every 10s
-    return () => clearInterval(interval);
-  }, [data, lastNotifiedTaskId]);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-    }
-  };
-
-  const resetIdleTimer = () => {
-    if (isIdleWarningOpen) return;
-    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-    idleTimerRef.current = setTimeout(() => {
-      setIsIdleWarningOpen(true);
-      setIdleCountdown(WARNING_DURATION);
-    }, IDLE_LIMIT);
-  };
-
-  useEffect(() => {
-    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-    const handler = () => resetIdleTimer();
-    events.forEach(event => window.addEventListener(event, handler));
-    resetIdleTimer();
-    return () => {
-      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
-      events.forEach(event => window.removeEventListener(event, handler));
-    };
-  }, [isIdleWarningOpen]);
-
-  useEffect(() => {
-    let interval: any;
-    if (isIdleWarningOpen) {
-      interval = setInterval(() => {
-        setIdleCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            onLogout();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isIdleWarningOpen, onLogout]);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [deleteIntent, setDeleteIntent] = useState<{ type: string, id: string } | null>(null);
 
   const loadData = async () => {
-    setAppError('');
-    setIsRetryLoading(true);
     try {
       const boardData = await DataService.getBoardData();
       setData(boardData);
-      
-      // Request notifications
-      if ("Notification" in window && Notification.permission !== "granted") {
-          Notification.requestPermission();
-      }
-    } catch (e: any) {
-      setAppError(e.message || "Failed to connect to database.");
-    } finally {
-      setIsRetryLoading(false);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  useEffect(() => {
-    if (user.id) loadData();
-  }, [user.id]);
-
-  const notifications = useMemo(() => {
-    if (!data) return [];
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const tasks = (Object.values(data.tasks) as Task[]).filter(task => {
-        const col = data.columns[task.status];
-        const colTitle = col?.title.toLowerCase().trim() || '';
-        const isDone = ['done', 'concluído', 'concluido', 'finalizado', 'complete', 'completed'].includes(colTitle);
-        return !isDone; 
-    });
-    return tasks.map(task => {
-        if (!task.dueDate) return null;
-        const dueDay = new Date(new Date(task.dueDate).getFullYear(), new Date(task.dueDate).getMonth(), new Date(task.dueDate).getDate());
-        const diffDays = Math.ceil((dueDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        if (diffDays < 0) return { task, type: 'overdue', days: Math.abs(diffDays) };
-        if (diffDays === 0) return { task, type: 'today', days: 0 };
-        if (diffDays <= 3) return { task, type: 'soon', days: diffDays };
-        return null;
-    }).filter(n => n !== null).sort((a, b) => {
-        const priorityOrder = { today: 0, overdue: 1, soon: 2 };
-        return (priorityOrder[a!.type] - priorityOrder[b!.type]);
-    }) as any[];
-  }, [data]);
+  useEffect(() => { loadData(); }, []);
 
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
     if (!destination || !data) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+    
+    // Local Update
     const newData = { ...data };
     if (source.droppableId === destination.droppableId) {
       const col = newData.columns[source.droppableId];
@@ -619,7 +370,6 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
       newTaskIds.splice(source.index, 1);
       newTaskIds.splice(destination.index, 0, draggableId);
       newData.columns[col.id] = { ...col, taskIds: newTaskIds };
-      DataService.updateTaskPosition(draggableId, col.id, destination.index);
     } else {
       const start = newData.columns[source.droppableId];
       const finish = newData.columns[destination.droppableId];
@@ -630,255 +380,105 @@ const MainApp = ({ user, onLogout, onUpdateUser }: { user: User, onLogout: () =>
       newData.columns[start.id] = { ...start, taskIds: startTaskIds };
       newData.columns[finish.id] = { ...finish, taskIds: finishTaskIds };
       newData.tasks[draggableId].status = finish.id;
-      DataService.updateTaskPosition(draggableId, finish.id, destination.index);
     }
     setData(newData);
+    
+    // DB Update
+    await DataService.updateTaskPosition(draggableId, destination.droppableId, destination.index);
   };
 
   const handleSaveTask = async (task: Partial<Task>) => {
-    try {
-      if (editingTask) {
-        const newData = await DataService.updateTask({ ...editingTask, ...task } as Task);
-        setData(newData);
-      } else {
-        const newData = await DataService.addTask({
-          id: '', status: data?.columnOrder[0] || 'To Do', createdAt: new Date().toISOString(), tags: [], ...(task as any)
-        });
-        setData(newData);
-      }
-      setEditingTask(undefined);
-      setPrefilledDate(undefined);
-    } catch (e: any) { setAppError("Error saving task: " + e.message); }
+    if (editingTask) {
+        const updated = await DataService.updateTask({ ...editingTask, ...task } as Task);
+        setData(updated);
+    } else {
+        const added = await DataService.addTask({ ...task } as Task);
+        setData(added);
+    }
+    setEditingTask(undefined);
+    setIsTaskModalOpen(false);
   };
 
   const executeDelete = async () => {
     if (!deleteIntent) return;
-    try {
-        let newData = null;
-        if (deleteIntent.type === 'task') newData = await DataService.deleteTask(deleteIntent.id);
-        else if (deleteIntent.type === 'column') newData = await DataService.deleteColumn(deleteIntent.id);
-        else if (deleteIntent.type === 'priority') newData = await DataService.deletePriority(deleteIntent.id);
-        else if (deleteIntent.type === 'assignee') newData = await DataService.deleteAssignee(deleteIntent.id);
-        if (newData) setData(newData);
-    } catch (e: any) { setAppError("Error deleting: " + e.message); } finally { setDeleteIntent(null); }
+    if (deleteIntent.type === 'task') {
+        const res = await DataService.deleteTask(deleteIntent.id);
+        setData(res);
+    }
+    setDeleteIntent(null);
   };
 
-  // Close mobile menu on navigate
-  const location = useLocation();
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-    setIsNotificationsOpen(false);
-  }, [location.pathname]);
-
-  if (appError && !data) {
-    return (
-        <div className="flex h-screen items-center justify-center bg-slate-100 p-4 text-center">
-            <div className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full">
-                <AlertTriangle size={48} className="text-red-500 mx-auto mb-4" />
-                <h2 className="text-xl font-bold mb-2">Erro de Conexão</h2>
-                <p className="text-slate-500 mb-6">{appError}</p>
-                <button onClick={loadData} disabled={isRetryLoading} className="bg-indigo-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 mx-auto">
-                    <RefreshCw size={18} className={isRetryLoading ? "animate-spin" : ""} /> Tentar Novamente
-                </button>
-            </div>
-        </div>
-    );
-  }
-
-  if (!data) return <div className="flex h-screen items-center justify-center">Carregando...</div>;
+  if (!data) return <div className="h-screen flex items-center justify-center bg-white"><RefreshCw className="animate-spin text-indigo-600" size={48} /></div>;
 
   return (
-    <div className="flex h-screen bg-slate-100 text-slate-900 font-sans overflow-hidden">
-        {/* Mobile Backdrop */}
-        {isMobileMenuOpen && (
-          <div 
-            className="fixed inset-0 bg-black/50 z-30 md:hidden backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-        )}
-
-        {/* Sidebar */}
-        <aside className={`fixed inset-y-0 left-0 z-40 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'} w-64 shadow-2xl md:shadow-none`}>
-          <div className="p-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0">
-                <Layout className="text-white w-5 h-5" />
-              </div>
-              {(!isSidebarCollapsed || isMobileMenuOpen) && <span className="font-bold text-white tracking-tight">HybridTask</span>}
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+      {/* Sidebar */}
+      <aside className={`bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-64'} h-full border-r border-slate-800`}>
+         <div className="p-6 flex items-center justify-between">
+            <div className="flex items-center gap-3 overflow-hidden">
+               <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20"><Layout className="text-white w-5 h-5" /></div>
+               {!isSidebarCollapsed && <span className="font-black text-white tracking-tighter text-lg">HybridTask</span>}
             </div>
-            {/* Desktop Collapse Toggle */}
-            <button 
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="hidden md:flex p-1.5 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-colors ml-auto"
-            >
-              {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+         </div>
+         <nav className="flex-1 px-4 space-y-1 mt-6">
+            <NavLink to="/dashboard" className={({isActive}) => `flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+              <LayoutDashboard size={20} /> {!isSidebarCollapsed && <span className="font-bold">Dashboard</span>}
+            </NavLink>
+            <NavLink to="/kanban" className={({isActive}) => `flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+              <Kanban size={20} /> {!isSidebarCollapsed && <span className="font-bold">Quadro</span>}
+            </NavLink>
+            <NavLink to="/table" className={({isActive}) => `flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+              <List size={20} /> {!isSidebarCollapsed && <span className="font-bold">Tabela</span>}
+            </NavLink>
+            <NavLink to="/calendar" className={({isActive}) => `flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+              <Calendar size={20} /> {!isSidebarCollapsed && <span className="font-bold">Calendário</span>}
+            </NavLink>
+            <NavLink to="/notes" className={({isActive}) => `flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+              <StickyNote size={20} /> {!isSidebarCollapsed && <span className="font-bold">Notas</span>}
+            </NavLink>
+            <NavLink to="/settings" className={({isActive}) => `flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+              <Settings size={20} /> {!isSidebarCollapsed && <span className="font-bold">Ajustes</span>}
+            </NavLink>
+         </nav>
+         <div className="p-4 border-t border-slate-800 space-y-2">
+            <button onClick={() => setIsProfileModalOpen(true)} className={`flex items-center gap-3 p-2 rounded-xl hover:bg-slate-800 w-full text-left transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+               <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center font-black text-white text-xs">{user.name.charAt(0)}</div>
+               {!isSidebarCollapsed && <span className="font-bold text-sm truncate">{user.name}</span>}
             </button>
-            {/* Mobile Close Button */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
-            >
-              <X size={20} />
+            <button onClick={onLogout} className={`flex items-center gap-3 p-2 rounded-xl text-red-400 hover:bg-slate-800 w-full transition-colors ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+               <LogOut size={20} /> {!isSidebarCollapsed && <span className="font-bold text-sm">Sair</span>}
             </button>
-          </div>
-          <nav className="flex-1 px-3 space-y-1 mt-6">
-            <NavLink to="/" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
-              <LayoutDashboard size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('dashboard')}</span>}
-            </NavLink>
-            <NavLink to="/board" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
-              <Kanban size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('kanban')}</span>}
-            </NavLink>
-            <NavLink to="/table" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
-              <List size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('table')}</span>}
-            </NavLink>
-            <NavLink to="/calendar" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
-              <Calendar size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('calendar')}</span>}
-            </NavLink>
-            <NavLink to="/notes" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
-              <StickyNote size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('notes')}</span>}
-            </NavLink>
-            <NavLink to="/settings" className={({isActive}) => `flex items-center gap-3 px-3 py-2.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'hover:bg-slate-800'} ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
-              <Settings size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('settings')}</span>}
-            </NavLink>
-            {/* PWA Install Button (Mobile/Desktop Prompt) */}
-            {deferredPrompt && (
-              <button 
-                onClick={handleInstallClick}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-emerald-400 hover:bg-slate-800 w-full text-left transition-colors border border-emerald-500/20 mt-4 ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}
-              >
-                <Download size={18} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span className="font-semibold text-sm">Instalar App</span>}
-              </button>
-            )}
-          </nav>
-          <div className="p-4 border-t border-slate-800">
-             <button onClick={() => setIsProfileModalOpen(true)} className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-800 w-full text-left ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
-                {user.avatar ? <img src={user.avatar} className="w-8 h-8 rounded-full shrink-0" /> : <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center font-bold shrink-0">{user.name.charAt(0)}</div>}
-                {(!isSidebarCollapsed || isMobileMenuOpen) && <div className="truncate"><p className="text-sm font-medium text-white">{user.name}</p></div>}
-             </button>
-             <button onClick={onLogout} className={`flex items-center gap-3 px-2 py-2 mt-2 rounded-lg text-red-400 hover:bg-slate-800 w-full ${isSidebarCollapsed && !isMobileMenuOpen ? 'justify-center' : ''}`}>
-               <LogOut size={20} /> {(!isSidebarCollapsed || isMobileMenuOpen) && <span>{t('logout')}</span>}
-             </button>
-          </div>
-        </aside>
+         </div>
+      </aside>
 
-        <main className="flex-1 flex flex-col h-full overflow-hidden">
-          <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 relative">
-             <div className="flex items-center gap-3">
-                 <button 
-                  onClick={() => setIsMobileMenuOpen(true)} 
-                  className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <Menu size={24} />
-                </button>
-                 <h2 className="text-lg md:text-xl font-semibold truncate">{t('projectOverview')}</h2>
-             </div>
-             <div className="flex items-center gap-2 md:gap-4">
-                {/* Notifications Button */}
-                <div className="relative">
-                    <button 
-                        onClick={() => setIsNotificationsOpen(!isNotificationsOpen)} 
-                        className={`p-2 relative hover:bg-slate-100 rounded-full transition-colors ${isNotificationsOpen ? 'bg-slate-100' : ''}`}
-                    >
-                        <Bell size={20} className={isNotificationsOpen ? 'text-indigo-600' : 'text-slate-600'} /> 
-                        {notifications.length > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
-                    </button>
-
-                    {/* Notifications Dropdown */}
-                    {isNotificationsOpen && (
-                        <>
-                            <div className="fixed inset-0 z-20" onClick={() => setIsNotificationsOpen(false)}></div>
-                            <div className="absolute top-full right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200 z-30 flex flex-col overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                                    <h3 className="font-bold text-slate-800">{t('notifications')}</h3>
-                                    <span className="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold">{notifications.length}</span>
-                                </div>
-                                <div className="overflow-y-auto max-h-[400px]">
-                                    {notifications.length === 0 ? (
-                                        <div className="p-8 text-center flex flex-col items-center gap-3">
-                                            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
-                                                <Bell size={24} />
-                                            </div>
-                                            <p className="text-sm text-slate-500">{t('noNotifications')}</p>
-                                        </div>
-                                    ) : (
-                                        <div className="divide-y divide-slate-100">
-                                            {notifications.map((n, idx) => (
-                                                <div 
-                                                    key={idx} 
-                                                    className="p-4 hover:bg-slate-50 transition-colors flex items-start gap-3 group cursor-pointer"
-                                                    onClick={() => { setEditingTask(n.task); setIsNotificationsOpen(false); }}
-                                                >
-                                                    <div className={`mt-1 p-1.5 rounded-lg shrink-0 ${
-                                                        n.type === 'overdue' ? 'bg-red-50 text-red-600' : 
-                                                        n.type === 'today' ? 'bg-amber-50 text-amber-600' : 
-                                                        'bg-indigo-50 text-indigo-600'
-                                                    }`}>
-                                                        {n.type === 'overdue' ? <AlertCircle size={14} /> : 
-                                                         n.type === 'today' ? <Clock size={14} /> : 
-                                                         <Calendar size={14} />}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="text-xs font-bold uppercase mb-0.5 tracking-wider truncate">
-                                                            {n.type === 'overdue' ? `${t('daysOverdue')}: ${n.days}` : 
-                                                             n.type === 'today' ? t('dueToday') : 
-                                                             `${t('dueInDays')} ${n.days} ${t('daysOld')}`}
-                                                        </p>
-                                                        <p className="text-sm font-semibold text-slate-800 truncate mb-1">{n.task.title}</p>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-xs text-slate-500">{new Date(n.task.dueDate).toLocaleDateString()}</span>
-                                                            <Edit3 size={12} className="text-slate-300 group-hover:text-indigo-500" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                                {notifications.length > 0 && (
-                                    <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                                        <button 
-                                            onClick={() => setIsNotificationsOpen(false)}
-                                            className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors"
-                                        >
-                                            FECHAR ALERTAS
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
-                </div>
-
-                <button onClick={() => { setEditingTask(undefined); setPrefilledDate(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium shadow-sm hover:bg-indigo-700 active:scale-95 transition-all">
-                  <Plus size={18} /> <span className="hidden sm:inline">{t('newTask')}</span>
-                </button>
-             </div>
-          </header>
-          <div className="flex-1 overflow-auto p-4 md:p-8">
+      <main className="flex-1 flex flex-col h-full">
+         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+            <h2 className="text-xl font-black text-slate-800">Workspace</h2>
+            <button onClick={() => { setEditingTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-5 py-2 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95">
+               <Plus size={18} /> Nova Tarefa
+            </button>
+         </header>
+         <div className="flex-1 overflow-auto p-8">
             <Routes>
-              <Route path="/" element={<Dashboard data={data} />} />
-              <Route path="/board" element={<KanbanBoard data={data} onDragEnd={handleDragEnd} onEditTask={setEditingTask} onDeleteTask={id => setDeleteIntent({type:'task',id})} />} />
-              <Route path="/table" element={<TableView data={data} onEditTask={setEditingTask} onDeleteTask={id => setDeleteIntent({type:'task',id})} />} />
-              <Route path="/calendar" element={<CalendarView data={data} onEditTask={setEditingTask} onAddTaskOnDate={(date) => { setPrefilledDate(date); setIsTaskModalOpen(true); }} />} />
-              <Route path="/notes" element={<NotesView data={data} onUpdate={loadData} />} />
-              <Route path="/settings" element={<SettingsView data={data} onAddColumn={DataService.addColumn} onUpdateColumn={DataService.updateColumn} onDeleteColumn={id => setDeleteIntent({type:'column',id})} onAddPriority={DataService.addPriority} onUpdatePriority={DataService.updatePriority} onDeletePriority={id => setDeleteIntent({type:'priority',id})} onAddAssignee={DataService.addAssignee} onDeleteAssignee={id => setDeleteIntent({type:'assignee',id})} onRestoreDefaults={loadData} />} />
+               <Route path="/dashboard" element={<Dashboard data={data} />} />
+               <Route path="/kanban" element={<KanbanBoard data={data} onDragEnd={handleDragEnd} onEditTask={setEditingTask} onDeleteTask={id => setDeleteIntent({type:'task', id})} />} />
+               <Route path="/table" element={<TableView data={data} onEditTask={setEditingTask} onDeleteTask={id => setDeleteIntent({type:'task', id})} />} />
+               <Route path="/calendar" element={<CalendarView data={data} onEditTask={setEditingTask} onAddTaskOnDate={(d) => setIsTaskModalOpen(true)} />} />
+               <Route path="/notes" element={<NotesView data={data} onUpdate={loadData} />} />
+               <Route path="/settings" element={<SettingsView data={data} onAddColumn={DataService.addColumn} onUpdateColumn={DataService.updateColumn} onDeleteColumn={DataService.deleteColumn} onAddPriority={DataService.addPriority} onUpdatePriority={DataService.updatePriority} onDeletePriority={DataService.deletePriority} onAddAssignee={DataService.addAssignee} onDeleteAssignee={DataService.deleteAssignee} onRestoreDefaults={loadData} />} />
+               <Route path="*" element={<Navigate to="/dashboard" />} />
             </Routes>
-          </div>
-        </main>
-      <TaskModal 
-        isOpen={isTaskModalOpen || !!editingTask} 
-        onClose={() => {setIsTaskModalOpen(false); setEditingTask(undefined); setPrefilledDate(undefined);}} 
-        onSubmit={handleSaveTask} 
-        initialData={editingTask || (prefilledDate ? { dueDate: prefilledDate } as Task : undefined)} 
-        boardData={data} 
-      />
+         </div>
+      </main>
+
+      <TaskModal isOpen={isTaskModalOpen || !!editingTask} onClose={() => { setIsTaskModalOpen(false); setEditingTask(undefined); }} onSubmit={handleSaveTask} initialData={editingTask} boardData={data} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} user={user} onUpdate={async (id, d) => onUpdateUser(await DataService.updateCurrentUser(id, d))} />
-      <ConfirmationModal isOpen={!!deleteIntent} onClose={() => setDeleteIntent(null)} onConfirm={executeDelete} title="Confirmar" message="Deseja excluir?" />
+      <ConfirmationModal isOpen={!!deleteIntent} onClose={() => setDeleteIntent(null)} onConfirm={executeDelete} title="Confirmar" message="Deseja excluir permanentemente?" />
     </div>
   );
 };
 
-// -- App Entry Point --
+// -- Root Component --
 const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -891,12 +491,12 @@ const App = () => {
     });
   }, []);
 
-  if (loading) return <div className="flex h-screen items-center justify-center bg-slate-50">Iniciando...</div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-white"><RefreshCw className="animate-spin text-indigo-600" size={48} /></div>;
 
   if (user) return (
     <HashRouter>
       <LanguageProvider>
-        <MainApp user={user} onLogout={() => setUser(null)} onUpdateUser={setUser} />
+        <MainApp user={user} onLogout={async () => { await DataService.logout(); setUser(null); }} onUpdateUser={setUser} />
       </LanguageProvider>
     </HashRouter>
   );
@@ -904,16 +504,9 @@ const App = () => {
   return (
     <LanguageProvider>
       {authView === 'landing' ? (
-        <LandingPage 
-          onGoToLogin={() => setAuthView('login')} 
-          onGoToSignup={() => setAuthView('signup')} 
-        />
+        <LandingPage onGoToLogin={() => setAuthView('login')} onGoToSignup={() => setAuthView('signup')} />
       ) : (
-        <Login 
-          initialMode={authView === 'signup' ? 'signup' : 'login'}
-          onLogin={setUser} 
-          onBackToHome={() => setAuthView('landing')} 
-        />
+        <AuthView initialMode={authView === 'signup' ? 'signup' : 'login'} onLogin={setUser} onBackToHome={() => setAuthView('landing')} />
       )}
     </LanguageProvider>
   );
