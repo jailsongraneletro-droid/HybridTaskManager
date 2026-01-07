@@ -45,6 +45,42 @@
       .scroll-smooth {
         scroll-behavior: smooth;
       }
+
+      /* Personalização da Barra de Rolagem (Scrollbar) */
+      /* Firefox */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+
+      /* Chrome, Edge e Safari */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8;
+      }
+
+      /* Barra de rolagem específica para a sidebar escura */
+      aside ::-webkit-scrollbar-thumb {
+        background-color: #475569;
+      }
+      aside ::-webkit-scrollbar-thumb:hover {
+        background-color: #64748b;
+      }
     </style>
   <script type="importmap">
 {
