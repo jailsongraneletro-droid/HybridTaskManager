@@ -25,7 +25,7 @@ const NOTE_COLORS = [
   { id: 'gray', bg: '#f1f5f9', border: '#cbd5e1' },
 ];
 
-const RICH_TEXT_STYLES = "outline-none min-h-[60px] text-slate-700 whitespace-pre-wrap [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-2 [&_h3]:text-lg [&_h3]:font-medium [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2 [&_li]:mb-0.5 empty:before:content-[attr(data-placeholder)] empty:before:text-slate-400";
+const RICH_TEXT_STYLES = "outline-none min-h-[60px] text-slate-700 whitespace-pre-wrap break-words [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-2 [&_h3]:text-lg [&_h3]:font-medium [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2 [&_li]:mb-0.5 empty:before:content-[attr(data-placeholder)] empty:before:text-slate-400";
 
 export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
   const { t } = useLanguage();
@@ -273,7 +273,7 @@ const NoteCard: React.FC<NoteCardProps> = ({ note, onDelete, onUpdate, t }) => {
     
     return (
         <div 
-            className="break-inside-avoid rounded-lg border shadow-sm hover:shadow-md transition-all group relative mb-4"
+            className="break-inside-avoid rounded-lg border shadow-sm hover:shadow-md transition-all group relative mb-4 overflow-hidden"
             style={{ backgroundColor: note.color, borderColor: NOTE_COLORS.find(c => c.bg === note.color)?.border || '#e2e8f0' }}
         >
             <div className="p-4" onClick={() => !isEditing && setIsEditing(true)}>
