@@ -39,8 +39,30 @@ const NotificationItem = ({ icon: Icon, color, title, time, onClick }: any) => (
 // -- Landing Page Component --
 const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, onGoToSignup: () => void }) => {
   const { t } = useLanguage();
+  
+  const features = [
+    { title: t('landingFeature1Title'), desc: t('landingFeature1Desc'), icon: Kanban, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { title: t('landingFeature2Title'), desc: t('landingFeature2Desc'), icon: BarChart3, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { title: t('landingFeature3Title'), desc: t('landingFeature3Desc'), icon: List, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { title: t('landingFeature4Title'), desc: t('landingFeature4Desc'), icon: StickyNote, color: 'text-rose-600', bg: 'bg-rose-50' }
+  ];
+
+  const steps = [
+    { id: '1', title: t('step1Title'), desc: t('step1Desc') },
+    { id: '2', title: t('step2Title'), desc: t('step2Desc') },
+    { id: '3', title: t('step3Title'), desc: t('step3Desc') },
+    { id: '4', title: t('step4Title'), desc: t('step4Desc') }
+  ];
+
+  const faqs = [
+    { q: t('landingFaq1Q'), a: t('landingFaq1A') },
+    { q: t('landingFaq2Q'), a: t('landingFaq2A') },
+    { q: t('landingFaq3Q'), a: t('landingFaq3A') }
+  ];
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 scroll-smooth">
+      {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -50,9 +72,9 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
             <span className="font-extrabold text-xl tracking-tight text-slate-900">HybridTask</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-bold text-slate-500 uppercase tracking-widest">
-             <a href="#ferramentas" className="hover:text-indigo-600 transition-colors">Ferramentas</a>
-             <a href="#manual" className="hover:text-indigo-600 transition-colors flex items-center gap-1.5"><BookOpen size={14} /> Ajuda</a>
-             <a href="#faq" className="hover:text-indigo-600 transition-colors">Suporte</a>
+             <a href="#ferramentas" className="hover:text-indigo-600 transition-colors">{t('landingHeroTitle').split(' ')[0]}</a>
+             <a href="#manual" className="hover:text-indigo-600 transition-colors flex items-center gap-1.5"><BookOpen size={14} /> {t('help')}</a>
+             <a href="#faq" className="hover:text-indigo-600 transition-colors">FAQ</a>
           </div>
           <div className="flex items-center gap-4">
             <button onClick={onGoToLogin} className="text-slate-600 font-bold hover:text-indigo-600 transition-colors px-4 py-2">{t('signIn')}</button>
@@ -61,6 +83,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </nav>
 
+      {/* Hero Section */}
       <section className="pt-48 pb-20 px-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-indigo-50 rounded-full blur-[120px] -z-10"></div>
         <div className="max-w-6xl mx-auto text-center">
@@ -68,11 +91,11 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
             <Sparkles size={14} /> PRODUTIVIDADE REIMAGINADA
           </div>
           <h1 className="text-6xl md:text-8xl font-black text-slate-900 mb-8 tracking-tighter leading-[0.95] animate-in fade-in slide-in-from-bottom-4 duration-700">
-            Domine seus projetos <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500">com clareza total.</span>
+            {t('landingHeroTitle').split(' ').slice(0, 2).join(' ')} <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500">{t('landingHeroTitle').split(' ').slice(2).join(' ')}</span>
           </h1>
           <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-12 leading-relaxed font-medium">
-            O único sistema que integra Kanban, Calendário, Tabelas e Notas em um fluxo de trabalho perfeito. Grátis, seguro e pronto para sua equipe.
+            {t('landingHeroSub')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <button onClick={onGoToSignup} className="w-full sm:w-auto px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-100 hover:-translate-y-1 active:scale-95 flex items-center gap-3">
@@ -85,8 +108,80 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
+      {/* Ferramentas / Benefícios */}
+      <section id="ferramentas" className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-black text-slate-900 mb-4">{t('landingBenefitsTitle')}</h2>
+            <p className="text-slate-500 font-medium max-w-xl mx-auto">Explore as ferramentas integradas que tornam o HybridTask a escolha inteligente para gestão.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((f, i) => (
+              <div key={i} className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all group">
+                <div className={`w-14 h-14 ${f.bg} ${f.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-inner group-hover:scale-110 transition-transform`}>
+                  <f.icon size={28} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">{f.title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Manual de Uso */}
+      <section id="manual" className="py-24 bg-white relative">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl font-black text-slate-900 mb-6">{t('userManualTitle')}</h2>
+            <p className="text-slate-500 font-bold text-lg">{t('userManualSub')}</p>
+          </div>
+
+          <div className="space-y-16">
+            {steps.map((s, i) => (
+              <div key={i} className="flex flex-col md:flex-row gap-8 items-start animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: `${i * 100}ms` }}>
+                <div className="w-16 h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 shadow-xl shadow-slate-200">
+                  {s.id}
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-black text-slate-800">{s.title}</h3>
+                  <p className="text-slate-500 leading-relaxed font-medium text-lg whitespace-pre-line">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="py-24 bg-slate-900 text-white">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-black mb-4">{t('landingFaqTitle')}</h2>
+            <p className="text-slate-400 font-medium">Tudo o que você precisa saber sobre o HybridTask.</p>
+          </div>
+          <div className="space-y-6">
+            {faqs.map((f, i) => (
+              <div key={i} className="bg-slate-800/50 p-8 rounded-3xl border border-slate-700 hover:border-indigo-500 transition-colors">
+                <h3 className="text-xl font-bold mb-3 flex items-center gap-3">
+                  <HelpCircle size={20} className="text-indigo-400" /> {f.q}
+                </h3>
+                <p className="text-slate-400 leading-relaxed">{f.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Simple Footer */}
       <footer className="py-12 border-t border-slate-100 bg-white">
         <div className="max-w-7xl mx-auto px-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Layout className="text-white w-4 h-4" />
+            </div>
+            <span className="font-extrabold text-lg text-slate-900 tracking-tight">HybridTask</span>
+          </div>
           <p className="text-slate-400 text-sm font-medium">© 2024 HybridTask Manager. Feito para quem faz acontecer.</p>
         </div>
       </footer>
