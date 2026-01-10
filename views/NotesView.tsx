@@ -3,7 +3,7 @@ import { BoardData, Note } from '../types';
 import { useLanguage } from '../utils/i18n';
 import { 
   Palette, Trash2, X, Plus, Bold, Italic, Underline, List as ListIcon, 
-  ListOrdered, Heading1, Heading2, AlertCircle, LayoutGrid, Rows3, RefreshCw 
+  ListOrdered, Heading1, Heading2, AlertCircle, LayoutGrid, Rows3, RefreshCw, Type 
 } from 'lucide-react';
 import { DataService } from '../services/dataService';
 import { ConfirmationModal } from '../components/Shared';
@@ -101,16 +101,18 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
                         <RichTextEditor content={newContent} onChange={setNewContent} placeholder={t('noteContent')} />
                     </div>
                     <div className="flex justify-between items-center px-2 py-2 border-t border-black/5">
-                        <button onClick={() => setShowColorPicker(!showColorPicker)} className="p-2 hover:bg-black/5 rounded-full text-slate-600 transition-colors">
-                            <Palette size={18} />
-                        </button>
-                        {showColorPicker && (
-                            <div className="absolute top-full left-0 mt-2 bg-white p-2 rounded-xl shadow-2xl border border-slate-100 grid grid-cols-4 gap-2 z-[100] w-48 animate-in zoom-in-95 duration-150">
-                                {NOTE_COLORS.map(c => (
-                                    <button key={c.id} onClick={() => { setNewColor(c.bg); setShowColorPicker(false); }} className={`w-8 h-8 rounded-full border hover:scale-110 transition-transform ${newColor === c.bg ? 'ring-2 ring-indigo-400' : ''}`} style={{ backgroundColor: c.bg, borderColor: c.border }} />
-                                ))}
-                            </div>
-                        )}
+                        <div className="relative">
+                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColorPicker(!showColorPicker); }} className="p-2 hover:bg-black/5 rounded-full text-slate-600 transition-colors">
+                                <Palette size={18} />
+                            </button>
+                            {showColorPicker && (
+                                <div className="absolute bottom-full left-0 mb-2 bg-white p-2 rounded-xl shadow-2xl border border-slate-100 grid grid-cols-4 gap-2 z-[100] w-48 animate-in zoom-in-95 duration-150">
+                                    {NOTE_COLORS.map(c => (
+                                        <button key={c.id} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setNewColor(c.bg); setShowColorPicker(false); }} className={`w-8 h-8 rounded-full border hover:scale-110 transition-transform ${newColor === c.bg ? 'ring-2 ring-indigo-400' : ''}`} style={{ backgroundColor: c.bg, borderColor: c.border }} />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                         <div className="flex gap-2">
                             <button onClick={() => setIsCreating(false)} className="px-3 py-1.5 text-slate-500 hover:text-slate-800 text-sm font-bold">Cancelar</button>
                             <button onClick={handleSaveNew} className="px-5 py-1.5 bg-indigo-600 text-white hover:bg-indigo-700 font-bold rounded-lg text-sm transition-all shadow-sm active:scale-95">{t('save')}</button>
@@ -153,6 +155,7 @@ const RichTextEditor: React.FC<{ content: string; onChange: (html: string) => vo
     const handleInput = () => { if (editorRef.current) onChange(editorRef.current.innerHTML); };
     const execCommand = (e: React.MouseEvent, command: string, value: string | undefined = undefined) => {
         e.preventDefault();
+        e.stopPropagation();
         document.execCommand(command, false, value);
         handleInput();
     };
@@ -164,8 +167,9 @@ const RichTextEditor: React.FC<{ content: string; onChange: (html: string) => vo
                 <ToolbarBtn icon={Italic} onClick={(e) => execCommand(e, 'italic')} />
                 <ToolbarBtn icon={Underline} onClick={(e) => execCommand(e, 'underline')} />
                 <div className="w-px h-4 bg-black/10 mx-1"></div>
-                <ToolbarBtn icon={Heading1} onClick={(e) => execCommand(e, 'formatBlock', 'H1')} />
-                <ToolbarBtn icon={Heading2} onClick={(e) => execCommand(e, 'formatBlock', 'H2')} />
+                <ToolbarBtn icon={Type} onClick={(e) => execCommand(e, 'formatBlock', 'P')} title="Texto Normal" />
+                <ToolbarBtn icon={Heading1} onClick={(e) => execCommand(e, 'formatBlock', 'H1')} title="Título 1" />
+                <ToolbarBtn icon={Heading2} onClick={(e) => execCommand(e, 'formatBlock', 'H2')} title="Título 2" />
                 <div className="w-px h-4 bg-black/10 mx-1"></div>
                 <ToolbarBtn icon={ListIcon} onClick={(e) => execCommand(e, 'insertUnorderedList')} />
                 <ToolbarBtn icon={ListOrdered} onClick={(e) => execCommand(e, 'insertOrderedList')} />
@@ -174,8 +178,10 @@ const RichTextEditor: React.FC<{ content: string; onChange: (html: string) => vo
     );
 };
 
-const ToolbarBtn = ({ icon: Icon, onClick }: { icon: any, onClick: (e: any) => void }) => (
-    <button onMouseDown={onClick} className="p-1.5 hover:bg-black/10 rounded text-slate-600 transition-colors"><Icon size={16} /></button>
+const ToolbarBtn = ({ icon: Icon, onClick, title }: { icon: any, onClick: (e: any) => void, title?: string }) => (
+    <button onMouseDown={onClick} title={title} className="p-1.5 hover:bg-black/10 rounded text-slate-600 transition-colors">
+        <Icon size={16} />
+    </button>
 );
 
 const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate: (n: Note, u: Partial<Note>) => void; t: any; isList: boolean; }> = ({ note, onDelete, onUpdate, t, isList }) => {
@@ -194,9 +200,12 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
             setIsSaving(false);
         }, 800);
         return () => clearTimeout(timer);
-    }, [title, content, isEditing]);
+    }, [title, content, isEditing, note, onUpdate]);
 
-    const handleColorUpdate = async (color: string) => { await onUpdate(note, { color }); setShowColors(false); };
+    const handleColorUpdate = async (color: string) => { 
+        setShowColors(false);
+        await onUpdate(note, { color }); 
+    };
     
     return (
         <div className={`rounded-xl border shadow-sm hover:shadow-md transition-all group relative overflow-hidden ${isList ? 'w-full' : 'break-inside-avoid mb-4'}`} style={{ backgroundColor: note.color, borderColor: NOTE_COLORS.find(c => c.bg === note.color)?.border || '#e2e8f0' }}>
@@ -222,16 +231,24 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
             </div>
             <div className={`flex items-center justify-between px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity border-t border-black/5 bg-black/5 ${isEditing ? 'opacity-100' : ''}`}>
                  <div className="flex items-center gap-1">
-                    <button onClick={(e) => { e.stopPropagation(); setShowColors(!showColors); }} className="p-2 hover:bg-black/10 rounded-full text-slate-600"><Palette size={16} /></button>
-                    {showColors && (
-                        <div className="absolute bottom-full left-0 mb-2 bg-white p-2 rounded-xl shadow-2xl border border-slate-100 grid grid-cols-4 gap-2 z-[110] w-48 animate-in zoom-in-95 duration-150">
-                            {NOTE_COLORS.map(c => ( <button key={c.id} onClick={(e) => { e.stopPropagation(); handleColorUpdate(c.bg); }} className="w-6 h-6 rounded-full border hover:scale-110 transition-transform" style={{ backgroundColor: c.bg, borderColor: c.border }} /> ))}
-                        </div>
-                    )}
-                    {!isEditing && <button onClick={(e) => { e.stopPropagation(); onDelete(note.id); }} className="p-2 hover:bg-black/10 rounded-full text-slate-600 hover:text-red-600"><Trash2 size={16} /></button>}
+                    <div className="relative">
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColors(!showColors); }} className="p-2 hover:bg-black/10 rounded-full text-slate-600">
+                            <Palette size={16} />
+                        </button>
+                        {showColors && (
+                            <div className="absolute bottom-full left-0 mb-2 bg-white p-2 rounded-xl shadow-2xl border border-slate-100 grid grid-cols-4 gap-2 z-[110] w-48 animate-in zoom-in-95 duration-150">
+                                {NOTE_COLORS.map(c => ( 
+                                    <button key={c.id} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleColorUpdate(c.bg); }} className="w-6 h-6 rounded-full border hover:scale-110 transition-transform" style={{ backgroundColor: c.bg, borderColor: c.border }} /> 
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                    {!isEditing && <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(note.id); }} className="p-2 hover:bg-black/10 rounded-full text-slate-600 hover:text-red-600"><Trash2 size={16} /></button>}
                  </div>
                  {isEditing ? (
-                     <button onClick={(e) => { e.stopPropagation(); setIsEditing(false); onUpdate(note, { title, content }); }} className="text-xs font-bold px-4 py-1.5 bg-black/10 hover:bg-black/20 rounded-lg text-slate-700 transition-colors">Fechar</button>
+                     <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); onUpdate(note, { title, content }); }} className="text-xs font-bold px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white transition-colors shadow-sm">
+                         Fechar e Salvar
+                     </button>
                  ) : ( <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{new Date(note.createdAt).toLocaleDateString()}</span> )}
             </div>
         </div>
