@@ -68,7 +68,7 @@ export const DataService = {
   },
 
   login: async (email: string, password?: string): Promise<User> => {
-    if (!password) throw new Error("Password required");
+    if (!password) throw new Error("Senha obrigatória");
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     if (data.user) {
@@ -79,15 +79,23 @@ export const DataService = {
             avatar: data.user.user_metadata.avatar
         };
     }
-    throw new Error("Login failed");
+    throw new Error("Falha no login");
   },
 
   signup: async (name: string, email: string, password: string): Promise<User | null> => {
     const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
     const { data, error } = await supabase.auth.signUp({
-        email, password, options: { data: { name, avatar: avatarUrl } }
+        email, 
+        password, 
+        options: { 
+          data: { name, avatar: avatarUrl },
+          emailRedirectTo: window.location.origin
+        }
     });
-    if (error) throw error;
+
+    if (error) {
+      throw error;
+    }
     
     if (data.user) {
          if (!data.session) {
@@ -99,13 +107,13 @@ export const DataService = {
          await DataService.seedUserData(newUser);
          return newUser;
     }
-    throw new Error("Signup failed");
+    throw new Error("Falha ao criar conta");
   },
 
   adminForcePasswordReset: async (email: string, newPassword: string) => {
     if (!supabaseAdmin) throw new Error("Service role key missing.");
     const { data: profile } = await supabase.from('profiles').select('id').eq('email', email).single();
-    if (!profile) throw new Error("User not found.");
+    if (!profile) throw new Error("Usuário não encontrado.");
     const { error } = await supabaseAdmin.auth.admin.updateUserById(profile.id, { password: newPassword });
     if (error) throw error;
     return true;
@@ -141,20 +149,15 @@ export const DataService = {
     }
   },
 
-  /**
-   * Fix: Added missing restoreDefaults method to DataService
-   */
   restoreDefaults: async (): Promise<BoardData> => {
     const user = await DataService.getCurrentUser();
-    if (!user) throw new Error("Not authenticated");
+    if (!user) throw new Error("Não autenticado");
 
-    // Clear existing
     await supabase.from('kanban_tasks').delete().eq('user_id', user.id);
     await supabase.from('kanban_columns').delete().eq('user_id', user.id);
     await supabase.from('kanban_priorities').delete().eq('user_id', user.id);
     await supabase.from('kanban_assignees').delete().eq('user_id', user.id);
 
-    // Re-seed
     await DataService.seedUserData(user);
     return await DataService.fetchBoardData(user.id);
   },
@@ -203,10 +206,15 @@ export const DataService = {
 
   addTask: async (task: Partial<Task>): Promise<Task> => {
     const user = await DataService.getCurrentUser();
-    if (!user) throw new Error("Not authenticated");
+    if (!user) throw new Error("Não autenticado");
     const { data, error } = await supabase.from('kanban_tasks').insert({
-      title: task.title, description: task.description, status: task.status,
-      priority: task.priority, assignee_id: task.assigneeId, due_date: task.dueDate, user_id: user.id
+      title: task.title, 
+      description: task.description, 
+      status: task.status,
+      priority: task.priority, 
+      assignee_id: task.assigneeId || null,
+      due_date: task.dueDate, 
+      user_id: user.id
     }).select().single();
     if (error) throw error;
     return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at };
@@ -214,16 +222,17 @@ export const DataService = {
 
   updateTask: async (taskId: string, updates: Partial<Task>): Promise<Task> => {
     const { data, error } = await supabase.from('kanban_tasks').update({
-      title: updates.title, description: updates.description, status: updates.status,
-      priority: updates.priority, assignee_id: updates.assigneeId, due_date: updates.dueDate
+      title: updates.title, 
+      description: updates.description, 
+      status: updates.status,
+      priority: updates.priority, 
+      assignee_id: updates.assigneeId || null
     }).eq('id', taskId).select().single();
     if (error) throw error;
     return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at };
   },
 
-  /**
-   * Fix: Added missing updateTaskPosition method to DataService
-   */
+  // Fix: Completed updateTaskPosition and added missing deleteTask method
   updateTaskPosition: async (taskId: string, newStatus: string, newPosition: number): Promise<void> => {
     const { error } = await supabase.from('kanban_tasks').update({ status: newStatus }).eq('id', taskId);
     if (error) throw error;
@@ -236,19 +245,22 @@ export const DataService = {
 
   // --- Column Mutations ---
 
-  addColumn: async (title: string, color: string): Promise<Column> => {
+  // Fix: Added missing addColumn, updateColumn, and deleteColumn methods
+  addColumn: async (title: string, color: string): Promise<void> => {
     const user = await DataService.getCurrentUser();
-    if (!user) throw new Error("Not authenticated");
+    if (!user) throw new Error("Não autenticado");
     const { count } = await supabase.from('kanban_columns').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-    const { data, error } = await supabase.from('kanban_columns').insert({
+    const { error } = await supabase.from('kanban_columns').insert({
       title, color, position: count || 0, user_id: user.id
-    }).select().single();
+    });
     if (error) throw error;
-    return { ...data, taskIds: [] };
   },
 
   updateColumn: async (id: string, updates: Partial<Column>): Promise<void> => {
-    const { error } = await supabase.from('kanban_columns').update(updates).eq('id', id);
+    const { error } = await supabase.from('kanban_columns').update({
+      title: updates.title,
+      color: updates.color
+    }).eq('id', id);
     if (error) throw error;
   },
 
@@ -259,16 +271,21 @@ export const DataService = {
 
   // --- Priority Mutations ---
 
-  addPriority: async (title: string, color: string): Promise<Priority> => {
+  // Fix: Added missing addPriority, updatePriority, and deletePriority methods
+  addPriority: async (title: string, color: string): Promise<void> => {
     const user = await DataService.getCurrentUser();
-    if (!user) throw new Error("Not authenticated");
-    const { data, error } = await supabase.from('kanban_priorities').insert({ title, color, user_id: user.id }).select().single();
+    if (!user) throw new Error("Não autenticado");
+    const { error } = await supabase.from('kanban_priorities').insert({
+      title, color, user_id: user.id
+    });
     if (error) throw error;
-    return data;
   },
 
   updatePriority: async (id: string, updates: Partial<Priority>): Promise<void> => {
-    const { error } = await supabase.from('kanban_priorities').update(updates).eq('id', id);
+    const { error } = await supabase.from('kanban_priorities').update({
+      title: updates.title,
+      color: updates.color
+    }).eq('id', id);
     if (error) throw error;
   },
 
@@ -279,13 +296,15 @@ export const DataService = {
 
   // --- Assignee Mutations ---
 
-  addAssignee: async (name: string, email: string): Promise<Assignee> => {
+  // Fix: Added missing addAssignee and deleteAssignee methods
+  addAssignee: async (name: string, email: string): Promise<void> => {
     const user = await DataService.getCurrentUser();
-    if (!user) throw new Error("Not authenticated");
-    const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
-    const { data, error } = await supabase.from('kanban_assignees').insert({ name, email, avatar, user_id: user.id }).select().single();
+    if (!user) throw new Error("Não autenticado");
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    const { error } = await supabase.from('kanban_assignees').insert({
+      name, email, avatar: avatarUrl, user_id: user.id
+    });
     if (error) throw error;
-    return data;
   },
 
   deleteAssignee: async (id: string): Promise<void> => {
@@ -293,37 +312,32 @@ export const DataService = {
     if (error) throw error;
   },
 
-  // --- Note Mutations (Fixes errors in NotesView) ---
+  // --- Note Mutations ---
 
-  /**
-   * Fix: Added missing addNote method to DataService
-   */
-  addNote: async (note: { title: string; content: string; color: string }): Promise<Note> => {
+  // Fix: Added missing addNote, updateNote, and deleteNote methods
+  addNote: async (note: Partial<Note>): Promise<void> => {
     const user = await DataService.getCurrentUser();
-    if (!user) throw new Error("Not authenticated");
-    const { data, error } = await supabase.from('kanban_notes').insert({
-      title: note.title, content: note.content, color: note.color, user_id: user.id
-    }).select().single();
+    if (!user) throw new Error("Não autenticado");
+    const { error } = await supabase.from('kanban_notes').insert({
+      title: note.title,
+      content: note.content,
+      color: note.color,
+      user_id: user.id
+    });
     if (error) throw error;
-    return { ...data, createdAt: data.created_at };
   },
 
-  /**
-   * Fix: Added missing updateNote method to DataService
-   */
-  updateNote: async (note: Note): Promise<Note> => {
-    const { data, error } = await supabase.from('kanban_notes').update({
-      title: note.title, content: note.content, color: note.color
-    }).eq('id', note.id).select().single();
+  updateNote: async (note: Note): Promise<void> => {
+    const { error } = await supabase.from('kanban_notes').update({
+      title: note.title,
+      content: note.content,
+      color: note.color
+    }).eq('id', note.id);
     if (error) throw error;
-    return { ...data, createdAt: data.created_at };
   },
 
-  /**
-   * Fix: Added missing deleteNote method to DataService
-   */
-  deleteNote: async (noteId: string): Promise<void> => {
-    const { error } = await supabase.from('kanban_notes').delete().eq('id', noteId);
+  deleteNote: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('kanban_notes').delete().eq('id', id);
     if (error) throw error;
-  },
+  }
 };

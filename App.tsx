@@ -4,7 +4,7 @@ import {
   Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, Bell, Calendar, 
   Kanban, List, ArrowLeft, Menu, X, RefreshCw, StickyNote, Activity, Layers, 
   ChevronFirst, ChevronLast, Sun, Moon, AlertCircle, CheckCircle2, Sparkles, ArrowRight,
-  BarChart3, ShieldCheck, Zap, BookOpen, Smartphone, Shield, Target, Users
+  BarChart3, ShieldCheck, Zap, BookOpen, Smartphone, Shield, Target, Users, Search as SearchIcon
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User } from './types';
@@ -40,43 +40,43 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
   
   const features = [
     { 
-      title: "Quadro Kanban Inteligente", 
-      desc: "Otimize seu fluxo de trabalho com nosso quadro Kanban dinâmico. Gerencie backlogs, sprints e tarefas em tempo real com a funcionalidade drag-and-drop, ideal para metodologias ágeis como Scrum e Lean.", 
+      title: "Kanban Ágil Profissional", 
+      desc: "Workflow visual completo com drag-and-drop. Gerencie backlogs e sprints com colunas customizáveis, etiquetas de prioridade e prazos dinâmicos para máxima eficiência em metodologias ágeis.", 
       icon: Kanban, 
       color: 'text-indigo-600', 
       bg: 'bg-indigo-50 dark:bg-indigo-900/20' 
     },
     { 
-      title: "Analytics e Performance", 
-      desc: "Visualize o progresso da sua equipe com dashboards analíticos avançados. Monitore taxas de conclusão, identifique gargalos em status específicos e tome decisões baseadas em dados reais de produtividade.", 
+      title: "Business Intelligence Integrado", 
+      desc: "Visualize o desempenho com dashboards de analytics. Monitore taxas de conclusão, gargalos no fluxo de trabalho e KPIs de produtividade em tempo real para decisões baseadas em dados.", 
       icon: BarChart3, 
       color: 'text-emerald-600', 
       bg: 'bg-emerald-50 dark:bg-emerald-900/20' 
     },
     { 
-      title: "Tabelas de Dados Avançadas", 
-      desc: "Para projetos com centenas de tarefas, utilize nossa visualização em tabela. Filtre por prioridade, responsável ou data de vencimento com a rapidez de uma planilha, mas com o poder de um banco de dados.", 
+      title: "Tabelas Dinâmicas de Gestão", 
+      desc: "Controle centenas de tarefas com a precisão de um banco de dados. Filtros multicritério, busca instantânea e agrupamentos por responsável ou status para uma visão clara de grandes projetos.", 
       icon: List, 
       color: 'text-amber-600', 
       bg: 'bg-amber-50 dark:bg-amber-900/20' 
     },
     { 
-      title: "Notas e Documentação", 
-      desc: "Mantenha toda a documentação do projeto, atas de reunião e brainstorms vinculados às suas tarefas. Nosso editor Rich Text permite organizar ideias de forma visual e colorida para fácil referência.", 
+      title: "Documentação e Notas Ricas", 
+      desc: "Centralize o conhecimento. Editor de texto rico para atas de reunião, wikis de projeto e brainstorms vinculados às tarefas, mantendo toda a memória do projeto em um só lugar.", 
       icon: StickyNote, 
       color: 'text-rose-600', 
       bg: 'bg-rose-50 dark:bg-rose-900/20' 
     },
     { 
-      title: "Calendário de Prazos", 
-      desc: "Nunca perca um deadline. A visualização de calendário permite planejar cronogramas mensais e semanais, garantindo que a carga de trabalho esteja distribuída de forma equilibrada entre os dias.", 
+      title: "Calendário e Cronogramas", 
+      desc: "Planeje seus marcos críticos com visualização de calendário. Antecipe conflitos de agenda, organize prazos semanais e garanta que cada deadline seja cumprido sem sobrecarga de equipe.", 
       icon: Calendar, 
       color: 'text-blue-600', 
       bg: 'bg-blue-50 dark:bg-blue-900/20' 
     },
     { 
-      title: "Gestão de Colaboradores", 
-      desc: "Atribua responsáveis específicos para cada micro-tarefa. O HybridTask facilita a delegação de funções e garante que cada membro da equipe saiba exatamente no que focar para atingir os objetivos.", 
+      title: "Sincronização Cloud em Real-time", 
+      desc: "Colaboração sem fronteiras. Cloud Sync instantâneo que mantém toda a equipe alinhada, com atualizações de status em tempo real e gestão centralizada de responsáveis e permissões.", 
       icon: Users, 
       color: 'text-violet-600', 
       bg: 'bg-violet-50 dark:bg-violet-900/20' 
@@ -94,10 +94,9 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
     { q: t('landingFaq1Q'), a: t('landingFaq1A') },
     { q: t('landingFaq2Q'), a: t('landingFaq2A') },
     { q: t('landingFaq3Q'), a: t('landingFaq3A') },
-    { q: "O sistema possui modo escuro?", a: "Sim! O HybridTask foi desenvolvido com suporte nativo ao modo escuro (Dark Mode) para reduzir o cansaço visual durante longas jornadas de trabalho." }
+    { q: "O sistema possui modo escuro?", a: "Sim! O HybridTask oferece suporte completo ao modo escuro para reduzir o cansaço visual e se adaptar às suas preferências de ambiente de trabalho." }
   ];
 
-  // Função para scroll suave manual caso os links de âncora falhem em algum navegador
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -109,16 +108,16 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans scroll-smooth transition-colors">
       <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-900 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
               <Layout className="text-white w-4 h-4" />
             </div>
             <span className="font-extrabold text-lg tracking-tight uppercase">HybridTask</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-             <button onClick={() => scrollTo('ferramentas')} className="hover:text-indigo-600 transition-colors uppercase">Recursos</button>
-             <button onClick={() => scrollTo('manual')} className="hover:text-indigo-600 transition-colors uppercase">Manual</button>
-             <button onClick={() => scrollTo('faq')} className="hover:text-indigo-600 transition-colors uppercase">Dúvidas</button>
+             <button onClick={() => scrollTo('ferramentas')} className="hover:text-indigo-600 transition-colors">Recursos</button>
+             <button onClick={() => scrollTo('manual')} className="hover:text-indigo-600 transition-colors">Manual</button>
+             <button onClick={() => scrollTo('faq')} className="hover:text-indigo-600 transition-colors">Dúvidas</button>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={onGoToLogin} className="text-slate-600 dark:text-slate-400 font-bold hover:text-indigo-600 px-3 py-1.5 text-xs">{t('signIn')}</button>
@@ -132,13 +131,13 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
       <section className="pt-32 pb-16 px-6 relative overflow-hidden text-center">
         <div className="max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[9px] font-black tracking-widest mb-6 uppercase border border-indigo-100">
-            <Sparkles size={12} /> Produtividade Re-imaginada
+            <Sparkles size={12} /> Produtividade Máxima
           </div>
           <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tighter leading-tight dark:text-white">
-            {t('landingHeroTitle')}
+            Gerencie Projetos com <span className="text-indigo-600">Alta Performance</span>
           </h1>
           <p className="text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10 font-medium leading-relaxed">
-            {t('landingHeroSub')}
+            Organize seu fluxo ágil, visualize métricas em dashboards de BI e mantenha sua documentação sincronizada em uma única plataforma cloud.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button onClick={onGoToSignup} className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-base hover:bg-indigo-700 transition-all shadow-xl flex items-center justify-center gap-3 glow-effect">
@@ -151,8 +150,8 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
       <section id="ferramentas" className="py-20 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">Recursos para Projetos de Alta Performance</h2>
-            <p className="text-slate-500 max-w-xl mx-auto text-sm font-medium">Tudo o que você precisa para gerenciar equipes modernas em um único ecossistema integrado.</p>
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight uppercase">Recursos do Ecossistema</h2>
+            <p className="text-slate-500 max-w-xl mx-auto text-sm font-medium">Tudo o que gestores modernos precisam para organizar fluxos de trabalho e equipes de alta entrega.</p>
             <div className="h-1 w-12 bg-indigo-600 mx-auto rounded-full mt-6"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -174,7 +173,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
           <div className="flex flex-col md:flex-row items-start gap-12">
             <div className="md:w-1/2">
                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black tracking-widest uppercase mb-4 border border-emerald-100">
-                 <BookOpen size={12} /> Guia de Utilização
+                 <BookOpen size={12} /> Guia de Domínio
                </div>
                <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-6 tracking-tighter leading-tight">{t('userManualTitle')}</h2>
                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-8">{t('userManualSub')}</p>
@@ -196,16 +195,16 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
-      <section id="faq" className="py-24 bg-slate-50 dark:bg-slate-900/30">
+      <section id="faq" className="py-24 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-100 dark:border-slate-800">
         <div className="max-w-3xl mx-auto px-6">
            <div className="text-center mb-12">
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">{t('landingFaqTitle')}</h2>
-              <p className="text-slate-500 font-bold uppercase text-[9px] tracking-widest">Respostas para as dúvidas comuns</p>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">Dúvidas Frequentes (FAQ)</h2>
+              <p className="text-slate-500 font-bold uppercase text-[9px] tracking-widest">Respostas Rápidas para Perguntas Comuns</p>
            </div>
            <div className="space-y-4">
               {faqs.map((faq, i) => (
-                <div key={i} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
-                   <h3 className="text-sm font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                <div key={i} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm hover:border-indigo-200 transition-colors group">
+                   <h3 className="text-sm font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2 group-hover:text-indigo-600 uppercase tracking-tight">
                       <Target size={14} className="text-indigo-500" />
                       {faq.q}
                    </h3>
@@ -224,8 +223,8 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
             </div>
             <span className="font-extrabold text-lg tracking-tight uppercase dark:text-white">HybridTask</span>
           </div>
-          <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest">
-            © 2025 HybridTask Manager. Desenvolvido por <a href="https://wa.me/+5513985994965" target="_blank" className="text-indigo-600 font-bold hover:underline">JR Marketing</a>
+          <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest text-center">
+            © 2025 HybridTask Manager. Desenvolvido com excelência pela <a href="https://wa.me/+5513985994965" target="_blank" className="text-indigo-600 font-bold hover:underline">JR Marketing</a>
           </p>
         </div>
       </footer>
@@ -241,32 +240,63 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
+
+  const getErrorMessage = (err: any): string => {
+    if (typeof err === 'string') return err;
+    if (err?.message) return String(err.message);
+    return String(err);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setLoading(true);
+
     try {
       if (mode === 'login') {
         const user = await DataService.login(email, password);
         onLogin(user);
       } else {
-        const user = await DataService.signup(name, email, password);
-        if (user) onLogin(user);
+        try {
+          await DataService.signup(name, email, password);
+          setSuccessMessage("Cadastro realizado com sucesso! Enviamos um e-mail de confirmação para você. Por favor, ative sua conta antes de tentar entrar.");
+          setMode('login');
+          setName('');
+          setPassword('');
+        } catch (signupErr: any) {
+          const errMsg = getErrorMessage(signupErr);
+          
+          if (errMsg === 'CONFIRM_EMAIL') {
+            setSuccessMessage("Cadastro realizado! Por favor, verifique seu e-mail para ativar sua conta.");
+            setMode('login');
+            setName('');
+            setPassword('');
+          } else if (errMsg.toLowerCase().includes('already registered') || errMsg.toLowerCase().includes('already exists')) {
+            setError("Este e-mail já possui uma conta cadastrada. Tente fazer o login ou recupere sua senha.");
+          } else {
+            // Rethrow unhandled signup errors to the outer catch
+            throw signupErr;
+          }
+        }
       }
     } catch (err: any) {
-      setError(err.message === 'CONFIRM_EMAIL' ? t('checkEmail') : (err.message || t('loginError')));
+      const finalMsg = getErrorMessage(err);
+      if (finalMsg !== 'CONFIRM_EMAIL') {
+        setError(finalMsg || t('loginError'));
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const inputClasses = "w-full px-4 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder-slate-400 text-sm font-medium";
+  const inputClasses = "w-full px-4 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder-slate-400 text-sm font-medium shadow-inner";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 w-full max-w-md animate-in fade-in zoom-in duration-300">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-md animate-in fade-in zoom-in duration-300">
         <button onClick={onBackToHome} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 text-[10px] mb-8 transition-colors font-black uppercase tracking-widest">
           <ArrowLeft size={14} /> {t('landingBackToHome')}
         </button>
@@ -280,11 +310,25 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
            </h2>
         </div>
 
+        {successMessage && (
+            <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
+                <CheckCircle2 size={18} className="shrink-0" />
+                <span>{successMessage}</span>
+            </div>
+        )}
+
+        {error && (
+            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold rounded-xl flex items-start gap-3 animate-in shake duration-300">
+                <AlertCircle size={18} className="shrink-0" />
+                <span>{error}</span>
+            </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
             <div>
               <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('name')}</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClasses} placeholder="Seu nome" required />
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClasses} placeholder="Seu nome completo" required={mode === 'signup'} />
             </div>
           )}
           <div>
@@ -296,14 +340,14 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} className={inputClasses} placeholder="••••••••" required />
           </div>
 
-          <button disabled={loading} className="w-full bg-indigo-600 text-white font-black py-4 rounded-xl hover:bg-indigo-700 shadow-lg disabled:opacity-50 transition-all active:scale-[0.98] glow-effect mt-2 text-sm uppercase tracking-widest">
-            {loading ? <RefreshCw className="animate-spin mx-auto" size={18} /> : (mode === 'login' ? t('signIn') : t('signUp'))}
+          <button disabled={loading} className="w-full bg-indigo-600 text-white font-black py-4 rounded-xl hover:bg-indigo-700 shadow-xl disabled:opacity-50 transition-all active:scale-[0.98] glow-effect mt-2 text-xs uppercase tracking-widest">
+            {loading ? <RefreshCw className="animate-spin mx-auto" size={18} /> : (mode === 'login' ? t('signIn') : "Criar Minha Conta Grátis")}
           </button>
         </form>
 
-        <p className="text-center mt-8 text-slate-500 dark:text-slate-400 text-xs font-medium">
+        <p className="text-center mt-8 text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wide">
           {mode === 'login' ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
-          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-indigo-600 dark:text-indigo-400 font-black hover:underline underline-offset-4">
+          <button onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setSuccessMessage(''); }} className="text-indigo-600 dark:text-indigo-400 font-black hover:underline underline-offset-4 ml-1">
              {mode === 'login' ? t('signUp') : t('signIn')}
           </button>
         </p>
@@ -395,7 +439,7 @@ const AppContent = () => {
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950">
       <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl animate-bounce mb-4"><Layout className="text-white" size={24} /></div>
-      <div className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Carregando...</div>
+      <div className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Sincronizando...</div>
     </div>
   );
 
