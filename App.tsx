@@ -4,7 +4,7 @@ import {
   Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, Bell, Calendar, 
   Kanban, List, ArrowLeft, Menu, X, RefreshCw, StickyNote, Activity, Layers, 
   ChevronFirst, ChevronLast, Sun, Moon, AlertCircle, CheckCircle2, Sparkles, ArrowRight,
-  BarChart3, ShieldCheck, Zap, BookOpen, Smartphone, Shield
+  BarChart3, ShieldCheck, Zap, BookOpen, Smartphone, Shield, Target, Users
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User } from './types';
@@ -39,10 +39,48 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
   const { t } = useLanguage();
   
   const features = [
-    { title: t('landingFeature1Title'), desc: t('landingFeature1Desc'), icon: Kanban, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
-    { title: t('landingFeature2Title'), desc: t('landingFeature2Desc'), icon: BarChart3, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-    { title: t('landingFeature3Title'), desc: t('landingFeature3Desc'), icon: List, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { title: t('landingFeature4Title'), desc: t('landingFeature4Desc'), icon: StickyNote, color: 'text-rose-600', bg: 'bg-rose-50 dark:bg-rose-900/20' }
+    { 
+      title: "Quadro Kanban Inteligente", 
+      desc: "Otimize seu fluxo de trabalho com nosso quadro Kanban dinâmico. Gerencie backlogs, sprints e tarefas em tempo real com a funcionalidade drag-and-drop, ideal para metodologias ágeis como Scrum e Lean.", 
+      icon: Kanban, 
+      color: 'text-indigo-600', 
+      bg: 'bg-indigo-50 dark:bg-indigo-900/20' 
+    },
+    { 
+      title: "Analytics e Performance", 
+      desc: "Visualize o progresso da sua equipe com dashboards analíticos avançados. Monitore taxas de conclusão, identifique gargalos em status específicos e tome decisões baseadas em dados reais de produtividade.", 
+      icon: BarChart3, 
+      color: 'text-emerald-600', 
+      bg: 'bg-emerald-50 dark:bg-emerald-900/20' 
+    },
+    { 
+      title: "Tabelas de Dados Avançadas", 
+      desc: "Para projetos com centenas de tarefas, utilize nossa visualização em tabela. Filtre por prioridade, responsável ou data de vencimento com a rapidez de uma planilha, mas com o poder de um banco de dados.", 
+      icon: List, 
+      color: 'text-amber-600', 
+      bg: 'bg-amber-50 dark:bg-amber-900/20' 
+    },
+    { 
+      title: "Notas e Documentação", 
+      desc: "Mantenha toda a documentação do projeto, atas de reunião e brainstorms vinculados às suas tarefas. Nosso editor Rich Text permite organizar ideias de forma visual e colorida para fácil referência.", 
+      icon: StickyNote, 
+      color: 'text-rose-600', 
+      bg: 'bg-rose-50 dark:bg-rose-900/20' 
+    },
+    { 
+      title: "Calendário de Prazos", 
+      desc: "Nunca perca um deadline. A visualização de calendário permite planejar cronogramas mensais e semanais, garantindo que a carga de trabalho esteja distribuída de forma equilibrada entre os dias.", 
+      icon: Calendar, 
+      color: 'text-blue-600', 
+      bg: 'bg-blue-50 dark:bg-blue-900/20' 
+    },
+    { 
+      title: "Gestão de Colaboradores", 
+      desc: "Atribua responsáveis específicos para cada micro-tarefa. O HybridTask facilita a delegação de funções e garante que cada membro da equipe saiba exatamente no que focar para atingir os objetivos.", 
+      icon: Users, 
+      color: 'text-violet-600', 
+      bg: 'bg-violet-50 dark:bg-violet-900/20' 
+    }
   ];
 
   const steps = [
@@ -55,8 +93,17 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
   const faqs = [
     { q: t('landingFaq1Q'), a: t('landingFaq1A') },
     { q: t('landingFaq2Q'), a: t('landingFaq2A') },
-    { q: t('landingFaq3Q'), a: t('landingFaq3A') }
+    { q: t('landingFaq3Q'), a: t('landingFaq3A') },
+    { q: "O sistema possui modo escuro?", a: "Sim! O HybridTask foi desenvolvido com suporte nativo ao modo escuro (Dark Mode) para reduzir o cansaço visual durante longas jornadas de trabalho." }
   ];
+
+  // Função para scroll suave manual caso os links de âncora falhem em algum navegador
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans scroll-smooth transition-colors">
@@ -69,9 +116,9 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
             <span className="font-extrabold text-lg tracking-tight uppercase">HybridTask</span>
           </div>
           <div className="hidden md:flex items-center gap-6 text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-             <a href="#ferramentas" className="hover:text-indigo-600 transition-colors">Recursos</a>
-             <a href="#manual" className="hover:text-indigo-600 transition-colors">Manual</a>
-             <a href="#faq" className="hover:text-indigo-600 transition-colors">Dúvidas</a>
+             <button onClick={() => scrollTo('ferramentas')} className="hover:text-indigo-600 transition-colors uppercase">Recursos</button>
+             <button onClick={() => scrollTo('manual')} className="hover:text-indigo-600 transition-colors uppercase">Manual</button>
+             <button onClick={() => scrollTo('faq')} className="hover:text-indigo-600 transition-colors uppercase">Dúvidas</button>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={onGoToLogin} className="text-slate-600 dark:text-slate-400 font-bold hover:text-indigo-600 px-3 py-1.5 text-xs">{t('signIn')}</button>
@@ -87,10 +134,10 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[9px] font-black tracking-widest mb-6 uppercase border border-indigo-100">
             <Sparkles size={12} /> Produtividade Re-imaginada
           </div>
-          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter leading-tight dark:text-white">
+          <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tighter leading-tight dark:text-white">
             {t('landingHeroTitle')}
           </h1>
-          <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10 font-medium leading-relaxed">
+          <p className="text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10 font-medium leading-relaxed">
             {t('landingHeroSub')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -101,50 +148,71 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
-      <section id="ferramentas" className="py-16 bg-slate-50 dark:bg-slate-900/30">
+      <section id="ferramentas" className="py-20 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">{t('landingBenefitsTitle')}</h2>
-            <div className="h-1 w-16 bg-indigo-600 mx-auto rounded-full"></div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">Recursos para Projetos de Alta Performance</h2>
+            <p className="text-slate-500 max-w-xl mx-auto text-sm font-medium">Tudo o que você precisa para gerenciar equipes modernas em um único ecossistema integrado.</p>
+            <div className="h-1 w-12 bg-indigo-600 mx-auto rounded-full mt-6"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((f, i) => (
               <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group">
                  <div className={`w-12 h-12 ${f.bg} rounded-xl flex items-center justify-center ${f.color} mb-6 group-hover:scale-110 transition-transform`}>
                    <f.icon size={24} />
                  </div>
                  <h3 className="text-lg font-black text-slate-800 dark:text-white mb-3 tracking-tight">{f.title}</h3>
-                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{f.desc}</p>
+                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="manual" className="py-20">
+      <section id="manual" className="py-24">
         <div className="max-w-5xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-start gap-12">
             <div className="md:w-1/2">
                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black tracking-widest uppercase mb-4 border border-emerald-100">
-                 <BookOpen size={12} /> Passo a Passo
+                 <BookOpen size={12} /> Guia de Utilização
                </div>
                <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-6 tracking-tighter leading-tight">{t('userManualTitle')}</h2>
-               <p className="text-base text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-8">{t('userManualSub')}</p>
+               <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-8">{t('userManualSub')}</p>
             </div>
-            <div className="md:w-1/2 space-y-8">
+            <div className="md:w-1/2 space-y-6">
               {steps.map((s, i) => (
                 <div key={i} className="flex gap-4">
-                   <div className="w-10 h-10 bg-slate-900 dark:bg-indigo-600 text-white rounded-xl flex items-center justify-center font-black text-lg shrink-0">
+                   <div className="w-8 h-8 bg-slate-900 dark:bg-indigo-600 text-white rounded-lg flex items-center justify-center font-black text-base shrink-0">
                      {s.id}
                    </div>
                    <div>
-                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{s.title}</h3>
-                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{s.desc}</p>
+                     <h3 className="text-base font-black text-slate-800 dark:text-white mb-1">{s.title}</h3>
+                     <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{s.desc}</p>
                    </div>
                 </div>
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="faq" className="py-24 bg-slate-50 dark:bg-slate-900/30">
+        <div className="max-w-3xl mx-auto px-6">
+           <div className="text-center mb-12">
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">{t('landingFaqTitle')}</h2>
+              <p className="text-slate-500 font-bold uppercase text-[9px] tracking-widest">Respostas para as dúvidas comuns</p>
+           </div>
+           <div className="space-y-4">
+              {faqs.map((faq, i) => (
+                <div key={i} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-6 shadow-sm">
+                   <h3 className="text-sm font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                      <Target size={14} className="text-indigo-500" />
+                      {faq.q}
+                   </h3>
+                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{faq.a}</p>
+                </div>
+              ))}
+           </div>
         </div>
       </section>
 
@@ -156,8 +224,8 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
             </div>
             <span className="font-extrabold text-lg tracking-tight uppercase dark:text-white">HybridTask</span>
           </div>
-          <p className="text-slate-400 text-xs font-medium">
-            © 2025 HybridTask Manager. Projetado por <a href="https://wa.me/+5513985994965" target="_blank" className="text-indigo-600 font-bold hover:underline">JR Marketing</a>
+          <p className="text-slate-400 text-[10px] font-medium uppercase tracking-widest">
+            © 2025 HybridTask Manager. Desenvolvido por <a href="https://wa.me/+5513985994965" target="_blank" className="text-indigo-600 font-bold hover:underline">JR Marketing</a>
           </p>
         </div>
       </footer>

@@ -3,15 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HybridTask | O Melhor Gerenciador de Projetos e Kanban Online Grátis</title>
-    <meta name="description" content="Organize suas tarefas, projetos e equipe com o HybridTask. O software de produtividade que une Quadro Kanban, Tabelas Dinâmicas, Notas e Dashboards em um só lugar. Comece grátis agora!" />
-    <meta name="keywords" content="gerenciador de tarefas, quadro kanban online, gestão de projetos, produtividade, dashboard de tarefas, notas inteligentes, kanban gratuito, organização de equipe, software de gestão ágil" />
+    <title>HybridTask | Gestão de Projetos, Kanban e Produtividade Ágil</title>
+    <meta name="description" content="O HybridTask é a ferramenta definitiva para gestão de projetos. Combine quadros Kanban, tabelas dinâmicas, notas inteligentes e dashboards de analytics para otimizar o workflow da sua equipe." />
+    <meta name="keywords" content="gerenciador de tarefas, quadro kanban, gestão ágil, produtividade, software de projetos, dashboard de metas, notas de projeto, kanban gratuito" />
     <meta name="theme-color" content="#4f46e5" />
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="HybridTask | Gestão de Projetos e Kanban Inteligente" />
-    <meta property="og:description" content="Aumente sua produtividade com a melhor ferramenta gratuita de Kanban e gestão de tarefas." />
+    <meta property="og:title" content="HybridTask | O Melhor Gerenciador de Projetos e Kanban Online" />
+    <meta property="og:description" content="Aumente sua produtividade com a melhor ferramenta gratuita de Kanban e gestão de tarefas estruturada." />
     <meta property="og:image" content="https://ui-avatars.com/api/?name=Hybrid+Task&background=4f46e5&color=fff&size=512" />
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,6 +30,7 @@
       }
     </script>
     <style>
+      :root { scroll-padding-top: 80px; }
       body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; transition: background-color 0.3s ease, color 0.3s ease; }
       
       ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -48,7 +49,7 @@
         color: #ffffff;
         padding: 6px 12px;
         border-radius: 8px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         white-space: nowrap;
         opacity: 0;
@@ -58,40 +59,13 @@
         z-index: 1000;
       }
       .dark .sidebar-tooltip::after { background: #4f46e5; }
-      .sidebar-tooltip::before {
-        content: '';
-        position: absolute;
-        left: calc(100% + 4px);
-        top: 50%;
-        transform: translateY(-50%) translateX(-8px);
-        border: 5px solid transparent;
-        border-right-color: #1e293b;
-        opacity: 0;
-        pointer-events: none;
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        z-index: 1000;
-      }
-      .dark .sidebar-tooltip::before { border-right-color: #4f46e5; }
-      .sidebar-tooltip:hover::after,
-      .sidebar-tooltip:hover::before {
-        opacity: 1;
-        transform: translateY(-50%) translateX(0);
-      }
+      .sidebar-tooltip:hover::after { opacity: 1; transform: translateY(-50%) translateX(0); }
 
       .icon-shadow { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)); }
       .dark .icon-shadow { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)); }
-      
       .glow-effect { box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3); }
-      .dark .glow-effect { box-shadow: 0 4px 20px 0 rgba(79, 70, 229, 0.4); }
 
-      .dark .bg-white { background-color: #1e293b; }
-      .dark .bg-slate-50 { background-color: #0f172a; }
-      .dark .border-slate-200 { border-color: #334155; }
-      
-      /* Prevenção de conflito em notas pastéis */
-      .note-content-fix { color: #1e293b !important; }
-
-      /* Esconde o ícone de calendário padrão do navegador para usar o customizado */
+      /* Esconde o ícone de calendário padrão do navegador */
       input[type="date"]::-webkit-calendar-picker-indicator {
         background: transparent;
         bottom: 0;
