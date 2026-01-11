@@ -23,13 +23,13 @@ import { INITIAL_DATA } from './constants';
 
 // -- Item de Notificação --
 const NotificationItem = ({ icon: Icon, color, title, time, onClick }: any) => (
-  <div onClick={onClick} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer flex gap-4 border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors">
-    <div className={`p-2.5 rounded-xl ${color} shrink-0 shadow-sm`}>
-      <Icon size={18} className="text-white" />
+  <div onClick={onClick} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer flex gap-3 border-b border-slate-100 dark:border-slate-800 last:border-0 transition-colors">
+    <div className={`p-2 rounded-lg ${color} shrink-0 shadow-sm`}>
+      <Icon size={14} className="text-white" />
     </div>
     <div className="min-w-0">
-      <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{title}</p>
-      <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">{time}</p>
+      <p className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{title}</p>
+      <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">{time}</p>
     </div>
   </div>
 );
@@ -60,98 +60,86 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 font-sans scroll-smooth transition-colors">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-900 px-6 py-4">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-100 dark:border-slate-900 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-xl shadow-indigo-100 dark:shadow-indigo-900/40">
-              <Layout className="text-white w-5 h-5" />
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Layout className="text-white w-4 h-4" />
             </div>
-            <span className="font-extrabold text-xl tracking-tight uppercase">HybridTask</span>
+            <span className="font-extrabold text-lg tracking-tight uppercase">HybridTask</span>
           </div>
-          <div className="hidden md:flex items-center gap-10 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">
+          <div className="hidden md:flex items-center gap-6 text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
              <a href="#ferramentas" className="hover:text-indigo-600 transition-colors">Recursos</a>
              <a href="#manual" className="hover:text-indigo-600 transition-colors">Manual</a>
              <a href="#faq" className="hover:text-indigo-600 transition-colors">Dúvidas</a>
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={onGoToLogin} className="text-slate-600 dark:text-slate-400 font-bold hover:text-indigo-600 px-4 py-2">{t('signIn')}</button>
-            <button onClick={onGoToSignup} className="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black text-xs hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 dark:shadow-indigo-900/40 active:scale-95 glow-effect uppercase tracking-widest">
+          <div className="flex items-center gap-3">
+            <button onClick={onGoToLogin} className="text-slate-600 dark:text-slate-400 font-bold hover:text-indigo-600 px-3 py-1.5 text-xs">{t('signIn')}</button>
+            <button onClick={onGoToSignup} className="bg-indigo-600 text-white px-5 py-2 rounded-xl font-black text-[10px] hover:bg-indigo-700 transition-all shadow-lg active:scale-95 glow-effect uppercase tracking-widest">
               {t('signUp')}
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="pt-48 pb-24 px-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[600px] h-[600px] bg-indigo-50 dark:bg-indigo-900/10 rounded-full blur-[120px] -z-10"></div>
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-black tracking-[0.3em] mb-10 uppercase border border-indigo-100 dark:border-indigo-800">
-            <Sparkles size={14} /> Produtividade Re-imaginada
+      <section className="pt-32 pb-16 px-6 relative overflow-hidden text-center">
+        <div className="max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[9px] font-black tracking-widest mb-6 uppercase border border-indigo-100">
+            <Sparkles size={12} /> Produtividade Re-imaginada
           </div>
-          <h1 className="text-6xl md:text-8xl font-black mb-10 tracking-tighter leading-[0.9] dark:text-white">
-            {t('landingHeroTitle').split(' ').slice(0, 3).join(' ')} <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-500">{t('landingHeroTitle').split(' ').slice(3).join(' ')}</span>
+          <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter leading-tight dark:text-white">
+            {t('landingHeroTitle')}
           </h1>
-          <p className="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-16 font-medium leading-relaxed">
+          <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10 font-medium leading-relaxed">
             {t('landingHeroSub')}
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <button onClick={onGoToSignup} className="w-full sm:w-auto px-12 py-6 bg-indigo-600 text-white rounded-[2rem] font-black text-lg hover:bg-indigo-700 transition-all shadow-2xl shadow-indigo-100 dark:shadow-indigo-900/40 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-4 glow-effect">
-              {t('landingStartBtn')} <ArrowRight size={24} />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button onClick={onGoToSignup} className="w-full sm:w-auto px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black text-base hover:bg-indigo-700 transition-all shadow-xl flex items-center justify-center gap-3 glow-effect">
+              {t('landingStartBtn')} <ArrowRight size={20} />
             </button>
-            <div className="flex items-center gap-4 text-slate-400 font-bold text-sm">
-               <ShieldCheck size={24} className="text-green-500" /> Sem cartões de crédito. Grátis para sempre.
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Ferramentas (Features) */}
-      <section id="ferramentas" className="py-24 bg-slate-50 dark:bg-slate-900/30">
+      <section id="ferramentas" className="py-16 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tight">{t('landingBenefitsTitle')}</h2>
-            <div className="h-1.5 w-24 bg-indigo-600 mx-auto rounded-full"></div>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">{t('landingBenefitsTitle')}</h2>
+            <div className="h-1 w-16 bg-indigo-600 mx-auto rounded-full"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((f, i) => (
-              <div key={i} className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all group hover:-translate-y-2">
-                 <div className={`w-16 h-16 ${f.bg} rounded-2xl flex items-center justify-center ${f.color} mb-8 group-hover:scale-110 transition-transform`}>
-                   <f.icon size={32} />
+              <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group">
+                 <div className={`w-12 h-12 ${f.bg} rounded-xl flex items-center justify-center ${f.color} mb-6 group-hover:scale-110 transition-transform`}>
+                   <f.icon size={24} />
                  </div>
-                 <h3 className="text-xl font-black text-slate-800 dark:text-white mb-4 tracking-tight">{f.title}</h3>
-                 <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{f.desc}</p>
+                 <h3 className="text-lg font-black text-slate-800 dark:text-white mb-3 tracking-tight">{f.title}</h3>
+                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Manual do Usuário */}
-      <section id="manual" className="py-32">
+      <section id="manual" className="py-20">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-start gap-20">
+          <div className="flex flex-col md:flex-row items-start gap-12">
             <div className="md:w-1/2">
-               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tracking-widest uppercase mb-6 border border-emerald-100 dark:border-emerald-800">
-                 <BookOpen size={14} /> Passo a Passo
+               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[9px] font-black tracking-widest uppercase mb-4 border border-emerald-100">
+                 <BookOpen size={12} /> Passo a Passo
                </div>
-               <h2 className="text-5xl font-black text-slate-900 dark:text-white mb-8 tracking-tighter leading-tight">{t('userManualTitle')}</h2>
-               <p className="text-xl text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-12">{t('userManualSub')}</p>
-               <button onClick={onGoToSignup} className="flex items-center gap-2 text-indigo-600 font-black uppercase tracking-widest text-xs hover:gap-4 transition-all">
-                 Criar conta e ver na prática <ArrowRight size={16} />
-               </button>
+               <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-6 tracking-tighter leading-tight">{t('userManualTitle')}</h2>
+               <p className="text-base text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-8">{t('userManualSub')}</p>
             </div>
-            <div className="md:w-1/2 space-y-12">
+            <div className="md:w-1/2 space-y-8">
               {steps.map((s, i) => (
-                <div key={i} className="flex gap-6 animate-in slide-in-from-right-4 duration-500" style={{ animationDelay: `${i * 100}ms` }}>
-                   <div className="w-12 h-12 bg-slate-900 dark:bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shrink-0 shadow-xl shadow-slate-200 dark:shadow-indigo-900/30">
+                <div key={i} className="flex gap-4">
+                   <div className="w-10 h-10 bg-slate-900 dark:bg-indigo-600 text-white rounded-xl flex items-center justify-center font-black text-lg shrink-0">
                      {s.id}
                    </div>
                    <div>
-                     <h3 className="text-xl font-black text-slate-800 dark:text-white mb-3">{s.title}</h3>
-                     <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{s.desc}</p>
+                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{s.title}</h3>
+                     <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{s.desc}</p>
                    </div>
                 </div>
               ))}
@@ -160,48 +148,17 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="py-24 bg-slate-50 dark:bg-slate-900/30">
-        <div className="max-w-3xl mx-auto px-6">
-           <div className="text-center mb-16">
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-4">{t('landingFaqTitle')}</h2>
-              <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Tudo o que você precisa saber</p>
-           </div>
-           <div className="space-y-4">
-              {faqs.map((faq, i) => (
-                <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-8 shadow-sm">
-                   <h3 className="text-lg font-black text-slate-800 dark:text-white mb-3 flex items-center gap-3">
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                      {faq.q}
-                   </h3>
-                   <p className="text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{faq.a}</p>
-                </div>
-              ))}
-           </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-20 border-t border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Layout className="text-white w-5 h-5" />
-              </div>
-              <span className="font-extrabold text-xl tracking-tight uppercase dark:text-white">HybridTask</span>
+      <footer className="py-12 border-t border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
+              <Layout className="text-white w-4 h-4" />
             </div>
-            <div className="flex gap-8 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-              <span>Sempre Grátis</span>
-              <span>Dados Criptografados</span>
-              <span>PWA Ready</span>
-            </div>
+            <span className="font-extrabold text-lg tracking-tight uppercase dark:text-white">HybridTask</span>
           </div>
-          <div className="mt-16 pt-8 border-t border-slate-50 dark:border-slate-900 text-center">
-            <p className="text-slate-400 text-sm font-medium">
-              © 2025 HybridTask Manager. Feito para quem faz acontecer. Projetado por <a href="https://wa.me/+5513985994965" target="_blank" className="text-indigo-600 font-bold hover:underline">JR Marketing</a>
-            </p>
-          </div>
+          <p className="text-slate-400 text-xs font-medium">
+            © 2025 HybridTask Manager. Projetado por <a href="https://wa.me/+5513985994965" target="_blank" className="text-indigo-600 font-bold hover:underline">JR Marketing</a>
+          </p>
         </div>
       </footer>
     </div>
@@ -237,56 +194,48 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
     }
   };
 
-  const inputClasses = "w-full px-5 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all placeholder-slate-400 dark:placeholder-slate-500 font-medium";
+  const inputClasses = "w-full px-4 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder-slate-400 text-sm font-medium";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
-      <div className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-lg animate-in fade-in zoom-in duration-300">
-        <button onClick={onBackToHome} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs mb-10 transition-colors font-black uppercase tracking-widest">
-          <ArrowLeft size={16} /> {t('landingBackToHome')}
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 w-full max-w-md animate-in fade-in zoom-in duration-300">
+        <button onClick={onBackToHome} className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-indigo-600 text-[10px] mb-8 transition-colors font-black uppercase tracking-widest">
+          <ArrowLeft size={14} /> {t('landingBackToHome')}
         </button>
         
-        <div className="text-center mb-10">
-           <div className="w-16 h-16 bg-indigo-600 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-xl glow-effect">
-              <Layout className="text-white" size={32} />
+        <div className="text-center mb-8">
+           <div className="w-12 h-12 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg glow-effect">
+              <Layout className="text-white" size={24} />
            </div>
-           <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
+           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">
              {mode === 'login' ? t('signIn') : t('signUp')}
            </h2>
-           <p className="text-slate-500 dark:text-slate-400 mt-3 font-medium">{mode === 'login' ? 'Bem-vindo de volta!' : 'Crie sua conta gratuita'}</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
             <div>
-              <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-2 ml-2">{t('name')}</label>
+              <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('name')}</label>
               <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClasses} placeholder="Seu nome" required />
             </div>
           )}
           <div>
-            <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-2 ml-2">{t('email')}</label>
+            <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('email')}</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputClasses} placeholder="seu@email.com" required />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-2 ml-2">{t('password')}</label>
+            <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('password')}</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} className={inputClasses} placeholder="••••••••" required />
           </div>
 
-          {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-2xl flex items-start gap-3 animate-in slide-in-from-top-1">
-              <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm font-bold text-red-600 dark:text-red-400 leading-tight">{error}</p>
-            </div>
-          )}
-
-          <button disabled={loading} className="w-full bg-indigo-600 text-white font-black py-5 rounded-[2rem] hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/40 disabled:opacity-50 transition-all active:scale-[0.98] glow-effect mt-4 text-lg">
-            {loading ? <RefreshCw className="animate-spin mx-auto" size={24} /> : (mode === 'login' ? t('signIn') : t('signUp'))}
+          <button disabled={loading} className="w-full bg-indigo-600 text-white font-black py-4 rounded-xl hover:bg-indigo-700 shadow-lg disabled:opacity-50 transition-all active:scale-[0.98] glow-effect mt-2 text-sm uppercase tracking-widest">
+            {loading ? <RefreshCw className="animate-spin mx-auto" size={18} /> : (mode === 'login' ? t('signIn') : t('signUp'))}
           </button>
         </form>
 
-        <p className="text-center mt-10 text-slate-500 dark:text-slate-400 text-sm font-medium">
+        <p className="text-center mt-8 text-slate-500 dark:text-slate-400 text-xs font-medium">
           {mode === 'login' ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
-          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-indigo-600 dark:text-indigo-400 font-black hover:underline underline-offset-8 transition-all">
+          <button onClick={() => setMode(mode === 'login' ? 'signup' : 'login')} className="text-indigo-600 dark:text-indigo-400 font-black hover:underline underline-offset-4">
              {mode === 'login' ? t('signUp') : t('signIn')}
           </button>
         </p>
@@ -377,8 +326,8 @@ const AppContent = () => {
 
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950">
-      <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center shadow-2xl animate-bounce mb-6"><Layout className="text-white" size={40} /></div>
-      <div className="text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.3em] text-xs">Carregando...</div>
+      <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl animate-bounce mb-4"><Layout className="text-white" size={24} /></div>
+      <div className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Carregando...</div>
     </div>
   );
 
@@ -404,68 +353,68 @@ const AppContent = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 overflow-hidden text-slate-900 dark:text-slate-100 transition-colors">
-      <aside className={`hidden lg:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-sm z-30 transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-72'}`}>
-        <div className={`p-8 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg icon-shadow shrink-0">
-                <Layout className="text-white" size={20} />
+      <aside className={`hidden lg:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-sm z-30 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-56'}`}>
+        <div className={`p-5 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+           <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg icon-shadow shrink-0">
+                <Layout className="text-white" size={16} />
               </div>
-              {!isSidebarCollapsed && <span className="font-black text-xl tracking-tight uppercase">HybridTask</span>}
+              {!isSidebarCollapsed && <span className="font-black text-base tracking-tight uppercase">HybridTask</span>}
            </div>
         </div>
 
-        <nav className={`flex-1 ${isSidebarCollapsed ? 'px-3' : 'px-4'} space-y-3`}>
+        <nav className={`flex-1 ${isSidebarCollapsed ? 'px-2' : 'px-3'} space-y-1.5`}>
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               data-tooltip={isSidebarCollapsed ? item.label : undefined}
               className={({ isActive }) => 
-                `flex items-center rounded-[1.5rem] font-bold text-sm transition-all group relative ${isSidebarCollapsed ? 'sidebar-tooltip justify-center px-0 py-4' : 'gap-4 px-4 py-4'} ${isActive ? 'bg-indigo-600 text-white shadow-xl glow-effect' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100'}`
+                `flex items-center rounded-xl font-bold text-xs transition-all group relative ${isSidebarCollapsed ? 'sidebar-tooltip justify-center px-0 py-3' : 'gap-3 px-3 py-3'} ${isActive ? 'bg-indigo-600 text-white shadow-lg glow-effect' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800'}`
               }
             >
-              <item.icon size={isSidebarCollapsed ? 18 : 22} className={`shrink-0 transition-transform group-hover:scale-110 ${location.pathname.startsWith(item.to) ? '' : 'icon-shadow'}`} />
+              <item.icon size={isSidebarCollapsed ? 16 : 18} className="shrink-0 transition-transform group-hover:scale-110" />
               {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
             </NavLink>
           ))}
         </nav>
 
-        <div className={`p-4 border-t border-slate-100 dark:border-slate-800 space-y-3 ${isSidebarCollapsed ? 'px-3' : 'px-4'}`}>
-           <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className={`w-full flex items-center text-slate-400 dark:text-slate-500 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-all ${isSidebarCollapsed ? 'justify-center py-4' : 'justify-between px-4 py-3'}`}>
-              {!isSidebarCollapsed && <span className="text-[10px] font-black uppercase tracking-widest">Recolher</span>}
-              {isSidebarCollapsed ? <ChevronLast size={20} className="icon-shadow" /> : <ChevronFirst size={20} className="icon-shadow" />}
+        <div className={`p-3 border-t border-slate-100 dark:border-slate-800 space-y-2 ${isSidebarCollapsed ? 'px-2' : 'px-3'}`}>
+           <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className={`w-full flex items-center text-slate-400 hover:text-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all ${isSidebarCollapsed ? 'justify-center py-3' : 'justify-between px-3 py-2.5'}`}>
+              {!isSidebarCollapsed && <span className="text-[9px] font-black uppercase tracking-widest">Recolher</span>}
+              {isSidebarCollapsed ? <ChevronLast size={16} /> : <ChevronFirst size={16} />}
            </button>
-           <div onClick={() => setIsProfileModalOpen(true)} className={`flex items-center rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-all group ${isSidebarCollapsed ? 'justify-center py-4' : 'gap-3 px-4 py-3'}`}>
-              <Avatar name={user.name} url={user.avatar} size={isSidebarCollapsed ? 'sm' : 'md'} />
-              {!isSidebarCollapsed && <div className="min-w-0"><p className="text-sm font-black dark:text-white truncate">{user.name}</p><p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{t('editProfile')}</p></div>}
+           <div onClick={() => setIsProfileModalOpen(true)} className={`flex items-center rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-all group ${isSidebarCollapsed ? 'justify-center py-3' : 'gap-2.5 px-3 py-2.5'}`}>
+              <Avatar name={user.name} url={user.avatar} size="sm" />
+              {!isSidebarCollapsed && <div className="min-w-0"><p className="text-xs font-black dark:text-white truncate">{user.name}</p></div>}
            </div>
-           <button onClick={async () => { await DataService.logout(); setUser(null); }} className={`w-full flex items-center rounded-2xl font-bold text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all ${isSidebarCollapsed ? 'justify-center py-4' : 'gap-3 px-4 py-3'}`}>
-              <LogOut size={22} className="icon-shadow" />
+           <button onClick={async () => { await DataService.logout(); setUser(null); }} className={`w-full flex items-center rounded-xl font-bold text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all ${isSidebarCollapsed ? 'justify-center py-3' : 'gap-2.5 px-3 py-2.5'}`}>
+              <LogOut size={18} />
               {!isSidebarCollapsed && <span>{t('logout')}</span>}
            </button>
         </div>
       </aside>
 
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        <header className="flex items-center justify-between p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
-           <div className="flex items-center gap-4">
-             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl"><Menu size={24} /></button>
-             <div className="hidden lg:flex items-center gap-2"><Layout className="text-indigo-600 icon-shadow" size={20} /><span className="font-black text-lg dark:text-white uppercase tracking-tighter">HybridTask</span></div>
+        <header className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
+           <div className="flex items-center gap-3">
+             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"><Menu size={20} /></button>
+             <div className="hidden lg:flex items-center gap-2"><Layout className="text-indigo-600" size={16} /><span className="font-black text-base dark:text-white uppercase tracking-tighter">HybridTask</span></div>
            </div>
-           <div className="flex items-center gap-2.5">
-              <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm" title={isDarkMode ? "Modo Claro" : "Modo Escuro"}>
-                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+           <div className="flex items-center gap-2">
+              <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-indigo-600 shadow-sm transition-all">
+                {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
               </button>
               <div className="relative" ref={notificationRef}>
-                <button onClick={() => setShowNotifications(!showNotifications)} className={`p-2.5 rounded-2xl border transition-all relative ${showNotifications ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-indigo-600 shadow-sm'}`}>
-                  <Bell size={20} className="icon-shadow" />
-                  {overdueTasksCount > 0 && <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full animate-pulse"></span>}
+                <button onClick={() => setShowNotifications(!showNotifications)} className={`p-2 rounded-xl border transition-all relative ${showNotifications ? 'bg-indigo-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 shadow-sm'}`}>
+                  <Bell size={16} />
+                  {overdueTasksCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 border-2 border-white dark:border-slate-900 rounded-full animate-pulse"></span>}
                 </button>
                 {showNotifications && (
-                  <div className="absolute top-full right-0 mt-3 w-80 bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
-                    <div className="p-4 bg-slate-50/80 dark:bg-slate-800/80 border-b dark:border-slate-800 flex items-center justify-between"><span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('notifications')}</span><span className="px-3 py-1 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full">{overdueTasksCount} alertas</span></div>
-                    <div className="max-h-96 overflow-y-auto">
-                      {overdueTasksCount > 0 ? Object.values(boardData.tasks).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(task => <NotificationItem key={task.id} icon={AlertCircle} color="bg-red-500" title={`Atrasada: ${task.title}`} time={new Date(task.dueDate).toLocaleDateString()} onClick={() => { setSelectedTask(task); setIsTaskModalOpen(true); setShowNotifications(false); }} />) : <div className="p-8 text-center"><CheckCircle2 size={32} className="mx-auto text-green-200 dark:text-green-900 mb-3" /><p className="text-sm font-bold text-slate-400">{t('noNotifications')}</p></div>}
+                  <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
+                    <div className="p-3 bg-slate-50/80 dark:bg-slate-800/80 border-b dark:border-slate-800 flex items-center justify-between"><span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('notifications')}</span><span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-600 text-[8px] font-black rounded-full">{overdueTasksCount} alertas</span></div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {overdueTasksCount > 0 ? Object.values(boardData.tasks).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(task => <NotificationItem key={task.id} icon={AlertCircle} color="bg-red-500" title={task.title} time={new Date(task.dueDate).toLocaleDateString()} onClick={() => { setSelectedTask(task); setIsTaskModalOpen(true); setShowNotifications(false); }} />) : <div className="p-6 text-center"><p className="text-[10px] font-bold text-slate-400">{t('noNotifications')}</p></div>}
                     </div>
                   </div>
                 )}
@@ -474,12 +423,12 @@ const AppContent = () => {
            </div>
         </header>
 
-        <div className="px-6 pt-8 md:px-10 flex items-center justify-between shrink-0 mb-6">
-           <div><h1 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">{navItems.find(i => location.pathname.startsWith(i.to))?.label || t('dashboard')}</h1><p className="text-slate-400 dark:text-slate-500 font-black text-[10px] uppercase tracking-[0.3em] mt-3 flex items-center gap-2"><Globe size={12} className="text-indigo-500" /> {t('projectOverview')}</p></div>
-           <button onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-8 py-4 rounded-[1.5rem] font-black text-sm flex items-center gap-3 hover:bg-indigo-700 shadow-2xl shadow-indigo-100 dark:shadow-indigo-900/40 transition-all active:scale-95 group glow-effect"><div className="p-1 bg-white/20 rounded-lg group-hover:rotate-90 transition-transform duration-300"><Plus size={20} className="icon-shadow" /></div><span className="hidden sm:inline">{t('newTask')}</span></button>
+        <div className="px-5 pt-6 md:px-8 flex items-center justify-between shrink-0 mb-5">
+           <div><h1 className="text-2xl md:text-3xl font-black tracking-tighter text-slate-900 dark:text-white leading-none">{navItems.find(i => location.pathname.startsWith(i.to))?.label || t('dashboard')}</h1></div>
+           <button onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black text-xs flex items-center gap-2 hover:bg-indigo-700 shadow-xl transition-all active:scale-95 glow-effect"><Plus size={16} /><span className="hidden sm:inline">{t('newTask')}</span></button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 pb-12 md:px-10 scroll-smooth custom-scrollbar">
+        <div className="flex-1 overflow-y-auto px-5 pb-8 md:px-8 scroll-smooth custom-scrollbar">
            <Routes>
               <Route path="/dashboard" element={<Dashboard data={boardData} />} />
               <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(); }} />} />
@@ -493,11 +442,11 @@ const AppContent = () => {
 
         {isMobileMenuOpen && (
            <div className="lg:hidden fixed inset-0 z-[100]">
-              <div className="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md" onClick={() => setIsMobileMenuOpen(false)}></div>
-              <aside className="absolute top-0 left-0 w-80 h-full bg-white dark:bg-slate-900 shadow-2xl p-8 flex flex-col animate-in slide-in-from-left duration-300 rounded-r-[3rem]">
-                 <div className="flex items-center justify-between mb-12"><div className="flex items-center gap-3"><div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-xl"><Layout className="text-white" size={20} /></div><span className="font-black text-2xl tracking-tighter dark:text-white">HybridTask</span></div><button onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl"><X size={24} /></button></div>
-                 <nav className="flex-1 space-y-3">{navItems.map((item) => (<NavLink key={item.to} to={item.to} onClick={() => setIsMobileMenuOpen(false)} className={({ isActive }) => `flex items-center gap-4 px-6 py-5 rounded-[2rem] font-bold transition-all ${isActive ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><item.icon size={24} className={location.pathname.startsWith(item.to) ? '' : 'icon-shadow'} /> {item.label}</NavLink>))}</nav>
-                 <div className="mt-auto pt-8 border-t border-slate-100 dark:border-slate-800"><button onClick={async () => { await DataService.logout(); setUser(null); }} className="w-full flex items-center gap-4 px-6 py-5 rounded-[2rem] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"><LogOut size={24} className="icon-shadow" /> {t('logout')}</button></div>
+              <div className="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
+              <aside className="absolute top-0 left-0 w-64 h-full bg-white dark:bg-slate-900 shadow-2xl p-6 flex flex-col animate-in slide-in-from-left duration-300 rounded-r-3xl">
+                 <div className="flex items-center justify-between mb-8"><div className="flex items-center gap-2"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg"><Layout className="text-white" size={16} /></div><span className="font-black text-lg dark:text-white uppercase tracking-tighter">HybridTask</span></div><button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 rounded-xl"><X size={20} /></button></div>
+                 <nav className="flex-1 space-y-1.5">{navItems.map((item) => (<NavLink key={item.to} to={item.to} onClick={() => setIsMobileMenuOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 dark:text-slate-400'}`}><item.icon size={18} /> {item.label}</NavLink>))}</nav>
+                 <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800"><button onClick={async () => { await DataService.logout(); setUser(null); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs text-red-500"><LogOut size={18} /> {t('logout')}</button></div>
               </aside>
            </div>
         )}

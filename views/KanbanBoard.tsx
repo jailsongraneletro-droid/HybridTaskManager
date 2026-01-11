@@ -29,38 +29,37 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onClick}
-          className={`bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm mb-3 group hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md transition-all relative ${
-            snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl ring-2 ring-indigo-400 z-50' : ''
+          className={`bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-2 group hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md transition-all relative ${
+            snapshot.isDragging ? 'rotate-1 scale-102 shadow-lg ring-1 ring-indigo-400 z-50' : ''
           }`}
           style={provided.draggableProps.style}
         >
-          {/* Ações (Visível ao passar o mouse) */}
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={onDelete}
-              className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+              className="p-1 text-slate-400 hover:text-red-500 rounded"
               title="Excluir Tarefa"
             >
-              <Trash2 size={14} />
+              <Trash2 size={12} />
             </button>
           </div>
 
-          <div className="flex justify-between items-start mb-2 pr-6">
+          <div className="flex justify-between items-start mb-1.5 pr-4">
             <PriorityBadge priority={priorityData} />
           </div>
           
-          <h4 className="font-semibold text-slate-800 dark:text-slate-100 mb-2 line-clamp-2 leading-tight">
+          <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-1.5 line-clamp-2 leading-tight text-xs">
             {task.title}
           </h4>
           
-          <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 mt-3 pt-2 border-t border-slate-50 dark:border-slate-700/50">
-             <div className="flex items-center gap-1 text-xs">
-                <Calendar size={12} />
+          <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 mt-2.5 pt-2 border-t border-slate-50 dark:border-slate-700/50">
+             <div className="flex items-center gap-1 text-[10px]">
+                <Calendar size={10} />
                 <span>{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>
              </div>
-             <div className="flex items-center gap-2">
+             <div className="flex items-center gap-1.5">
                 <TaskAge createdAt={task.createdAt} />
-                {assigneeData && <Avatar name={assigneeData.name} url={assigneeData.avatar} />}
+                {assigneeData && <Avatar name={assigneeData.name} url={assigneeData.avatar} size="sm" />}
              </div>
           </div>
         </div>
@@ -72,20 +71,20 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEditTask, onDeleteTask }) => {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex h-full overflow-x-auto gap-4 md:gap-6 pb-4 px-1 md:px-0">
+      <div className="flex h-full overflow-x-auto gap-4 pb-4">
         {data.columnOrder.map((columnId) => {
           const column = data.columns[columnId];
           const tasks = column.taskIds.map(taskId => data.tasks[taskId]);
 
           return (
-            <div key={column.id} className="min-w-[300px] flex flex-col h-full rounded-xl bg-slate-100/40 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 shadow-inner">
+            <div key={column.id} className="min-w-[260px] max-w-[260px] flex flex-col h-full rounded-2xl bg-slate-100/40 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 shadow-inner">
               <div 
-                className="p-4 flex items-center justify-between border-t-4 rounded-t-xl bg-white/50 dark:bg-slate-900/50"
+                className="p-3 flex items-center justify-between border-t-2 rounded-t-2xl bg-white/50 dark:bg-slate-900/50"
                 style={{ borderColor: column.color }}
               >
-                <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                <h3 className="font-black text-slate-700 dark:text-slate-200 flex items-center gap-2 text-[10px] uppercase tracking-widest">
                   {column.title}
-                  <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full text-xs font-black">
+                  <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded-full text-[9px] font-black">
                     {tasks.length}
                   </span>
                 </h3>
@@ -96,7 +95,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex-1 p-2 transition-colors ${snapshot.isDraggingOver ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}
+                    className={`flex-1 p-2 transition-colors overflow-y-auto custom-scrollbar ${snapshot.isDraggingOver ? 'bg-indigo-50/20 dark:bg-indigo-900/10' : ''}`}
                   >
                     {tasks.map((task, index) => (
                       <TaskCard 

@@ -38,53 +38,53 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   }));
 
   const StatCard = ({ title, value, icon: Icon, color, subtext, trend }: any) => (
-    <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between group hover:shadow-xl transition-all duration-300">
-      <div className="flex items-start justify-between mb-4">
-        <div className={`p-4 rounded-2xl ${color} shadow-lg text-white group-hover:scale-110 transition-transform`}><Icon size={28} /></div>
-        {trend && <div className="px-3 py-1 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1"><TrendingUp size={12} /> {trend}</div>}
+    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
+      <div className="flex items-start justify-between mb-3">
+        <div className={`p-2.5 rounded-xl ${color} shadow-md text-white group-hover:scale-105 transition-transform`}><Icon size={18} /></div>
+        {trend && <div className="px-2 py-0.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-[8px] font-black uppercase tracking-wider flex items-center gap-1"><TrendingUp size={10} /> {trend}</div>}
       </div>
       <div>
-        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">{title}</p>
-        <h3 className="text-4xl font-black text-slate-800 dark:text-white tracking-tighter">{value}</h3>
-        {subtext && <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-3">{subtext}</p>}
+        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">{value}</h3>
+        {subtext && <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-2">{subtext}</p>}
       </div>
     </div>
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard title={t('completionRate')} value={`${completionRate}%`} icon={CheckCircle} color="bg-gradient-to-br from-green-400 to-emerald-600" subtext={`${completedTasks} de ${totalTasks} finalizadas`} trend="+5%" />
         <StatCard title={t('overdueTasks')} value={overdueTasks} icon={AlertTriangle} color="bg-gradient-to-br from-rose-400 to-red-600" subtext={t('pastDue')} />
         <StatCard title={t('totalWorkload')} value={totalTasks} icon={Activity} color="bg-gradient-to-br from-indigo-400 to-violet-600" subtext={t('activeTasks')} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[450px]">
-          <div className="flex items-center gap-3 mb-8"><div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-xl"><Layers size={20} /></div><h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('taskStatusDist')}</h3></div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[350px]">
+          <div className="flex items-center gap-2 mb-6"><div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg"><Layers size={16} /></div><h3 className="text-base font-black text-slate-800 dark:text-white tracking-tight">{t('taskStatusDist')}</h3></div>
           <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={statusData} cx="50%" cy="50%" innerRadius={80} outerRadius={120} paddingAngle={8} dataKey="value" animationDuration={1500}>
+                <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value" animationDuration={1000}>
                   {statusData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />)}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 25px 50px rgba(0,0,0,0.15)', background: '#ffffff', color: '#1e293b' }} />
-                <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ paddingTop: '20px', fontWeight: 'bold', fontSize: '12px' }} />
+                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', background: '#ffffff', color: '#1e293b', fontSize: '10px' }} />
+                <Legend verticalAlign="bottom" height={24} iconType="circle" wrapperStyle={{ paddingTop: '10px', fontWeight: 'bold', fontSize: '10px' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[450px]">
-          <div className="flex items-center gap-3 mb-8"><div className="p-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl"><BarChart3 size={20} /></div><h3 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{t('tasksByPriority')}</h3></div>
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[350px]">
+          <div className="flex items-center gap-2 mb-6"><div className="p-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg"><BarChart3 size={16} /></div><h3 className="text-base font-black text-slate-800 dark:text-white tracking-tight">{t('tasksByPriority')}</h3></div>
           <div className="flex-1 min-h-0">
              <ResponsiveContainer width="100%" height="100%">
               <BarChart data={priorityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs><linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#a855f7" /></linearGradient></defs>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 800 }} />
-                <YAxis axisLine={false} tickLine={false} allowDecimals={false} tick={{ fill: '#94a3b8', fontSize: 11, fontWeight: 500 }} />
-                <Tooltip cursor={{fill: 'rgba(99, 102, 241, 0.05)', radius: 12}} contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 25px 50px rgba(0,0,0,0.15)', background: '#ffffff' }} />
-                <Bar dataKey="count" fill="url(#barGradient)" radius={[12, 12, 0, 0]} barSize={50} animationDuration={1500} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 700 }} />
+                <YAxis axisLine={false} tickLine={false} allowDecimals={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 500 }} />
+                <Tooltip cursor={{fill: 'rgba(99, 102, 241, 0.05)', radius: 8}} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', background: '#ffffff', fontSize: '10px' }} />
+                <Bar dataKey="count" fill="url(#barGradient)" radius={[8, 8, 0, 0]} barSize={36} animationDuration={1000} />
               </BarChart>
             </ResponsiveContainer>
           </div>
