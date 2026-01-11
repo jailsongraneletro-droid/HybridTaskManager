@@ -63,6 +63,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 scroll-smooth">
+      {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -83,6 +84,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </nav>
 
+      {/* Hero Section */}
       <section className="pt-48 pb-20 px-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-indigo-50 rounded-full blur-[120px] -z-10"></div>
         <div className="max-w-6xl mx-auto text-center">
@@ -107,6 +109,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
+      {/* Features Grid */}
       <section id="ferramentas" className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -127,6 +130,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
+      {/* User Manual Section */}
       <section id="manual" className="py-24 bg-white relative">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-20">
@@ -149,6 +153,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
+      {/* FAQ Section */}
       <section id="faq" className="py-24 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -168,6 +173,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
+      {/* Footer */}
       <footer className="py-12 border-t border-slate-100 bg-white">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
@@ -194,22 +200,6 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [signupSuccess, setSignupSuccess] = useState(false);
-  const [countdown, setCountdown] = useState(3);
-
-  useEffect(() => {
-    let timer: any;
-    if (signupSuccess && countdown > 0) {
-      timer = setInterval(() => {
-        setCountdown(prev => prev - 1);
-      }, 1000);
-    } else if (signupSuccess && countdown === 0) {
-      setSignupSuccess(false);
-      setMode('login');
-      setCountdown(3);
-    }
-    return () => clearInterval(timer);
-  }, [signupSuccess, countdown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -220,16 +210,8 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
         const user = await DataService.login(email, password);
         onLogin(user);
       } else {
-        try {
-          await DataService.signup(name, email, password);
-        } catch (err: any) {
-          if (err.message === "CONFIRM_EMAIL") {
-            setSignupSuccess(true);
-            return;
-          }
-          throw err;
-        }
-        setSignupSuccess(true);
+        const user = await DataService.signup(name, email, password);
+        onLogin(user);
       }
     } catch (err: any) {
       setError(err.message || t('loginError'));
@@ -239,33 +221,6 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
   };
 
   const inputClasses = "w-full px-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400 transition-all";
-
-  if (signupSuccess) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-        <div className="bg-white p-10 rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md text-center animate-in zoom-in-95 duration-300">
-           <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full mx-auto flex items-center justify-center mb-6 shadow-sm border border-green-100">
-              <Mail size={40} />
-           </div>
-           <h2 className="text-2xl font-black text-slate-900 mb-4">Verifique seu E-mail</h2>
-           <p className="text-slate-500 font-medium mb-8 leading-relaxed">
-             Enviamos um link de confirmação para o seu e-mail. Por favor, confirme sua conta para continuar.
-           </p>
-           <div className="flex flex-col items-center gap-4">
-             <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
-               Redirecionando em {countdown}s
-             </div>
-             <button 
-               onClick={() => { setSignupSuccess(false); setMode('login'); }}
-               className="text-indigo-600 font-bold hover:underline transition-all"
-             >
-               Ir para Login agora
-             </button>
-           </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
@@ -300,189 +255,369 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
   );
 };
 
-// -- Main App Component --
-
-/**
- * Fix: Added missing App component and export default App
- */
-const App = () => {
+// -- Main App Content --
+const AppContent = () => {
+  const { t } = useLanguage();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [boardData, setBoardData] = useState<BoardData>(INITIAL_DATA);
   const [loading, setLoading] = useState(true);
-  const [authMode, setAuthMode] = useState<'landing' | 'login' | 'signup'>('landing');
-  const [activeTask, setActiveTask] = useState<Task | Partial<Task> | null>(null);
+  const [isAuthMode, setIsAuthMode] = useState<'login' | 'signup' | null>(null);
+  
+  // Sidebar State
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Modals
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
+  
+  const notificationRef = useRef<HTMLDivElement>(null);
 
-  const fetchData = async (u: User) => {
+  const fetchBoard = async () => {
     try {
-      const data = await DataService.fetchBoardData(u.id);
+      const currUser = user || await DataService.getCurrentUser();
+      if (!currUser) return;
+      const data = await DataService.fetchBoardData(currUser.id);
       setBoardData(data);
-    } catch (e) {
-      console.error("Fetch error", e);
-    }
+    } catch (e) { console.error("Error fetching board:", e); }
   };
 
   useEffect(() => {
-    const init = async () => {
-      const u = await DataService.getCurrentUser();
-      if (u) {
-        setUser(u);
-        await fetchData(u);
-      }
+    DataService.getCurrentUser().then(currUser => {
+      setUser(currUser);
+      if (currUser) fetchBoard();
       setLoading(false);
-    };
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        const u = await DataService.getCurrentUser();
-        if (u) {
-          setUser(u);
-          await fetchData(u);
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setBoardData(INITIAL_DATA);
-        setAuthMode('landing');
-      }
     });
+  }, []);
 
-    return () => subscription.unsubscribe();
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
-    if (!destination || (destination.droppableId === source.droppableId && destination.index === source.index)) return;
+    if (!destination) return;
+    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-    const task = boardData.tasks[draggableId];
-    if (task.status !== destination.droppableId) {
-      const updatedTask = { ...task, status: destination.droppableId };
-      setBoardData(prev => {
-        const newTasks = { ...prev.tasks, [draggableId]: updatedTask };
-        const newColumns = { ...prev.columns };
-        newColumns[source.droppableId].taskIds = prev.columns[source.droppableId].taskIds.filter(id => id !== draggableId);
-        newColumns[destination.droppableId].taskIds.splice(destination.index, 0, draggableId);
-        return { ...prev, tasks: newTasks, columns: newColumns };
-      });
-      await DataService.updateTask(draggableId, { status: destination.droppableId });
+    const newBoard = { ...boardData };
+    const sourceCol = newBoard.columns[source.droppableId];
+    const destCol = newBoard.columns[destination.droppableId];
+    
+    if (sourceCol && destCol) {
+      sourceCol.taskIds.splice(source.index, 1);
+      destCol.taskIds.splice(destination.index, 0, draggableId);
+      setBoardData(newBoard);
+      await DataService.updateTaskPosition(draggableId, destination.droppableId, destination.index);
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <RefreshCw className="animate-spin text-indigo-600" size={48} />
-    </div>
-  );
+  const handleTaskSubmit = async (taskData: Partial<Task>) => {
+    if (selectedTask && (selectedTask as any).id) {
+      await DataService.updateTask((selectedTask as any).id, taskData);
+    } else {
+      await DataService.addTask({
+        ...taskData,
+        createdAt: new Date().toISOString()
+      } as Task);
+    }
+    await fetchBoard();
+    setSelectedTask(undefined);
+    setIsTaskModalOpen(false);
+  };
 
-  if (!user) {
-    if (authMode === 'landing') return <LanguageProvider><LandingPage onGoToLogin={() => setAuthMode('login')} onGoToSignup={() => setAuthMode('signup')} /></LanguageProvider>;
-    return <LanguageProvider><AuthView initialMode={authMode === 'login' ? 'login' : 'signup'} onLogin={(u) => { setUser(u); setAuthMode('landing'); }} onBackToHome={() => setAuthMode('landing')} /></LanguageProvider>;
+  const handleTaskDelete = async (taskId: string) => {
+    await DataService.deleteTask(taskId);
+    await fetchBoard();
+    setIsTaskModalOpen(false);
+  };
+
+  const overdueTasksCount = useMemo(() => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    return Object.values(boardData.tasks).filter(t => {
+      if (t.status === 'Done') return false;
+      return new Date(t.dueDate).getTime() < today.getTime();
+    }).length;
+  }, [boardData.tasks]);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-slate-50">
+        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-100 animate-bounce mb-4">
+          <Layout className="text-white" size={32} />
+        </div>
+        <div className="flex items-center gap-2 text-slate-400 font-bold uppercase tracking-widest text-xs">
+           <RefreshCw className="animate-spin" size={14} /> Carregando...
+        </div>
+      </div>
+    );
   }
 
+  if (!user) {
+    if (isAuthMode) {
+      return (
+        <AuthView 
+          initialMode={isAuthMode} 
+          onLogin={(u) => { setUser(u); fetchBoard(); setIsAuthMode(null); }} 
+          onBackToHome={() => setIsAuthMode(null)} 
+        />
+      );
+    }
+    return <LandingPage onGoToLogin={() => setIsAuthMode('login')} onGoToSignup={() => setIsAuthMode('signup')} />;
+  }
+
+  const navItems = [
+    { to: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+    { to: '/kanban', label: t('kanban'), icon: Kanban },
+    { to: '/table', label: t('table'), icon: List },
+    { to: '/calendar', label: t('calendar'), icon: Calendar },
+    { to: '/notes', label: t('notes'), icon: StickyNote },
+    { to: '/settings', label: t('settings'), icon: Settings },
+  ];
+
   return (
-    <LanguageProvider>
-      <HashRouter>
-        <div className="flex h-screen bg-slate-50 text-slate-900">
-          {/* Sidebar */}
-          <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static transition-transform duration-300`}>
-            <div className="flex flex-col h-full">
-              <div className="p-6 flex items-center gap-3">
-                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white"><Layout size={20} /></div>
-                <span className="font-extrabold text-lg tracking-tight">HybridTask</span>
-                <button className="lg:hidden ml-auto" onClick={() => setIsSidebarOpen(false)}><X size={20}/></button>
+    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
+      {/* Sidebar Desktop */}
+      <aside className={`hidden lg:flex flex-col bg-white border-r border-slate-200 shadow-sm z-30 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'w-20' : 'w-72'}`}>
+        <div className={`p-8 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+           <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-2xl shadow-indigo-200 shrink-0 icon-shadow">
+                <Layout className="text-white" size={20} />
               </div>
-              <nav className="flex-1 px-4 space-y-1">
-                <NavItem to="/dashboard" icon={LayoutDashboard} label="dashboard" />
-                <NavItem to="/kanban" icon={Kanban} label="kanban" />
-                <NavItem to="/table" icon={List} label="table" />
-                <NavItem to="/calendar" icon={Calendar} label="calendar" />
-                <NavItem to="/notes" icon={StickyNote} label="notes" />
-                <NavItem to="/settings" icon={Settings} label="settings" />
-              </nav>
-              <div className="p-4 border-t border-slate-100">
-                <button onClick={() => DataService.logout()} className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-bold">
-                  <LogOut size={20} /> Sair
-                </button>
-              </div>
-            </div>
-          </aside>
-
-          {/* Main Content */}
-          <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-30">
-              <div className="flex items-center gap-4">
-                <button className="lg:hidden" onClick={() => setIsSidebarOpen(true)}><Menu size={24}/></button>
-                <h1 className="font-extrabold text-xl text-slate-800 tracking-tight">Fluxo de Trabalho</h1>
-              </div>
-              <div className="flex items-center gap-4">
-                <button onClick={() => { setActiveTask({}); setIsTaskModalOpen(true); }} className="hidden sm:flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">
-                  <Plus size={20} /> Nova Tarefa
-                </button>
-                <Avatar url={user.avatar} name={user.name} size="md" onClick={() => setIsProfileModalOpen(true)} />
-              </div>
-            </header>
-
-            <div className="flex-1 overflow-auto p-4 md:p-8">
-              <Routes>
-                <Route path="/dashboard" element={<Dashboard data={boardData} />} />
-                <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={(t) => { setActiveTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async (id) => { await DataService.deleteTask(id); fetchData(user); }} />} />
-                <Route path="/table" element={<TableView data={boardData} onEditTask={(t) => { setActiveTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async (id) => { await DataService.deleteTask(id); fetchData(user); }} />} />
-                <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={(t) => { setActiveTask(t); setIsTaskModalOpen(true); }} onAddTaskOnDate={(d) => { setActiveTask({ dueDate: d }); setIsTaskModalOpen(true); }} />} />
-                <Route path="/notes" element={<NotesView data={boardData} onUpdate={() => fetchData(user)} />} />
-                <Route path="/settings" element={
-                  <SettingsView 
-                    data={boardData} 
-                    onAddColumn={async (t, c) => { await DataService.addColumn(t, c); fetchData(user); }}
-                    onUpdateColumn={async (id, u) => { await DataService.updateColumn(id, u); fetchData(user); }}
-                    onDeleteColumn={async (id) => { await DataService.deleteColumn(id); fetchData(user); }}
-                    onAddPriority={async (t, c) => { await DataService.addPriority(t, c); fetchData(user); }}
-                    onUpdatePriority={async (id, u) => { await DataService.updatePriority(id, u); fetchData(user); }}
-                    onDeletePriority={async (id) => { await DataService.deletePriority(id); fetchData(user); }}
-                    onAddAssignee={async (n, e) => { await DataService.addAssignee(n, e); fetchData(user); }}
-                    onDeleteAssignee={async (id) => { await DataService.deleteAssignee(id); fetchData(user); }}
-                    onRestoreDefaults={async () => { await DataService.seedUserData(user); fetchData(user); }}
-                  />
-                } />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
-            </div>
-          </main>
+              {!isSidebarCollapsed && <span className="font-black text-xl tracking-tight transition-all">HybridTask</span>}
+           </div>
         </div>
 
-        <TaskModal 
-          isOpen={isTaskModalOpen} 
-          onClose={() => setIsTaskModalOpen(false)} 
-          boardData={boardData}
-          initialData={activeTask || undefined}
-          onSubmit={async (t) => {
-            if ((activeTask as any)?.id) await DataService.updateTask((activeTask as any).id, t);
-            else await DataService.addTask(t);
-            fetchData(user);
-          }}
-          onDelete={async (id) => { await DataService.deleteTask(id); fetchData(user); }}
-        />
-        
-        <ProfileModal 
-          isOpen={isProfileModalOpen} 
-          onClose={() => setIsProfileModalOpen(false)} 
-          user={user} 
-          onUpdate={async (id, d) => { const updated = await DataService.updateCurrentUser(id, d); setUser(updated); }} 
-        />
-      </HashRouter>
-    </LanguageProvider>
+        <nav className={`flex-1 ${isSidebarCollapsed ? 'px-2' : 'px-4'} space-y-3`}>
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              data-tooltip={item.label}
+              className={({ isActive }) => 
+                `flex items-center rounded-2xl font-bold text-sm transition-all group relative ${isSidebarCollapsed ? 'sidebar-tooltip justify-center px-0 py-4' : 'gap-4 px-4 py-3.5'} ${isActive ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`
+              }
+            >
+              <item.icon size={22} className={`shrink-0 transition-transform group-hover:scale-110 ${location.pathname.startsWith(item.to) ? 'icon-shadow-active' : 'icon-shadow'}`} />
+              {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className={`p-4 border-t border-slate-100 space-y-3 ${isSidebarCollapsed ? 'px-2' : 'px-4'}`}>
+           <button 
+             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+             data-tooltip={isSidebarCollapsed ? "Expandir" : "Recolher"}
+             className={`w-full flex items-center text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-2xl transition-all ${isSidebarCollapsed ? 'sidebar-tooltip justify-center py-4' : 'justify-between px-4 py-3'}`}
+           >
+              {!isSidebarCollapsed && <span className="text-xs font-black uppercase tracking-widest">Recolher</span>}
+              {isSidebarCollapsed ? <ChevronLast size={20} className="icon-shadow" /> : <ChevronFirst size={20} className="icon-shadow" />}
+           </button>
+
+           <div 
+             onClick={() => setIsProfileModalOpen(true)} 
+             data-tooltip={isSidebarCollapsed ? user.name : ""}
+             className={`flex items-center rounded-2xl hover:bg-slate-50 cursor-pointer transition-all group ${isSidebarCollapsed ? 'sidebar-tooltip justify-center py-4' : 'gap-3 px-4 py-3'}`}
+           >
+              <Avatar name={user.name} url={user.avatar} size={isSidebarCollapsed ? 'sm' : 'md'} />
+              {!isSidebarCollapsed && (
+                <div className="min-w-0">
+                   <p className="text-sm font-black text-slate-800 truncate">{user.name}</p>
+                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{t('editProfile')}</p>
+                </div>
+              )}
+           </div>
+           
+           <button 
+             onClick={async () => { await DataService.logout(); setUser(null); }} 
+             data-tooltip={isSidebarCollapsed ? t('logout') : ""}
+             className={`w-full flex items-center rounded-2xl font-bold text-sm text-red-500 hover:bg-red-50 transition-all ${isSidebarCollapsed ? 'sidebar-tooltip justify-center py-4' : 'gap-3 px-4 py-3'}`}
+           >
+              <LogOut size={22} className="icon-shadow" />
+              {!isSidebarCollapsed && <span>{t('logout')}</span>}
+           </button>
+        </div>
+      </aside>
+
+      {/* Main Container */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <header className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 sticky top-0 z-40">
+           <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors">
+              <Menu size={24} />
+           </button>
+           <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center icon-shadow">
+                <Layout className="text-white" size={16} />
+              </div>
+              <span className="font-black text-lg">HybridTask</span>
+           </div>
+           <Avatar name={user.name} url={user.avatar} onClick={() => setIsProfileModalOpen(true)} />
+        </header>
+
+        <div className="px-6 pt-8 md:px-10 flex items-center justify-between shrink-0 mb-6">
+           <div className="animate-in slide-in-from-left-4 duration-500">
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 leading-none">
+                 {navItems.find(i => location.pathname.startsWith(i.to))?.label || t('dashboard')}
+              </h1>
+              <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.25em] mt-3 flex items-center gap-2">
+                <Globe size={12} className="text-indigo-500" />
+                {t('projectOverview')}
+              </p>
+           </div>
+           
+           <div className="flex items-center gap-3">
+              {/* Notification Bell */}
+              <div className="relative" ref={notificationRef}>
+                <button 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className={`p-3 rounded-2xl border transition-all relative ${showNotifications ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300 hover:text-indigo-600 shadow-sm'}`}
+                >
+                  <Bell size={22} className="icon-shadow" />
+                  {overdueTasksCount > 0 && (
+                    <span className="absolute top-2.5 right-2.5 w-3 h-3 bg-red-500 border-2 border-white rounded-full animate-pulse"></span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute top-full right-0 mt-3 w-80 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
+                    <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+                      <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('notifications')}</span>
+                      <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-black rounded-full uppercase">{overdueTasksCount} alertas</span>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                      {overdueTasksCount > 0 ? (
+                        Object.values(boardData.tasks)
+                          .filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0))
+                          .map(task => (
+                            <NotificationItem 
+                              key={task.id}
+                              icon={AlertCircle}
+                              color="bg-red-500"
+                              title={`Atrasada: ${task.title}`}
+                              time={new Date(task.dueDate).toLocaleDateString()}
+                              onClick={() => { setSelectedTask(task); setIsTaskModalOpen(true); setShowNotifications(false); }}
+                            />
+                          ))
+                      ) : (
+                        <div className="p-8 text-center">
+                          <CheckCircle2 size={32} className="mx-auto text-green-200 mb-3" />
+                          <p className="text-sm font-bold text-slate-400">{t('noNotifications')}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <button 
+                onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }}
+                className="bg-indigo-600 text-white px-6 py-3.5 rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 active:scale-95 group"
+              >
+                  <div className="p-1 bg-white/20 rounded-lg group-hover:rotate-90 transition-transform duration-300">
+                    <Plus size={18} className="icon-shadow" />
+                  </div>
+                  <span className="hidden sm:inline">{t('newTask')}</span>
+              </button>
+           </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 pb-10 md:px-10 scroll-smooth custom-scrollbar">
+           <Routes>
+              <Route path="/dashboard" element={<Dashboard data={boardData} />} />
+              <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={handleTaskDelete} />} />
+              <Route path="/table" element={<TableView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={handleTaskDelete} />} />
+              <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }} />} />
+              <Route path="/notes" element={<NotesView data={boardData} onUpdate={fetchBoard} />} />
+              <Route path="/settings" element={
+                <SettingsView 
+                  data={boardData} 
+                  onAddColumn={async (title, color) => { await DataService.addColumn(title, color); await fetchBoard(); }} 
+                  onUpdateColumn={async (id, upd) => { await DataService.updateColumn(id, upd); await fetchBoard(); }} 
+                  onDeleteColumn={async (id) => { await DataService.deleteColumn(id); await fetchBoard(); }} 
+                  onAddPriority={async (title, color) => { await DataService.addPriority(title, color); await fetchBoard(); }} 
+                  onUpdatePriority={async (id, upd) => { await DataService.updatePriority(id, upd); await fetchBoard(); }} 
+                  onDeletePriority={async (id) => { await DataService.deletePriority(id); await fetchBoard(); }} 
+                  onAddAssignee={async (name, email) => { await DataService.addAssignee(name, email); await fetchBoard(); }} 
+                  onDeleteAssignee={async (id) => { await DataService.deleteAssignee(id); await fetchBoard(); }} 
+                  onRestoreDefaults={async () => { await DataService.restoreDefaults(); await fetchBoard(); }} 
+                />
+              } />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+           </Routes>
+        </div>
+
+        {isMobileMenuOpen && (
+           <div className="lg:hidden fixed inset-0 z-[100]">
+              <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsMobileMenuOpen(false)}></div>
+              <aside className="absolute top-0 left-0 w-80 h-full bg-white shadow-2xl p-8 flex flex-col animate-in slide-in-from-left duration-300 rounded-r-[3rem]">
+                 <div className="flex items-center justify-between mb-12">
+                    <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-xl shadow-indigo-100 icon-shadow">
+                          <Layout className="text-white" size={20} />
+                       </div>
+                       <span className="font-black text-2xl tracking-tighter">HybridTask</span>
+                    </div>
+                    <button onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-slate-400 hover:bg-slate-50 rounded-2xl"><X size={24} /></button>
+                 </div>
+                 <nav className="flex-1 space-y-3">
+                    {navItems.map((item) => (
+                       <NavLink 
+                        key={item.to} 
+                        to={item.to} 
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={({ isActive }) => `flex items-center gap-4 px-6 py-4 rounded-[1.5rem] font-bold transition-all ${isActive ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50'}`}
+                       >
+                          <item.icon size={22} className={location.pathname.startsWith(item.to) ? 'icon-shadow-active' : 'icon-shadow'} /> {item.label}
+                       </NavLink>
+                    ))}
+                 </nav>
+                 <div className="mt-auto pt-8 border-t border-slate-100">
+                    <button onClick={async () => { await DataService.logout(); setUser(null); }} className="w-full flex items-center gap-4 px-6 py-4 rounded-[1.5rem] font-bold text-red-500 hover:bg-red-50 transition-all">
+                       <LogOut size={22} className="icon-shadow" /> {t('logout')}
+                    </button>
+                 </div>
+              </aside>
+           </div>
+        )}
+      </main>
+
+      <TaskModal 
+        isOpen={isTaskModalOpen} 
+        onClose={() => { setIsTaskModalOpen(false); setSelectedTask(undefined); }} 
+        onSubmit={handleTaskSubmit} 
+        onDelete={handleTaskDelete} 
+        initialData={selectedTask} 
+        boardData={boardData} 
+      />
+      
+      <ProfileModal 
+        isOpen={isProfileModalOpen} 
+        onClose={() => setIsProfileModalOpen(false)} 
+        user={user} 
+        onUpdate={async (id, upd) => { 
+          const updatedUser = await DataService.updateCurrentUser(id, upd); 
+          setUser(updatedUser); 
+        }} 
+      />
+    </div>
   );
 };
 
-const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => {
-  const { t } = useLanguage();
-  return (
-    <NavLink to={to} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${isActive ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>
-      <Icon size={20} />
-      <span>{t(label as any)}</span>
-    </NavLink>
-  );
-};
+const App = () => (
+  <LanguageProvider>
+    <HashRouter>
+      <AppContent />
+    </HashRouter>
+  </LanguageProvider>
+);
 
 export default App;

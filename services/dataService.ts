@@ -141,6 +141,24 @@ export const DataService = {
     }
   },
 
+  /**
+   * Fix: Added missing restoreDefaults method to DataService
+   */
+  restoreDefaults: async (): Promise<BoardData> => {
+    const user = await DataService.getCurrentUser();
+    if (!user) throw new Error("Not authenticated");
+
+    // Clear existing
+    await supabase.from('kanban_tasks').delete().eq('user_id', user.id);
+    await supabase.from('kanban_columns').delete().eq('user_id', user.id);
+    await supabase.from('kanban_priorities').delete().eq('user_id', user.id);
+    await supabase.from('kanban_assignees').delete().eq('user_id', user.id);
+
+    // Re-seed
+    await DataService.seedUserData(user);
+    return await DataService.fetchBoardData(user.id);
+  },
+
   // --- Board Data Fetching ---
 
   fetchBoardData: async (userId: string): Promise<BoardData> => {
@@ -201,6 +219,14 @@ export const DataService = {
     }).eq('id', taskId).select().single();
     if (error) throw error;
     return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at };
+  },
+
+  /**
+   * Fix: Added missing updateTaskPosition method to DataService
+   */
+  updateTaskPosition: async (taskId: string, newStatus: string, newPosition: number): Promise<void> => {
+    const { error } = await supabase.from('kanban_tasks').update({ status: newStatus }).eq('id', taskId);
+    if (error) throw error;
   },
 
   deleteTask: async (taskId: string): Promise<void> => {
