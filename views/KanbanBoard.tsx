@@ -29,17 +29,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onClick}
-          className={`bg-white p-3 rounded-lg border border-slate-200 shadow-sm mb-3 group hover:border-indigo-300 hover:shadow-md transition-all relative ${
+          className={`bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm mb-3 group hover:border-indigo-300 dark:hover:border-indigo-500 hover:shadow-md transition-all relative ${
             snapshot.isDragging ? 'rotate-2 scale-105 shadow-xl ring-2 ring-indigo-400 z-50' : ''
           }`}
           style={provided.draggableProps.style}
         >
-          {/* Action Menu (Visible on Hover) */}
+          {/* Ações (Visível ao passar o mouse) */}
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={onDelete}
-              className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded"
-              title="Delete Task"
+              className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+              title="Excluir Tarefa"
             >
               <Trash2 size={14} />
             </button>
@@ -49,11 +49,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
             <PriorityBadge priority={priorityData} />
           </div>
           
-          <h4 className="font-medium text-slate-800 mb-2 line-clamp-2 leading-tight">
+          <h4 className="font-semibold text-slate-800 dark:text-slate-100 mb-2 line-clamp-2 leading-tight">
             {task.title}
           </h4>
           
-          <div className="flex items-center justify-between text-slate-400 mt-3 pt-2 border-t border-slate-50">
+          <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 mt-3 pt-2 border-t border-slate-50 dark:border-slate-700/50">
              <div className="flex items-center gap-1 text-xs">
                 <Calendar size={12} />
                 <span>{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>
@@ -78,14 +78,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
           const tasks = column.taskIds.map(taskId => data.tasks[taskId]);
 
           return (
-            <div key={column.id} className="min-w-[300px] flex flex-col h-full rounded-xl bg-slate-50/50 border border-slate-200/60">
+            <div key={column.id} className="min-w-[300px] flex flex-col h-full rounded-xl bg-slate-100/40 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/60 shadow-inner">
               <div 
-                className="p-4 flex items-center justify-between border-t-4 rounded-t-xl"
+                className="p-4 flex items-center justify-between border-t-4 rounded-t-xl bg-white/50 dark:bg-slate-900/50"
                 style={{ borderColor: column.color }}
               >
-                <h3 className="font-semibold text-slate-700 flex items-center gap-2">
+                <h3 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
                   {column.title}
-                  <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">
+                  <span className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-full text-xs font-black">
                     {tasks.length}
                   </span>
                 </h3>
@@ -96,7 +96,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex-1 p-2 transition-colors ${snapshot.isDraggingOver ? 'bg-indigo-50/50' : ''}`}
+                    className={`flex-1 p-2 transition-colors ${snapshot.isDraggingOver ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}
                   >
                     {tasks.map((task, index) => (
                       <TaskCard 

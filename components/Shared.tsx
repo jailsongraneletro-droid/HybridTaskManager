@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Priority } from '../types';
 import { 
@@ -8,9 +7,8 @@ import {
 import { useLanguage } from '../utils/i18n';
 
 export const PriorityBadge = ({ priority }: { priority?: Priority }) => {
-  // Fallback if priority is deleted or undefined
   if (!priority) {
-      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">None</span>;
+      return <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">Nenhuma</span>;
   }
 
   return (
@@ -18,8 +16,8 @@ export const PriorityBadge = ({ priority }: { priority?: Priority }) => {
       className="px-2 py-0.5 rounded-full text-xs font-medium border"
       style={{
         backgroundColor: priority.color,
-        borderColor: `${priority.color}80`, // darken border slightly
-        color: '#475569' // slate-600 for text contrast usually works on light pastels
+        borderColor: `${priority.color}80`,
+        color: '#1e293b'
       }}
     >
       {priority.title}
@@ -32,7 +30,7 @@ export const StatusBadge = ({ status, color = '#64748b' }: { status: string; col
     <div 
       className="flex items-center gap-1.5 px-2 py-1 rounded-md text-sm border w-fit"
       style={{ 
-        backgroundColor: `${color}15`, // 10% opacity
+        backgroundColor: `${color}15`,
         color: color,
         borderColor: `${color}30`
       }}
@@ -49,14 +47,8 @@ export const TaskAge = ({ createdAt }: { createdAt: string }) => {
   const calculateAge = (dateStr: string) => {
     const created = new Date(dateStr);
     const now = new Date();
-    // Calculate difference in milliseconds
     const diffTime = now.getTime() - created.getTime();
-    
-    // Ensure we don't return negative if system clock is slightly off
     if (diffTime < 0) return 0;
-
-    // Use Math.floor to get full days elapsed. 
-    // Tasks created today (less than 24h ago) will be 0.
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
@@ -66,16 +58,15 @@ export const TaskAge = ({ createdAt }: { createdAt: string }) => {
 
   return (
     <div 
-      className={`flex items-center gap-1 text-xs ${isOld ? 'text-red-600 font-bold' : 'text-slate-400'}`} 
-      title={`Created on ${new Date(createdAt).toLocaleDateString()}`}
+      className={`flex items-center gap-1 text-xs ${isOld ? 'text-red-500 font-bold' : 'text-slate-400 dark:text-slate-500'}`} 
+      title={`Criado em ${new Date(createdAt).toLocaleDateString()}`}
     >
-      <Clock size={12} className={isOld ? 'text-red-600' : ''} />
+      <Clock size={12} className={isOld ? 'text-red-500' : ''} />
       <span>{days === 0 ? t('today') : `${days} ${t('daysOld')}`}</span>
     </div>
   );
 };
 
-// Updated Avatar to support onClick prop
 export const Avatar = ({ url, name, size = 'sm', onClick }: { url?: string; name: string; size?: 'sm' | 'md'; onClick?: () => void }) => {
   const sizeClasses = size === 'sm' ? 'w-6 h-6 text-[10px]' : 'w-8 h-8 text-xs';
   const clickableClass = onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : '';
@@ -85,7 +76,7 @@ export const Avatar = ({ url, name, size = 'sm', onClick }: { url?: string; name
       <img 
         src={url} 
         alt={name} 
-        className={`${sizeClasses} ${clickableClass} rounded-full object-cover border border-slate-200`} 
+        className={`${sizeClasses} ${clickableClass} rounded-full object-cover border border-slate-200 dark:border-slate-700`} 
         title={name} 
         onClick={onClick}
       />
@@ -94,7 +85,7 @@ export const Avatar = ({ url, name, size = 'sm', onClick }: { url?: string; name
 
   return (
     <div 
-      className={`${sizeClasses} ${clickableClass} rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold border border-indigo-200`} 
+      className={`${sizeClasses} ${clickableClass} rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold border border-indigo-200 dark:border-indigo-800`} 
       title={name}
       onClick={onClick}
     >
@@ -114,15 +105,16 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="flex items-center justify-between p-4 border-b border-slate-100">
-          <h2 className="text-lg font-semibold text-slate-800">{title}</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200 border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <h2 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">{title}</h2>
+          <button onClick={onClose} className="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-white/50 dark:bg-slate-800 rounded-lg group">
+             <Circle size={20} className="fill-current opacity-20" />
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-bold text-lg leading-none">×</div>
           </button>
         </div>
-        <div className="p-4 overflow-y-auto max-h-[80vh]">
+        <div className="p-6 overflow-y-auto max-h-[85vh]">
           {children}
         </div>
       </div>
@@ -144,28 +136,28 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-4 text-red-600">
-             <div className="p-2 bg-red-100 rounded-full">
-               <AlertTriangle size={24} />
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border border-slate-200 dark:border-slate-800">
+        <div className="p-8">
+          <div className="flex items-center gap-4 mb-5 text-red-500">
+             <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-2xl">
+               <AlertTriangle size={32} />
              </div>
-             <h3 className="text-xl font-bold text-slate-800">{title}</h3>
+             <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">{title}</h3>
           </div>
-          <p className="text-slate-600 mb-6 leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed font-medium">
             {message}
           </p>
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-4">
              <button 
                onClick={onClose}
-               className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+               className="px-6 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
              >
                {t('cancel')}
              </button>
              <button 
                onClick={() => { onConfirm(); onClose(); }}
-               className="px-4 py-2 text-sm font-medium bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-md shadow-red-200 transition-colors"
+               className="px-6 py-2.5 text-sm font-bold bg-red-600 text-white hover:bg-red-700 rounded-xl shadow-lg shadow-red-100 dark:shadow-red-900/40 transition-all active:scale-95"
              >
                {t('confirm')}
              </button>

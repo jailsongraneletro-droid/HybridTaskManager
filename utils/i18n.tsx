@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Simplified to just string map since we only support PT-BR now
@@ -147,6 +148,9 @@ const translations = {
     daysOld: 'dias',
     today: 'Hoje',
     unassigned: 'Não atribuído',
+    // Fix: Added missing 'grid' and 'list' keys
+    grid: 'Grade',
+    list: 'Lista',
     
     // Confirmation Modals
     confirmDeleteTitle: 'Excluir Item',
