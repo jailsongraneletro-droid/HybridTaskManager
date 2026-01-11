@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Priority } from '../types';
 import { 
@@ -74,15 +75,29 @@ export const TaskAge = ({ createdAt }: { createdAt: string }) => {
   );
 };
 
-export const Avatar = ({ url, name, size = 'sm' }: { url?: string; name: string; size?: 'sm' | 'md' }) => {
+// Updated Avatar to support onClick prop
+export const Avatar = ({ url, name, size = 'sm', onClick }: { url?: string; name: string; size?: 'sm' | 'md'; onClick?: () => void }) => {
   const sizeClasses = size === 'sm' ? 'w-6 h-6 text-[10px]' : 'w-8 h-8 text-xs';
+  const clickableClass = onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : '';
   
   if (url) {
-    return <img src={url} alt={name} className={`${sizeClasses} rounded-full object-cover border border-slate-200`} title={name} />;
+    return (
+      <img 
+        src={url} 
+        alt={name} 
+        className={`${sizeClasses} ${clickableClass} rounded-full object-cover border border-slate-200`} 
+        title={name} 
+        onClick={onClick}
+      />
+    );
   }
 
   return (
-    <div className={`${sizeClasses} rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold border border-indigo-200`} title={name}>
+    <div 
+      className={`${sizeClasses} ${clickableClass} rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold border border-indigo-200`} 
+      title={name}
+      onClick={onClick}
+    >
       {name.charAt(0)}
     </div>
   );

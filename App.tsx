@@ -6,7 +6,7 @@ import {
   ShieldAlert, Menu, X, RefreshCw, StickyNote, WifiOff, Clock, BarChart3,
   Layers, ChevronDown, Rocket, CheckCircle2, Zap, ShieldCheck, TrendingUp, AlertCircle, CheckCircle2 as CheckIcon,
   Download, ChevronLeft, ChevronRight, Edit3, Volume2, MousePointer2, Sparkles, Smartphone, Shield, HelpCircle, 
-  BookOpen, CheckSquare, ArrowRight, MousePointerClick, Filter, PieChart as ChartIcon, Monitor
+  BookOpen, CheckSquare, ArrowRight, MousePointerClick, Filter, PieChart as ChartIcon, Monitor, ChevronFirst, ChevronLast
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User, Priority } from './types';
@@ -26,13 +26,13 @@ import { INITIAL_DATA } from './constants';
 
 // -- Notification Item Component --
 const NotificationItem = ({ icon: Icon, color, title, time, onClick }: any) => (
-  <div onClick={onClick} className="p-3 hover:bg-slate-50 cursor-pointer flex gap-3 border-b border-slate-100 last:border-0 transition-colors">
-    <div className={`p-2 rounded-lg ${color} shrink-0`}>
-      <Icon size={16} className="text-white" />
+  <div onClick={onClick} className="p-4 hover:bg-slate-50 cursor-pointer flex gap-4 border-b border-slate-100 last:border-0 transition-colors">
+    <div className={`p-2.5 rounded-xl ${color} shrink-0 shadow-sm`}>
+      <Icon size={18} className="text-white" />
     </div>
     <div className="min-w-0">
-      <p className="text-sm font-bold text-slate-800 truncate">{title}</p>
-      <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{time}</p>
+      <p className="text-sm font-bold text-slate-800 truncate leading-tight">{title}</p>
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{time}</p>
     </div>
   </div>
 );
@@ -63,7 +63,6 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-indigo-100 scroll-smooth">
-      {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -84,7 +83,6 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="pt-48 pb-20 px-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-indigo-50 rounded-full blur-[120px] -z-10"></div>
         <div className="max-w-6xl mx-auto text-center">
@@ -109,7 +107,6 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
-      {/* Ferramentas / Benefícios */}
       <section id="ferramentas" className="py-24 bg-slate-50">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -130,14 +127,12 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
-      {/* Manual de Uso */}
       <section id="manual" className="py-24 bg-white relative">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-20">
             <h2 className="text-5xl font-black text-slate-900 mb-6">{t('userManualTitle')}</h2>
             <p className="text-slate-500 font-bold text-lg">{t('userManualSub')}</p>
           </div>
-
           <div className="space-y-16">
             {steps.map((s, i) => (
               <div key={i} className="flex flex-col md:flex-row gap-8 items-start animate-in fade-in slide-in-from-bottom-4" style={{ animationDelay: `${i * 100}ms` }}>
@@ -154,7 +149,6 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
-      {/* FAQ */}
       <section id="faq" className="py-24 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
@@ -174,7 +168,6 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         </div>
       </section>
 
-      {/* Simple Footer */}
       <footer className="py-12 border-t border-slate-100 bg-white">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
@@ -201,6 +194,22 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    let timer: any;
+    if (signupSuccess && countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown(prev => prev - 1);
+      }, 1000);
+    } else if (signupSuccess && countdown === 0) {
+      setSignupSuccess(false);
+      setMode('login');
+      setCountdown(3);
+    }
+    return () => clearInterval(timer);
+  }, [signupSuccess, countdown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -211,8 +220,16 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
         const user = await DataService.login(email, password);
         onLogin(user);
       } else {
-        const user = await DataService.signup(name, email, password);
-        onLogin(user);
+        try {
+          await DataService.signup(name, email, password);
+        } catch (err: any) {
+          if (err.message === "CONFIRM_EMAIL") {
+            setSignupSuccess(true);
+            return;
+          }
+          throw err;
+        }
+        setSignupSuccess(true);
       }
     } catch (err: any) {
       setError(err.message || t('loginError'));
@@ -222,6 +239,33 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
   };
 
   const inputClasses = "w-full px-4 py-3 bg-white text-slate-900 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400 transition-all";
+
+  if (signupSuccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+        <div className="bg-white p-10 rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md text-center animate-in zoom-in-95 duration-300">
+           <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full mx-auto flex items-center justify-center mb-6 shadow-sm border border-green-100">
+              <Mail size={40} />
+           </div>
+           <h2 className="text-2xl font-black text-slate-900 mb-4">Verifique seu E-mail</h2>
+           <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+             Enviamos um link de confirmação para o seu e-mail. Por favor, confirme sua conta para continuar.
+           </p>
+           <div className="flex flex-col items-center gap-4">
+             <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
+               Redirecionando em {countdown}s
+             </div>
+             <button 
+               onClick={() => { setSignupSuccess(false); setMode('login'); }}
+               className="text-indigo-600 font-bold hover:underline transition-all"
+             >
+               Ir para Login agora
+             </button>
+           </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
@@ -237,31 +281,10 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === 'signup' && (
-            <input 
-              type="text" 
-              value={name} 
-              onChange={e => setName(e.target.value)} 
-              className={inputClasses} 
-              placeholder="Nome" 
-              required 
-            />
+            <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClasses} placeholder="Nome" required />
           )}
-          <input 
-            type="email" 
-            value={email} 
-            onChange={e => setEmail(e.target.value)} 
-            className={inputClasses} 
-            placeholder="Email" 
-            required 
-          />
-          <input 
-            type="password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            className={inputClasses} 
-            placeholder="Senha" 
-            required 
-          />
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputClasses} placeholder="Email" required />
+          <input type="password" value={password} onChange={e => setPassword(e.target.value)} className={inputClasses} placeholder="Senha" required />
           {error && <p className="text-red-500 text-sm font-bold bg-red-50 p-2 rounded-lg border border-red-100">{error}</p>}
           <button disabled={loading} className="w-full bg-indigo-600 text-white font-black py-4 rounded-xl hover:bg-indigo-700 shadow-xl disabled:opacity-50 transition-all active:scale-[0.98]">
             {loading ? <RefreshCw className="animate-spin mx-auto" size={20} /> : 'Continuar'}
@@ -277,311 +300,189 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
   );
 };
 
-// -- Main App Content --
-const AppContent = () => {
-  const { t } = useLanguage();
-  const location = useLocation();
+// -- Main App Component --
+
+/**
+ * Fix: Added missing App component and export default App
+ */
+const App = () => {
   const [user, setUser] = useState<User | null>(null);
   const [boardData, setBoardData] = useState<BoardData>(INITIAL_DATA);
   const [loading, setLoading] = useState(true);
-  const [isAuthMode, setIsAuthMode] = useState<'login' | 'signup' | null>(null);
-  
-  // Modals
+  const [authMode, setAuthMode] = useState<'landing' | 'login' | 'signup'>('landing');
+  const [activeTask, setActiveTask] = useState<Task | Partial<Task> | null>(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
-  
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const fetchBoard = async () => {
+  const fetchData = async (u: User) => {
     try {
-      const data = await DataService.getBoardData();
+      const data = await DataService.fetchBoardData(u.id);
       setBoardData(data);
     } catch (e) {
-      console.error("Error fetching board:", e);
+      console.error("Fetch error", e);
     }
   };
 
   useEffect(() => {
-    DataService.getCurrentUser().then(currUser => {
-      setUser(currUser);
-      if (currUser) fetchBoard();
+    const init = async () => {
+      const u = await DataService.getCurrentUser();
+      if (u) {
+        setUser(u);
+        await fetchData(u);
+      }
       setLoading(false);
+    };
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        const u = await DataService.getCurrentUser();
+        if (u) {
+          setUser(u);
+          await fetchData(u);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setBoardData(INITIAL_DATA);
+        setAuthMode('landing');
+      }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
-    if (!destination) return;
-    if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+    if (!destination || (destination.droppableId === source.droppableId && destination.index === source.index)) return;
 
-    // Optimistic Update
-    const newBoard = { ...boardData };
-    const sourceCol = newBoard.columns[source.droppableId];
-    const destCol = newBoard.columns[destination.droppableId];
-    
-    if (sourceCol && destCol) {
-      sourceCol.taskIds.splice(source.index, 1);
-      destCol.taskIds.splice(destination.index, 0, draggableId);
-      setBoardData(newBoard);
-      // Sync to backend
-      await DataService.updateTaskPosition(draggableId, destination.droppableId, destination.index);
+    const task = boardData.tasks[draggableId];
+    if (task.status !== destination.droppableId) {
+      const updatedTask = { ...task, status: destination.droppableId };
+      setBoardData(prev => {
+        const newTasks = { ...prev.tasks, [draggableId]: updatedTask };
+        const newColumns = { ...prev.columns };
+        newColumns[source.droppableId].taskIds = prev.columns[source.droppableId].taskIds.filter(id => id !== draggableId);
+        newColumns[destination.droppableId].taskIds.splice(destination.index, 0, draggableId);
+        return { ...prev, tasks: newTasks, columns: newColumns };
+      });
+      await DataService.updateTask(draggableId, { status: destination.droppableId });
     }
   };
 
-  const handleTaskSubmit = async (taskData: Partial<Task>) => {
-    if (selectedTask && (selectedTask as any).id) {
-      const updated = await DataService.updateTask({ ...selectedTask, ...taskData } as Task);
-      setBoardData(updated);
-    } else {
-      const updated = await DataService.addTask({
-        ...taskData,
-        id: `task-${Date.now()}`,
-        createdAt: new Date().toISOString()
-      } as Task);
-      setBoardData(updated);
-    }
-    setSelectedTask(undefined);
-    setIsTaskModalOpen(false);
-  };
-
-  const handleTaskDelete = async (taskId: string) => {
-    const updated = await DataService.deleteTask(taskId);
-    setBoardData(updated);
-    setIsTaskModalOpen(false);
-  };
-
-  if (loading) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-slate-50">
-        <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-100 animate-bounce mb-4">
-          <Layout className="text-white" size={32} />
-        </div>
-        <div className="flex items-center gap-2 text-slate-400 font-bold uppercase tracking-widest text-xs">
-           <RefreshCw className="animate-spin" size={14} /> Carregando...
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <RefreshCw className="animate-spin text-indigo-600" size={48} />
+    </div>
+  );
 
   if (!user) {
-    if (isAuthMode) {
-      return (
-        <AuthView 
-          initialMode={isAuthMode} 
-          onLogin={(u) => { setUser(u); fetchBoard(); setIsAuthMode(null); }} 
-          onBackToHome={() => setIsAuthMode(null)} 
-        />
-      );
-    }
-    return <LandingPage onGoToLogin={() => setIsAuthMode('login')} onGoToSignup={() => setIsAuthMode('signup')} />;
+    if (authMode === 'landing') return <LanguageProvider><LandingPage onGoToLogin={() => setAuthMode('login')} onGoToSignup={() => setAuthMode('signup')} /></LanguageProvider>;
+    return <LanguageProvider><AuthView initialMode={authMode === 'login' ? 'login' : 'signup'} onLogin={(u) => { setUser(u); setAuthMode('landing'); }} onBackToHome={() => setAuthMode('landing')} /></LanguageProvider>;
   }
 
-  const navItems = [
-    { to: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
-    { to: '/kanban', label: t('kanban'), icon: Kanban },
-    { to: '/table', label: t('table'), icon: List },
-    { to: '/calendar', label: t('calendar'), icon: Calendar },
-    { to: '/notes', label: t('notes'), icon: StickyNote },
-    { to: '/settings', label: t('settings'), icon: Settings },
-  ];
-
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
-      {/* Sidebar Desktop */}
-      <aside className="hidden lg:flex w-72 flex-col bg-white border-r border-slate-200 shadow-sm z-30">
-        <div className="p-8">
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-xl shadow-indigo-100">
-                <Layout className="text-white" size={20} />
+    <LanguageProvider>
+      <HashRouter>
+        <div className="flex h-screen bg-slate-50 text-slate-900">
+          {/* Sidebar */}
+          <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static transition-transform duration-300`}>
+            <div className="flex flex-col h-full">
+              <div className="p-6 flex items-center gap-3">
+                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white"><Layout size={20} /></div>
+                <span className="font-extrabold text-lg tracking-tight">HybridTask</span>
+                <button className="lg:hidden ml-auto" onClick={() => setIsSidebarOpen(false)}><X size={20}/></button>
               </div>
-              <span className="font-black text-xl tracking-tight">HybridTask</span>
-           </div>
-        </div>
-
-        <nav className="flex-1 px-4 space-y-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => 
-                `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all group ${
-                  isActive 
-                  ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-50' 
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                }`
-              }
-            >
-              <item.icon size={20} />
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="p-6 border-t border-slate-100">
-           <div 
-             onClick={() => setIsProfileModalOpen(true)}
-             className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 cursor-pointer transition-all border border-transparent hover:border-slate-100 group"
-           >
-              <Avatar name={user.name} url={user.avatar} size="md" />
-              <div className="min-w-0">
-                 <p className="text-sm font-black text-slate-800 truncate">{user.name}</p>
-                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{t('editProfile')}</p>
+              <nav className="flex-1 px-4 space-y-1">
+                <NavItem to="/dashboard" icon={LayoutDashboard} label="dashboard" />
+                <NavItem to="/kanban" icon={Kanban} label="kanban" />
+                <NavItem to="/table" icon={List} label="table" />
+                <NavItem to="/calendar" icon={Calendar} label="calendar" />
+                <NavItem to="/notes" icon={StickyNote} label="notes" />
+                <NavItem to="/settings" icon={Settings} label="settings" />
+              </nav>
+              <div className="p-4 border-t border-slate-100">
+                <button onClick={() => DataService.logout()} className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-bold">
+                  <LogOut size={20} /> Sair
+                </button>
               </div>
-           </div>
-           <button 
-             onClick={async () => { await DataService.logout(); setUser(null); }}
-             className="w-full mt-4 flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-red-500 hover:bg-red-50 transition-all"
-           >
-              <LogOut size={20} />
-              {t('logout')}
-           </button>
-        </div>
-      </aside>
+            </div>
+          </aside>
 
-      {/* Main Container */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-        {/* Header Mobile */}
-        <header className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 sticky top-0 z-40">
-           <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg">
-              <Menu size={24} />
-           </button>
-           <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <Layout className="text-white" size={16} />
+          {/* Main Content */}
+          <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-30">
+              <div className="flex items-center gap-4">
+                <button className="lg:hidden" onClick={() => setIsSidebarOpen(true)}><Menu size={24}/></button>
+                <h1 className="font-extrabold text-xl text-slate-800 tracking-tight">Fluxo de Trabalho</h1>
               </div>
-              <span className="font-black text-lg">HybridTask</span>
-           </div>
-           <Avatar name={user.name} url={user.avatar} onClick={() => setIsProfileModalOpen(true)} />
-        </header>
+              <div className="flex items-center gap-4">
+                <button onClick={() => { setActiveTask({}); setIsTaskModalOpen(true); }} className="hidden sm:flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100">
+                  <Plus size={20} /> Nova Tarefa
+                </button>
+                <Avatar url={user.avatar} name={user.name} size="md" onClick={() => setIsProfileModalOpen(true)} />
+              </div>
+            </header>
 
-        {/* View Header */}
-        <div className="px-6 py-6 md:px-10 flex items-center justify-between shrink-0">
-           <div>
-              <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900">
-                 {navItems.find(i => location.pathname.startsWith(i.to))?.label || t('dashboard')}
-              </h1>
-              <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em] mt-1">{t('projectOverview')}</p>
-           </div>
-           <button 
-             onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }}
-             className="bg-indigo-600 text-white px-5 py-3 rounded-2xl font-black text-sm flex items-center gap-2 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 active:scale-95"
-           >
-              <Plus size={20} />
-              <span className="hidden sm:inline">{t('newTask')}</span>
-           </button>
+            <div className="flex-1 overflow-auto p-4 md:p-8">
+              <Routes>
+                <Route path="/dashboard" element={<Dashboard data={boardData} />} />
+                <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={(t) => { setActiveTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async (id) => { await DataService.deleteTask(id); fetchData(user); }} />} />
+                <Route path="/table" element={<TableView data={boardData} onEditTask={(t) => { setActiveTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async (id) => { await DataService.deleteTask(id); fetchData(user); }} />} />
+                <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={(t) => { setActiveTask(t); setIsTaskModalOpen(true); }} onAddTaskOnDate={(d) => { setActiveTask({ dueDate: d }); setIsTaskModalOpen(true); }} />} />
+                <Route path="/notes" element={<NotesView data={boardData} onUpdate={() => fetchData(user)} />} />
+                <Route path="/settings" element={
+                  <SettingsView 
+                    data={boardData} 
+                    onAddColumn={async (t, c) => { await DataService.addColumn(t, c); fetchData(user); }}
+                    onUpdateColumn={async (id, u) => { await DataService.updateColumn(id, u); fetchData(user); }}
+                    onDeleteColumn={async (id) => { await DataService.deleteColumn(id); fetchData(user); }}
+                    onAddPriority={async (t, c) => { await DataService.addPriority(t, c); fetchData(user); }}
+                    onUpdatePriority={async (id, u) => { await DataService.updatePriority(id, u); fetchData(user); }}
+                    onDeletePriority={async (id) => { await DataService.deletePriority(id); fetchData(user); }}
+                    onAddAssignee={async (n, e) => { await DataService.addAssignee(n, e); fetchData(user); }}
+                    onDeleteAssignee={async (id) => { await DataService.deleteAssignee(id); fetchData(user); }}
+                    onRestoreDefaults={async () => { await DataService.seedUserData(user); fetchData(user); }}
+                  />
+                } />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </div>
+          </main>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto px-6 pb-10 md:px-10 scroll-smooth">
-           <Routes>
-              <Route path="/dashboard" element={<Dashboard data={boardData} />} />
-              <Route path="/kanban" element={
-                <KanbanBoard 
-                  data={boardData} 
-                  onDragEnd={handleDragEnd} 
-                  onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} 
-                  onDeleteTask={handleTaskDelete}
-                />
-              } />
-              <Route path="/table" element={
-                <TableView 
-                  data={boardData} 
-                  onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} 
-                  onDeleteTask={handleTaskDelete}
-                />
-              } />
-              <Route path="/calendar" element={
-                <CalendarView 
-                  data={boardData} 
-                  onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} 
-                  onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }}
-                />
-              } />
-              <Route path="/notes" element={<NotesView data={boardData} onUpdate={fetchBoard} />} />
-              <Route path="/settings" element={
-                <SettingsView 
-                  data={boardData} 
-                  onAddColumn={async (title, color) => setBoardData(await DataService.addColumn(title, color))}
-                  onUpdateColumn={async (id, upd) => setBoardData(await DataService.updateColumn(id, upd))}
-                  onDeleteColumn={async (id) => setBoardData(await DataService.deleteColumn(id))}
-                  onAddPriority={async (title, color) => setBoardData(await DataService.addPriority(title, color))}
-                  onUpdatePriority={async (id, upd) => setBoardData(await DataService.updatePriority(id, upd))}
-                  onDeletePriority={async (id) => setBoardData(await DataService.deletePriority(id))}
-                  onAddAssignee={async (name, email) => setBoardData(await DataService.addAssignee(name, email))}
-                  onDeleteAssignee={async (id) => setBoardData(await DataService.deleteAssignee(id))}
-                  onRestoreDefaults={async () => setBoardData(await DataService.restoreDefaults())}
-                />
-              } />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-           </Routes>
-        </div>
-
-        {/* Mobile Sidebar Overlay */}
-        {isMobileMenuOpen && (
-           <div className="lg:hidden fixed inset-0 z-[100]">
-              <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-              <aside className="absolute top-0 left-0 w-80 h-full bg-white shadow-2xl p-6 flex flex-col animate-in slide-in-from-left duration-300">
-                 <div className="flex items-center justify-between mb-10">
-                    <div className="flex items-center gap-3">
-                       <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                          <Layout className="text-white" size={16} />
-                       </div>
-                       <span className="font-black text-xl">HybridTask</span>
-                    </div>
-                    <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:bg-slate-50 rounded-lg"><X size={20} /></button>
-                 </div>
-                 <nav className="flex-1 space-y-2">
-                    {navItems.map((item) => (
-                       <NavLink 
-                        key={item.to} 
-                        to={item.to} 
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' : 'text-slate-500 hover:bg-slate-50'}`}
-                       >
-                          <item.icon size={20} /> {item.label}
-                       </NavLink>
-                    ))}
-                 </nav>
-                 <div className="mt-auto border-t border-slate-100 pt-6">
-                    <button onClick={async () => { await DataService.logout(); setUser(null); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-red-500 hover:bg-red-50 transition-all">
-                       <LogOut size={20} /> {t('logout')}
-                    </button>
-                 </div>
-              </aside>
-           </div>
-        )}
-      </main>
-
-      {/* Global Modals */}
-      <TaskModal 
-        isOpen={isTaskModalOpen} 
-        onClose={() => { setIsTaskModalOpen(false); setSelectedTask(undefined); }} 
-        onSubmit={handleTaskSubmit} 
-        onDelete={handleTaskDelete}
-        initialData={selectedTask}
-        boardData={boardData}
-      />
-      
-      <ProfileModal 
-        isOpen={isProfileModalOpen} 
-        onClose={() => setIsProfileModalOpen(false)} 
-        user={user} 
-        onUpdate={async (id, upd) => {
-          const updatedUser = await DataService.updateCurrentUser(id, upd);
-          setUser(updatedUser);
-        }} 
-      />
-    </div>
+        <TaskModal 
+          isOpen={isTaskModalOpen} 
+          onClose={() => setIsTaskModalOpen(false)} 
+          boardData={boardData}
+          initialData={activeTask || undefined}
+          onSubmit={async (t) => {
+            if ((activeTask as any)?.id) await DataService.updateTask((activeTask as any).id, t);
+            else await DataService.addTask(t);
+            fetchData(user);
+          }}
+          onDelete={async (id) => { await DataService.deleteTask(id); fetchData(user); }}
+        />
+        
+        <ProfileModal 
+          isOpen={isProfileModalOpen} 
+          onClose={() => setIsProfileModalOpen(false)} 
+          user={user} 
+          onUpdate={async (id, d) => { const updated = await DataService.updateCurrentUser(id, d); setUser(updated); }} 
+        />
+      </HashRouter>
+    </LanguageProvider>
   );
 };
 
-const App = () => (
-  <LanguageProvider>
-    <HashRouter>
-      <AppContent />
-    </HashRouter>
-  </LanguageProvider>
-);
+const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => {
+  const { t } = useLanguage();
+  return (
+    <NavLink to={to} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-bold ${isActive ? 'bg-indigo-50 text-indigo-600' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}>
+      <Icon size={20} />
+      <span>{t(label as any)}</span>
+    </NavLink>
+  );
+};
 
 export default App;
