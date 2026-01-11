@@ -7,4 +7,4 @@ Disallow: /#/table
 Disallow: /#/calendar
 Disallow: /#/notes
 
-Sitemap: https://hybridtask.vercel.app/sitemap.xml
+Sitemap: https://hybrid-task-manager.vercel.app/sitemap.xml
