@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /#/dashboard
+Disallow: /#/settings
+Disallow: /#/kanban
+Disallow: /#/table
+Disallow: /#/calendar
+Disallow: /#/notes
+
+Sitemap: https://hybridtask.vercel.app/sitemap.xml
