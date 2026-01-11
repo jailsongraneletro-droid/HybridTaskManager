@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { 
-  Layout, LayoutDashboard, Settings, Plus, LogOut, Globe, Bell, Calendar, 
+  ClipboardList, LayoutDashboard, Settings, Plus, LogOut, Bell, Calendar, 
   Kanban, List, ArrowLeft, Menu, X, RefreshCw, StickyNote, Activity, Layers, 
   ChevronFirst, ChevronLast, Sun, Moon, AlertCircle, CheckCircle2, Sparkles, ArrowRight,
-  BarChart3, ShieldCheck, Zap, BookOpen, Smartphone, Shield, Target, Users, Search as SearchIcon
+  BarChart3, BookOpen, Target, Users
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User } from './types';
@@ -110,7 +110,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-              <Layout className="text-white w-4 h-4" />
+              <ClipboardList className="text-white w-4 h-4" />
             </div>
             <span className="font-extrabold text-lg tracking-tight uppercase">HybridTask</span>
           </div>
@@ -219,7 +219,7 @@ const LandingPage = ({ onGoToLogin, onGoToSignup }: { onGoToLogin: () => void, o
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
-              <Layout className="text-white w-4 h-4" />
+              <ClipboardList className="text-white w-4 h-4" />
             </div>
             <span className="font-extrabold text-lg tracking-tight uppercase dark:text-white">HybridTask</span>
           </div>
@@ -244,9 +244,18 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
   const [successMessage, setSuccessMessage] = useState<string>('');
 
   const getErrorMessage = (err: any): string => {
+    if (!err) return '';
     if (typeof err === 'string') return err;
-    if (err?.message) return String(err.message);
-    return String(err);
+    if (err.message) return String(err.message);
+    if (err.error_description) return String(err.error_description);
+    if (err.error) return typeof err.error === 'string' ? err.error : JSON.stringify(err.error);
+    
+    try {
+      const stringified = JSON.stringify(err);
+      return stringified === '{}' ? 'Ocorreu um erro inesperado.' : stringified;
+    } catch {
+      return String(err);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -277,7 +286,6 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
           } else if (errMsg.toLowerCase().includes('already registered') || errMsg.toLowerCase().includes('already exists')) {
             setError("Este e-mail já possui uma conta cadastrada. Tente fazer o login ou recupere sua senha.");
           } else {
-            // Rethrow unhandled signup errors to the outer catch
             throw signupErr;
           }
         }
@@ -303,7 +311,7 @@ const AuthView = ({ onLogin, onBackToHome, initialMode }: { onLogin: (user: User
         
         <div className="text-center mb-8">
            <div className="w-12 h-12 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg glow-effect">
-              <Layout className="text-white" size={24} />
+              <ClipboardList className="text-white" size={24} />
            </div>
            <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">
              {mode === 'login' ? t('signIn') : t('signUp')}
@@ -438,7 +446,7 @@ const AppContent = () => {
 
   if (loading) return (
     <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-950">
-      <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl animate-bounce mb-4"><Layout className="text-white" size={24} /></div>
+      <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-xl animate-bounce mb-4"><ClipboardList className="text-white" size={24} /></div>
       <div className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Sincronizando...</div>
     </div>
   );
@@ -469,7 +477,7 @@ const AppContent = () => {
         <div className={`p-5 flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
            <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg icon-shadow shrink-0">
-                <Layout className="text-white" size={16} />
+                <ClipboardList className="text-white" size={16} />
               </div>
               {!isSidebarCollapsed && <span className="font-black text-base tracking-tight uppercase">HybridTask</span>}
            </div>
@@ -511,7 +519,7 @@ const AppContent = () => {
         <header className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40">
            <div className="flex items-center gap-3">
              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1.5 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg"><Menu size={20} /></button>
-             <div className="hidden lg:flex items-center gap-2"><Layout className="text-indigo-600" size={16} /><span className="font-black text-base dark:text-white uppercase tracking-tighter">HybridTask</span></div>
+             <div className="hidden lg:flex items-center gap-2"><ClipboardList className="text-indigo-600" size={16} /><span className="font-black text-base dark:text-white uppercase tracking-tighter">HybridTask</span></div>
            </div>
            <div className="flex items-center gap-2">
               <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-indigo-600 shadow-sm transition-all">
@@ -556,7 +564,7 @@ const AppContent = () => {
            <div className="lg:hidden fixed inset-0 z-[100]">
               <div className="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
               <aside className="absolute top-0 left-0 w-64 h-full bg-white dark:bg-slate-900 shadow-2xl p-6 flex flex-col animate-in slide-in-from-left duration-300 rounded-r-3xl">
-                 <div className="flex items-center justify-between mb-8"><div className="flex items-center gap-2"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg"><Layout className="text-white" size={16} /></div><span className="font-black text-lg dark:text-white uppercase tracking-tighter">HybridTask</span></div><button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 rounded-xl"><X size={20} /></button></div>
+                 <div className="flex items-center justify-between mb-8"><div className="flex items-center gap-2"><div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg"><ClipboardList className="text-white" size={16} /></div><span className="font-black text-lg dark:text-white uppercase tracking-tighter">HybridTask</span></div><button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 rounded-xl"><X size={20} /></button></div>
                  <nav className="flex-1 space-y-1.5">{navItems.map((item) => (<NavLink key={item.to} to={item.to} onClick={() => setIsMobileMenuOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 dark:text-slate-400'}`}><item.icon size={18} /> {item.label}</NavLink>))}</nav>
                  <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800"><button onClick={async () => { await DataService.logout(); setUser(null); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs text-red-500"><LogOut size={18} /> {t('logout')}</button></div>
               </aside>

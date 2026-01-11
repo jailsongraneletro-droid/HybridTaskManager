@@ -93,9 +93,7 @@ export const DataService = {
         }
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
     
     if (data.user) {
          if (!data.session) {
@@ -122,8 +120,6 @@ export const DataService = {
   logout: async () => {
     await supabase.auth.signOut();
   },
-
-  // --- Seeding ---
 
   seedUserData: async (user: User) => {
     const { count: colCount } = await supabase.from('kanban_columns').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
@@ -161,8 +157,6 @@ export const DataService = {
     await DataService.seedUserData(user);
     return await DataService.fetchBoardData(user.id);
   },
-
-  // --- Board Data Fetching ---
 
   fetchBoardData: async (userId: string): Promise<BoardData> => {
     const [tasksRes, columnsRes, prioritiesRes, assigneesRes, notesRes] = await Promise.all([
@@ -202,37 +196,44 @@ export const DataService = {
     };
   },
 
-  // --- Task Mutations ---
-
   addTask: async (task: Partial<Task>): Promise<Task> => {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
+    
+    const cleanAssigneeId = (task.assigneeId && task.assigneeId.trim() !== '') ? task.assigneeId : null;
+    const cleanPriority = (task.priority && task.priority.trim() !== '') ? task.priority : null;
+
     const { data, error } = await supabase.from('kanban_tasks').insert({
       title: task.title, 
       description: task.description, 
       status: task.status,
-      priority: task.priority, 
-      assignee_id: task.assigneeId || null,
+      priority: cleanPriority, 
+      assignee_id: cleanAssigneeId,
       due_date: task.dueDate, 
       user_id: user.id
     }).select().single();
+    
     if (error) throw error;
     return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at };
   },
 
   updateTask: async (taskId: string, updates: Partial<Task>): Promise<Task> => {
+    const cleanAssigneeId = (updates.assigneeId && updates.assigneeId.trim() !== '') ? updates.assigneeId : null;
+    const cleanPriority = (updates.priority && updates.priority.trim() !== '') ? updates.priority : null;
+
     const { data, error } = await supabase.from('kanban_tasks').update({
       title: updates.title, 
       description: updates.description, 
       status: updates.status,
-      priority: updates.priority, 
-      assignee_id: updates.assigneeId || null
+      priority: cleanPriority, 
+      assignee_id: cleanAssigneeId,
+      due_date: updates.dueDate
     }).eq('id', taskId).select().single();
+    
     if (error) throw error;
     return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at };
   },
 
-  // Fix: Completed updateTaskPosition and added missing deleteTask method
   updateTaskPosition: async (taskId: string, newStatus: string, newPosition: number): Promise<void> => {
     const { error } = await supabase.from('kanban_tasks').update({ status: newStatus }).eq('id', taskId);
     if (error) throw error;
@@ -243,9 +244,6 @@ export const DataService = {
     if (error) throw error;
   },
 
-  // --- Column Mutations ---
-
-  // Fix: Added missing addColumn, updateColumn, and deleteColumn methods
   addColumn: async (title: string, color: string): Promise<void> => {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
@@ -269,9 +267,6 @@ export const DataService = {
     if (error) throw error;
   },
 
-  // --- Priority Mutations ---
-
-  // Fix: Added missing addPriority, updatePriority, and deletePriority methods
   addPriority: async (title: string, color: string): Promise<void> => {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
@@ -294,9 +289,6 @@ export const DataService = {
     if (error) throw error;
   },
 
-  // --- Assignee Mutations ---
-
-  // Fix: Added missing addAssignee and deleteAssignee methods
   addAssignee: async (name: string, email: string): Promise<void> => {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
@@ -312,13 +304,15 @@ export const DataService = {
     if (error) throw error;
   },
 
-  // --- Note Mutations ---
-
-  // Fix: Added missing addNote, updateNote, and deleteNote methods
   addNote: async (note: Partial<Note>): Promise<void> => {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
+    
+    // Solução para o erro de ID nulo: gerar um UUID caso o banco não gere automaticamente
+    const noteId = crypto.randomUUID();
+    
     const { error } = await supabase.from('kanban_notes').insert({
+      id: noteId,
       title: note.title,
       content: note.content,
       color: note.color,
