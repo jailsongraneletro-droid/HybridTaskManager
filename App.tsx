@@ -441,7 +441,8 @@ const AppContent = () => {
 
   const overdueTasksCount = useMemo(() => {
     const today = new Date().setHours(0,0,0,0);
-    return Object.values(boardData.tasks).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < today).length;
+    // Fix: cast Object.values to Task[] to resolve 'unknown' type error
+    return (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < today).length;
   }, [boardData.tasks]);
 
   if (loading) return (
@@ -508,7 +509,7 @@ const AppContent = () => {
               <Avatar name={user.name} url={user.avatar} size="sm" />
               {!isSidebarCollapsed && <div className="min-w-0"><p className="text-xs font-black dark:text-white truncate">{user.name}</p></div>}
            </div>
-           <button onClick={async () => { await DataService.logout(); setUser(null); }} className={`w-full flex items-center rounded-xl font-bold text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all ${isSidebarCollapsed ? 'justify-center py-3' : 'gap-2.5 px-3 py-2.5'}`}>
+           <button onClick={async () => { await DataService.logout(); setUser(null); }} className={`w-full flex items-center rounded-xl font-bold text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all ${isSidebarCollapsed ? 'justify-center py-3' : 'justify-between px-3 py-2.5'}`}>
               <LogOut size={18} />
               {!isSidebarCollapsed && <span>{t('logout')}</span>}
            </button>
@@ -534,7 +535,8 @@ const AppContent = () => {
                   <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
                     <div className="p-3 bg-slate-50/80 dark:bg-slate-800/80 border-b dark:border-slate-800 flex items-center justify-between"><span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('notifications')}</span><span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-600 text-[8px] font-black rounded-full">{overdueTasksCount} alertas</span></div>
                     <div className="max-h-80 overflow-y-auto">
-                      {overdueTasksCount > 0 ? Object.values(boardData.tasks).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(task => <NotificationItem key={task.id} icon={AlertCircle} color="bg-red-500" title={task.title} time={new Date(task.dueDate).toLocaleDateString()} onClick={() => { setSelectedTask(task); setIsTaskModalOpen(true); setShowNotifications(false); }} />) : <div className="p-6 text-center"><p className="text-[10px] font-bold text-slate-400">{t('noNotifications')}</p></div>}
+                      {/* Fix: cast Object.values to Task[] to resolve 'unknown' type error */}
+                      {overdueTasksCount > 0 ? (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(task => <NotificationItem key={task.id} icon={AlertCircle} color="bg-red-500" title={task.title} time={new Date(task.dueDate).toLocaleDateString()} onClick={() => { setSelectedTask(task); setIsTaskModalOpen(true); setShowNotifications(false); }} />) : <div className="p-6 text-center"><p className="text-[10px] font-bold text-slate-400">{t('noNotifications')}</p></div>}
                     </div>
                   </div>
                 )}
@@ -553,7 +555,7 @@ const AppContent = () => {
               <Route path="/dashboard" element={<Dashboard data={boardData} />} />
               <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(); }} />} />
               <Route path="/table" element={<TableView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(); }} />} />
-              <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }} />} />
+              <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }} onUpdate={fetchBoard} />} />
               <Route path="/notes" element={<NotesView data={boardData} onUpdate={fetchBoard} />} />
               <Route path="/settings" element={<SettingsView data={boardData} onAddColumn={async (t, c) => { await DataService.addColumn(t, c); fetchBoard(); }} onUpdateColumn={async (id, u) => { await DataService.updateColumn(id, u); fetchBoard(); }} onDeleteColumn={async (id) => { await DataService.deleteColumn(id); fetchBoard(); }} onAddPriority={async (t, c) => { await DataService.addPriority(t, c); fetchBoard(); }} onUpdatePriority={async (id, u) => { await DataService.updatePriority(id, u); fetchBoard(); }} onDeletePriority={async (id) => { await DataService.deletePriority(id); fetchBoard(); }} onAddAssignee={async (n, e) => { await DataService.addAssignee(n, e); fetchBoard(); }} onDeleteAssignee={async (id) => { await DataService.deleteAssignee(id); fetchBoard(); }} onRestoreDefaults={async () => { await DataService.restoreDefaults(); fetchBoard(); }} />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />

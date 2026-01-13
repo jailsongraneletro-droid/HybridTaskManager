@@ -248,8 +248,15 @@ export const DataService = {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
     const { count } = await supabase.from('kanban_columns').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
+    
+    const colId = crypto.randomUUID(); // Gerar ID no cliente para evitar erro 23502
+    
     const { error } = await supabase.from('kanban_columns').insert({
-      title, color, position: count || 0, user_id: user.id
+      id: colId,
+      title, 
+      color, 
+      position: count || 0, 
+      user_id: user.id
     });
     if (error) throw error;
   },
@@ -270,8 +277,14 @@ export const DataService = {
   addPriority: async (title: string, color: string): Promise<void> => {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
+    
+    const prioId = crypto.randomUUID(); // Gerar ID no cliente para evitar erro 23502
+    
     const { error } = await supabase.from('kanban_priorities').insert({
-      title, color, user_id: user.id
+      id: prioId,
+      title, 
+      color, 
+      user_id: user.id
     });
     if (error) throw error;
   },
@@ -308,7 +321,6 @@ export const DataService = {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
     
-    // Solução para o erro de ID nulo: gerar um UUID caso o banco não gere automaticamente
     const noteId = crypto.randomUUID();
     
     const { error } = await supabase.from('kanban_notes').insert({

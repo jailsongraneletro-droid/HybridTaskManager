@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Task, BoardData } from '../types';
 import { Modal } from './Shared';
-import { Trash2, AlertCircle, Calendar as CalendarIcon } from 'lucide-react';
+import { Trash2, AlertCircle, Calendar as CalendarIcon, User as UserIcon } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 import { Link } from 'react-router-dom';
 
@@ -79,7 +79,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
     <Modal isOpen={isOpen} onClose={onClose} title={(initialData as any)?.id ? t('edit') : t('newTask')}>
       {isConfigMissing ? (
         <div className="p-6 text-center space-y-4">
-            <h3 className="text-base font-black">Configuração Incompleta</h3>
+            <h3 className="text-base font-black dark:text-white">Configuração Incompleta</h3>
             <Link to="/settings" onClick={onClose} className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold inline-block">Configurar Quadro</Link>
         </div>
       ) : (
@@ -114,11 +114,25 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
           </div>
         </div>
 
-        <div>
-          <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('dueDate')}</label>
-          <div className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-            <input required type="date" className="w-full pl-3 pr-10 py-2 bg-transparent text-slate-900 dark:text-slate-100 outline-none text-xs relative z-10" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0"><CalendarIcon size={14} /></div>
+        <div className="grid grid-cols-2 gap-3">
+           <div>
+            <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('assignee')}</label>
+            <div className="relative">
+                <select className={`${inputClasses} pl-8`} value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
+                <option value="">{t('unassigned')}</option>
+                {boardData?.assignees.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+                </select>
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"><UserIcon size={14} /></div>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('dueDate')}</label>
+            <div className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <input required type="date" className="w-full pl-3 pr-10 py-2 bg-transparent text-slate-900 dark:text-slate-100 outline-none text-xs relative z-10" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0"><CalendarIcon size={14} /></div>
+            </div>
           </div>
         </div>
 

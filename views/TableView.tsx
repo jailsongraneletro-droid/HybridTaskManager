@@ -141,6 +141,14 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
   const visibleColumns = columnOrder.filter(id => !hiddenColumns.includes(id));
   const gridTemplate = visibleColumns.map(id => ALL_COLUMNS.find(c => c.id === id)?.width || '1fr').join(' ');
 
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const items = Array.from(columnOrder);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    setColumnOrder(items as ColumnId[]);
+  };
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-full relative">
       <div className="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
@@ -163,17 +171,39 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
 
       <div className="flex-1 overflow-auto">
         <div className="min-w-[800px]">
-          <div className="grid bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10" style={{ gridTemplateColumns: gridTemplate }}>
-            {visibleColumns.map((colId) => {
-              const colDef = ALL_COLUMNS.find(c => c.id === colId)!;
-              return (
-                <div key={colId} className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                   {t(colDef.labelKey as any)}
-                   {colId !== 'actions' && colId !== 'taskAge' && <ArrowUpDown size={10} className="opacity-30" />}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="columns" direction="horizontal">
+              {(provided) => (
+                <div 
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="grid bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10" 
+                  style={{ gridTemplateColumns: gridTemplate }}
+                >
+                  {visibleColumns.map((colId, index) => {
+                    const colDef = ALL_COLUMNS.find(c => c.id === colId)!;
+                    return (
+                      <Draggable key={colId} draggableId={colId} index={index}>
+                        {(dragProvided) => (
+                          <div 
+                            ref={dragProvided.innerRef}
+                            {...dragProvided.draggableProps}
+                            {...dragProvided.dragHandleProps}
+                            className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group cursor-grab active:cursor-grabbing"
+                          >
+                             <GripVertical size={10} className="opacity-0 group-hover:opacity-50" />
+                             {t(colDef.labelKey as any)}
+                             {colId !== 'actions' && colId !== 'taskAge' && <ArrowUpDown size={10} className="opacity-30" />}
+                          </div>
+                        )}
+                      </Draggable>
+                    );
+                  })}
+                  {provided.placeholder}
                 </div>
-              );
-            })}
-          </div>
+              )}
+            </Droppable>
+          </DragDropContext>
 
           <div className="pb-4">
              {Object.entries(groupedTasks).map(([groupKey, tasks]) => (
@@ -182,12 +212,12 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
                           <h4 className="font-black text-[9px] text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                              {getGroupTitle(groupKey)}
-                             <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-[8px] font-black">{tasks.length}</span>
+                             <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded-full text-[8px] font-black">{(tasks as Task[]).length}</span>
                           </h4>
                        </div>
                    )}
                    <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                       {tasks.map(task => <TaskRow key={task.id} task={task} visibleColumns={visibleColumns} gridTemplate={gridTemplate} data={data} onEditTask={onEditTask} onDeleteTask={onDeleteTask} t={t} />)}
+                       {(tasks as Task[]).map(task => <TaskRow key={task.id} task={task} visibleColumns={visibleColumns} gridTemplate={gridTemplate} data={data} onEditTask={onEditTask} onDeleteTask={onDeleteTask} t={t} />)}
                    </div>
                 </div>
              ))}

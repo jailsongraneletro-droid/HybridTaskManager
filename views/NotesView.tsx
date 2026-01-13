@@ -14,21 +14,21 @@ interface NotesViewProps {
 }
 
 const NOTE_COLORS = [
-  { id: 'white', bg: '#ffffff', border: '#e2e8f0' },
-  { id: 'red', bg: '#fee2e2', border: '#fecaca' },
-  { id: 'orange', bg: '#ffedd5', border: '#fed7aa' },
-  { id: 'yellow', bg: '#fef9c3', border: '#fde047' },
-  { id: 'green', bg: '#dcfce7', border: '#bbf7d0' },
-  { id: 'teal', bg: '#ccfbf1', border: '#99f6e4' },
-  { id: 'blue', bg: '#dbeafe', border: '#bfdbfe' },
-  { id: 'darkblue', bg: '#e0e7ff', border: '#c7d2fe' },
-  { id: 'purple', bg: '#f3e8ff', border: '#e9d5ff' },
-  { id: 'pink', bg: '#fce7f3', border: '#fbcfe8' },
-  { id: 'brown', bg: '#f5f5f4', border: '#e7e5e4' },
-  { id: 'gray', bg: '#f1f5f9', border: '#cbd5e1' },
+  { id: 'white', bg: '#ffffff', darkBg: '#1e293b', border: '#e2e8f0', darkBorder: '#334155' },
+  { id: 'red', bg: '#fee2e2', darkBg: '#450a0a', border: '#fecaca', darkBorder: '#7f1d1d' },
+  { id: 'orange', bg: '#ffedd5', darkBg: '#431407', border: '#fed7aa', darkBorder: '#7c2d12' },
+  { id: 'yellow', bg: '#fef9c3', darkBg: '#422006', border: '#fde047', darkBorder: '#713f12' },
+  { id: 'green', bg: '#dcfce7', darkBg: '#064e3b', border: '#bbf7d0', darkBorder: '#065f46' },
+  { id: 'teal', bg: '#ccfbf1', darkBg: '#134e4a', border: '#99f6e4', darkBorder: '#115e59' },
+  { id: 'blue', bg: '#dbeafe', darkBg: '#172554', border: '#bfdbfe', darkBorder: '#1e3a8a' },
+  { id: 'darkblue', bg: '#e0e7ff', darkBg: '#1e1b4b', border: '#c7d2fe', darkBorder: '#312e81' },
+  { id: 'purple', bg: '#f3e8ff', darkBg: '#2e1065', border: '#e9d5ff', darkBorder: '#4c1d95' },
+  { id: 'pink', bg: '#fce7f3', darkBg: '#500724', border: '#fbcfe8', darkBorder: '#700733' },
+  { id: 'brown', bg: '#f5f5f4', darkBg: '#1c1917', border: '#e7e5e4', darkBorder: '#292524' },
+  { id: 'gray', bg: '#f1f5f9', darkBg: '#020617', border: '#cbd5e1', darkBorder: '#0f172a' },
 ];
 
-const RICH_TEXT_STYLES = "outline-none min-h-[100px] text-slate-800 dark:text-slate-900 whitespace-pre-wrap break-words [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mb-2 [&_h2]:mt-2 [&_h3]:text-lg [&_h3]:font-medium [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2 [&_li]:mb-0.5 empty:before:content-[attr(data-placeholder)] empty:before:text-slate-400";
+const RICH_TEXT_STYLES = "outline-none min-h-[120px] text-slate-800 dark:text-slate-100 whitespace-pre-wrap break-words px-2 [&_h1]:text-2xl [&_h1]:font-black [&_h1]:mb-3 [&_h1]:mt-2 [&_h1]:text-slate-900 dark:[&_h1]:text-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-2 [&_h2]:mt-2 [&_h2]:text-slate-800 dark:[&_h2]:text-slate-200 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_li]:mb-1 [&_p]:mb-2 [&_strong]:font-black empty:before:content-[attr(data-placeholder)] empty:before:text-slate-400";
 
 export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
   const { t } = useLanguage();
@@ -42,6 +42,19 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
   const [newColor, setNewColor] = useState(NOTE_COLORS[0].bg);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'class') {
+                setIsDarkMode(document.documentElement.classList.contains('dark'));
+            }
+        });
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -81,6 +94,11 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
       } catch (e: any) { setError(e.message); }
   };
 
+  const getThemeColor = (colorBg: string) => {
+      const colorObj = NOTE_COLORS.find(c => c.bg === colorBg) || NOTE_COLORS[0];
+      return isDarkMode ? colorObj.darkBg : colorBg;
+  };
+
   return (
     <div className="animate-in fade-in duration-300 pb-10">
       <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
@@ -93,33 +111,35 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
           </button>
         </div>
 
-        <div ref={containerRef} className={`w-full max-w-xl bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300 relative ${isCreating ? 'shadow-2xl ring-4 ring-indigo-500/10' : 'cursor-text hover:shadow-md'}`} style={{ backgroundColor: isCreating ? newColor : undefined }}>
+        <div ref={containerRef} className={`w-full max-w-xl bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300 relative ${isCreating ? 'shadow-2xl ring-4 ring-indigo-500/10 z-50' : 'cursor-text hover:shadow-md'}`} style={{ backgroundColor: isCreating ? getThemeColor(newColor) : undefined }}>
             {!isCreating ? (
                 <div onClick={() => setIsCreating(true)} className="p-4 px-6 text-slate-500 dark:text-slate-400 font-bold flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-widest">{t('takeANote')}</span>
+                    <span className="text-xs uppercase tracking-widest font-black">{t('takeANote')}</span>
                     <Plus size={20} className="text-indigo-500" />
                 </div>
             ) : (
                 <div className="flex flex-col">
-                    <input type="text" placeholder={t('noteTitle')} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-transparent px-6 pt-5 pb-2 outline-none font-black text-slate-900 placeholder-slate-400 text-xl" autoFocus />
-                    <div className="relative px-6 py-2 overflow-hidden">
+                    <input type="text" placeholder={t('noteTitle')} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="w-full bg-transparent px-6 pt-5 pb-2 outline-none font-black text-slate-900 dark:text-white placeholder-slate-500/60 dark:placeholder-slate-400 text-xl" autoFocus />
+                    <div className="relative px-4 py-2 overflow-hidden">
                         <RichTextEditor content={newContent} onChange={setNewContent} placeholder={t('noteContent')} />
                     </div>
-                    <div className="flex justify-between items-center px-4 py-3 border-t border-black/5 mt-2">
-                        <div className="relative">
-                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColorPicker(!showColorPicker); }} className="p-2.5 hover:bg-black/5 rounded-xl text-slate-700 transition-colors">
-                                <Palette size={20} />
-                            </button>
-                            {showColorPicker && (
-                                <div className="absolute bottom-full left-0 mb-3 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 grid grid-cols-4 gap-2.5 z-[100] w-56 animate-in zoom-in-95 duration-150">
-                                    {NOTE_COLORS.map(c => (
-                                        <button key={c.id} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setNewColor(c.bg); setShowColorPicker(false); }} className={`w-10 h-10 rounded-xl border-2 hover:scale-110 transition-all ${newColor === c.bg ? 'border-indigo-500 shadow-lg' : 'border-transparent'}`} style={{ backgroundColor: c.bg }} />
-                                    ))}
-                                </div>
-                            )}
+                    <div className="flex justify-between items-center px-4 py-3 border-t border-black/5 dark:border-white/10 mt-2">
+                        <div className="flex items-center gap-1">
+                            <div className="relative">
+                                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColorPicker(!showColorPicker); }} className="p-2.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl text-slate-700 dark:text-slate-300 transition-colors">
+                                    <Palette size={20} />
+                                </button>
+                                {showColorPicker && (
+                                    <div className="absolute bottom-full left-0 mb-3 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 grid grid-cols-4 gap-2.5 z-[100] w-56 animate-in zoom-in-95 duration-150">
+                                        {NOTE_COLORS.map(c => (
+                                            <button key={c.id} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setNewColor(c.bg); setShowColorPicker(false); }} className={`w-10 h-10 rounded-xl border-2 hover:scale-110 transition-all ${newColor === c.bg ? 'border-indigo-500 shadow-lg' : 'border-transparent'}`} style={{ backgroundColor: isDarkMode ? c.darkBg : c.bg }} />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="flex gap-3">
-                            <button onClick={() => { setIsCreating(false); setNewTitle(''); setNewContent(''); }} className="px-5 py-2 text-slate-600 hover:text-slate-900 text-[10px] font-black uppercase tracking-widest">{t('cancel')}</button>
+                            <button onClick={() => { setIsCreating(false); setNewTitle(''); setNewContent(''); }} className="px-5 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">{t('cancel')}</button>
                             <button onClick={handleSaveNew} className="px-8 py-2 bg-indigo-600 text-white hover:bg-indigo-700 font-black rounded-xl text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95 glow-effect">{t('save')}</button>
                         </div>
                     </div>
@@ -141,11 +161,11 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
 
       {layoutMode === 'grid' ? (
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6 px-1">
-              {data.notes.map(note => ( <NoteCard key={note.id} note={note} onDelete={(id) => setNoteToDelete(id)} onUpdate={handleUpdate} t={t} isList={false} /> ))}
+              {data.notes.map(note => ( <NoteCard key={note.id} note={note} onDelete={(id) => setNoteToDelete(id)} onUpdate={handleUpdate} t={t} isList={false} isDarkMode={isDarkMode} /> ))}
           </div>
       ) : (
           <div className="flex flex-col gap-6 max-w-4xl mx-auto px-1">
-              {data.notes.map(note => ( <NoteCard key={note.id} note={note} onDelete={(id) => setNoteToDelete(id)} onUpdate={handleUpdate} t={t} isList={true} /> ))}
+              {data.notes.map(note => ( <NoteCard key={note.id} note={note} onDelete={(id) => setNoteToDelete(id)} onUpdate={handleUpdate} t={t} isList={true} isDarkMode={isDarkMode} /> ))}
           </div>
       )}
       
@@ -167,29 +187,29 @@ const RichTextEditor: React.FC<{ content: string; onChange: (html: string) => vo
     return (
         <div className="flex flex-col">
             <div ref={editorRef} contentEditable onInput={handleInput} onBlur={handleInput} className={RICH_TEXT_STYLES} data-placeholder={placeholder} suppressContentEditableWarning={true} />
-            <div className="flex flex-wrap items-center gap-1 py-3 mt-3 border-t border-black/5">
-                <ToolbarBtn icon={Bold} onClick={(e) => execCommand(e, 'bold')} />
-                <ToolbarBtn icon={Italic} onClick={(e) => execCommand(e, 'italic')} />
-                <ToolbarBtn icon={Underline} onClick={(e) => execCommand(e, 'underline')} />
-                <div className="w-px h-4 bg-black/10 mx-1"></div>
-                <ToolbarBtn icon={Type} onClick={(e) => execCommand(e, 'formatBlock', 'P')} title="Normal" />
-                <ToolbarBtn icon={Heading1} onClick={(e) => execCommand(e, 'formatBlock', 'H1')} title="H1" />
-                <ToolbarBtn icon={Heading2} onClick={(e) => execCommand(e, 'formatBlock', 'H2')} title="H2" />
-                <div className="w-px h-4 bg-black/10 mx-1"></div>
-                <ToolbarBtn icon={ListIcon} onClick={(e) => execCommand(e, 'insertUnorderedList')} />
-                <ToolbarBtn icon={ListOrdered} onClick={(e) => execCommand(e, 'insertOrderedList')} />
+            <div className="flex flex-wrap items-center gap-1.5 py-3 mt-4 border-t border-black/10 dark:border-white/10">
+                <ToolbarBtn icon={Bold} onClick={(e) => execCommand(e, 'bold')} title="Negrito" />
+                <ToolbarBtn icon={Italic} onClick={(e) => execCommand(e, 'italic')} title="Itálico" />
+                <ToolbarBtn icon={Underline} onClick={(e) => execCommand(e, 'underline')} title="Sublinhado" />
+                <div className="w-px h-4 bg-black/10 dark:bg-white/10 mx-1"></div>
+                <ToolbarBtn icon={Type} onClick={(e) => execCommand(e, 'formatBlock', 'P')} title="Texto Normal" />
+                <ToolbarBtn icon={Heading1} onClick={(e) => execCommand(e, 'formatBlock', 'H1')} title="Título 1" />
+                <ToolbarBtn icon={Heading2} onClick={(e) => execCommand(e, 'formatBlock', 'H2')} title="Título 2" />
+                <div className="w-px h-4 bg-black/10 dark:bg-white/10 mx-1"></div>
+                <ToolbarBtn icon={ListIcon} onClick={(e) => execCommand(e, 'insertUnorderedList')} title="Lista" />
+                <ToolbarBtn icon={ListOrdered} onClick={(e) => execCommand(e, 'insertOrderedList')} title="Lista Numerada" />
             </div>
         </div>
     );
 };
 
 const ToolbarBtn = ({ icon: Icon, onClick, title }: { icon: any, onClick: (e: any) => void, title?: string }) => (
-    <button onMouseDown={onClick} title={title} className="p-1.5 hover:bg-black/10 rounded-lg text-slate-700 transition-colors">
-        <Icon size={14} />
+    <button onMouseDown={onClick} title={title} className="p-2 hover:bg-black/10 dark:hover:bg-white/10 rounded-lg text-slate-800 dark:text-slate-200 transition-colors">
+        <Icon size={15} />
     </button>
 );
 
-const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate: (n: Note, u: Partial<Note>) => void; t: any; isList: boolean; }> = ({ note, onDelete, onUpdate, t, isList }) => {
+const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate: (n: Note, u: Partial<Note>) => void; t: any; isList: boolean; isDarkMode: boolean }> = ({ note, onDelete, onUpdate, t, isList, isDarkMode }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [title, setTitle] = useState(note.title);
     const [content, setContent] = useState(note.content);
@@ -204,7 +224,7 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
             setIsSaving(true);
             try { await onUpdate(note, { title, content }); } catch(e) {}
             setIsSaving(false);
-        }, 800);
+        }, 1000);
         return () => clearTimeout(timer);
     }, [title, content, isEditing, note, onUpdate]);
 
@@ -213,7 +233,6 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
         await onUpdate(note, { color }); 
     };
 
-    // Fechar edição ao clicar fora
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (cardRef.current && !cardRef.current.contains(e.target as Node) && isEditing) {
@@ -224,52 +243,62 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isEditing]);
     
+    const colorObj = NOTE_COLORS.find(c => c.bg === note.color) || NOTE_COLORS[0];
+    const cardStyles = {
+        backgroundColor: isDarkMode ? colorObj.darkBg : colorObj.bg,
+        borderColor: isDarkMode ? colorObj.darkBorder : colorObj.border
+    };
+
     return (
-        <div ref={cardRef} className={`rounded-[1.5rem] border shadow-sm hover:shadow-xl transition-all group relative overflow-hidden ${isList ? 'w-full' : 'break-inside-avoid'}`} style={{ backgroundColor: note.color, borderColor: NOTE_COLORS.find(c => c.bg === note.color)?.border || '#e2e8f0' }}>
+        <div ref={cardRef} className={`rounded-[2rem] border shadow-sm hover:shadow-xl transition-all group relative overflow-hidden flex flex-col ${isList ? 'w-full' : 'break-inside-avoid'}`} style={cardStyles}>
             {isSaving && (
-                <div className="absolute top-3 right-3 z-10 animate-in fade-in duration-200">
-                    <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/80 backdrop-blur-sm rounded-full text-[8px] font-black text-slate-600 uppercase tracking-widest border border-white">
-                        <RefreshCw size={10} className="animate-spin" /> Salvando
+                <div className="absolute top-4 right-4 z-10 animate-in fade-in duration-200">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-full text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest border border-white dark:border-slate-700 shadow-sm">
+                        <RefreshCw size={11} className="animate-spin" /> {t('saving') || 'Salvando...'}
                     </div>
                 </div>
             )}
-            <div className="p-6 md:p-8" onClick={() => !isEditing && setIsEditing(true)}>
+            <div className="p-6 md:p-8 flex-1" onClick={() => !isEditing && setIsEditing(true)}>
                  {isEditing ? (
-                     <div className="flex flex-col gap-3">
-                        <input value={title} onChange={e => setTitle(e.target.value)} className="bg-transparent font-black text-slate-900 outline-none w-full border-b border-black/10 pb-2 mb-2 text-lg placeholder-slate-400" placeholder={t('noteTitle')} autoFocus />
+                     <div className="flex flex-col gap-4">
+                        <input value={title} onChange={e => setTitle(e.target.value)} className="bg-transparent font-black text-slate-900 dark:text-white outline-none w-full border-b border-black/10 dark:border-white/10 pb-2 text-xl placeholder-slate-500/50 dark:placeholder-slate-400" placeholder={t('noteTitle')} autoFocus />
                         <RichTextEditor content={content} onChange={setContent} placeholder={t('noteContent')} />
                      </div>
                  ) : (
-                     <div className="note-content-fix">
-                        {note.title && <h3 className="font-black text-slate-900 mb-3 text-lg leading-tight tracking-tight">{note.title}</h3>}
-                        <div className="text-slate-800 text-sm whitespace-pre-wrap leading-relaxed [&_h1]:text-xl [&_h1]:font-bold [&_h2]:text-lg [&_h2]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5" dangerouslySetInnerHTML={{ __html: note.content }} />
+                     <div className="note-content-rendered prose prose-slate dark:prose-invert max-w-none overflow-hidden break-words">
+                        {note.title && <h3 className="font-black text-slate-900 dark:text-white mb-4 text-xl leading-tight tracking-tight break-words">{note.title}</h3>}
+                        <div className="text-slate-800 dark:text-slate-100 text-sm leading-relaxed [&_h1]:text-2xl [&_h1]:font-black [&_h1]:mb-3 [&_h1]:text-slate-900 dark:[&_h1]:text-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-2 [&_h2]:text-slate-800 dark:[&_h2]:text-slate-200 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_strong]:font-black break-words" dangerouslySetInnerHTML={{ __html: note.content }} />
                         {!note.title && !note.content.replace(/<[^>]*>/g, '').trim() && (
-                            <span className="text-slate-400 italic text-xs">Nota vazia...</span>
+                            <span className="text-slate-400 dark:text-slate-500 italic text-xs font-medium">Nota vazia...</span>
                         )}
                      </div>
                  )}
             </div>
-            <div className={`flex items-center justify-between px-5 py-3 opacity-0 group-hover:opacity-100 transition-opacity border-t border-black/5 bg-black/5 ${isEditing ? 'opacity-100' : ''}`}>
-                 <div className="flex items-center gap-1">
+            <div className={`flex items-center justify-between px-6 py-4 opacity-0 group-hover:opacity-100 transition-all border-t border-black/5 dark:border-white/5 bg-black/[0.03] dark:bg-white/[0.03] ${isEditing ? 'opacity-100' : ''}`}>
+                 <div className="flex items-center gap-2">
                     <div className="relative">
-                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColors(!showColors); }} className="p-2 hover:bg-black/10 rounded-lg text-slate-700 transition-all">
-                            <Palette size={16} />
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColors(!showColors); }} className="p-2.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl text-slate-800 dark:text-slate-200 transition-all">
+                            <Palette size={17} />
                         </button>
                         {showColors && (
                             <div className="absolute bottom-full left-0 mb-3 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 grid grid-cols-4 gap-2 z-[110] w-52 animate-in zoom-in-95 duration-150">
                                 {NOTE_COLORS.map(c => ( 
-                                    <button key={c.id} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleColorUpdate(c.bg); }} className={`w-10 h-10 rounded-lg border-2 hover:scale-110 transition-all ${note.color === c.bg ? 'border-indigo-500 shadow-md' : 'border-transparent'}`} style={{ backgroundColor: c.bg }} /> 
+                                    <button key={c.id} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleColorUpdate(c.bg); }} className={`w-10 h-10 rounded-lg border-2 hover:scale-110 transition-all ${note.color === c.bg ? 'border-indigo-500 shadow-md' : 'border-transparent'}`} style={{ backgroundColor: isDarkMode ? c.darkBg : c.bg }} /> 
                                 ))}
                             </div>
                         )}
                     </div>
-                    {!isEditing && <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(note.id); }} className="p-2 hover:bg-black/10 rounded-lg text-slate-700 hover:text-red-600 transition-all"><Trash2 size={16} /></button>}
+                    {!isEditing && (
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(note.id); }} className="p-2.5 hover:bg-red-500/10 dark:hover:bg-red-500/20 rounded-xl text-slate-800 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                            <Trash2 size={17} />
+                        </button>
+                    )}
                  </div>
                  {isEditing ? (
-                     <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); onUpdate(note, { title, content }); }} className="text-[9px] font-black uppercase tracking-widest px-5 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-white transition-all shadow-lg shadow-indigo-100 active:scale-95">
+                     <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); onUpdate(note, { title, content }); }} className="text-[10px] font-black uppercase tracking-widest px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-white transition-all shadow-lg shadow-indigo-100 dark:shadow-none active:scale-95">
                          Concluir
                      </button>
-                 ) : ( <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest opacity-50">{new Date(note.createdAt).toLocaleDateString()}</span> )}
+                 ) : ( <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest opacity-60">{new Date(note.createdAt).toLocaleDateString()}</span> )}
             </div>
         </div>
     );
