@@ -103,12 +103,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
             onClick={() => onEditTask(task)} 
             style={{ 
                 ...provided.draggableProps.style,
-                backgroundColor: snapshot.isDragging ? col?.color : `${col?.color}15`, 
-                borderLeft: `3px solid ${col?.color}` 
+                backgroundColor: snapshot.isDragging ? col?.color : isToday(new Date(task.dueDate)) ? `${col?.color}25` : `${col?.color}15`, 
+                borderLeft: `3.5px solid ${col?.color}` 
             }} 
-            className={`px-2 py-1 rounded-md text-[10px] font-bold truncate cursor-pointer hover:brightness-95 transition-all shadow-sm border border-slate-200/50 dark:border-slate-700/50 mb-0.5 flex items-center gap-1.5 ${snapshot.isDragging ? 'text-white z-[100]' : 'text-slate-700 dark:text-slate-200'}`}
+            className={`px-2 py-1.5 rounded-lg text-[10px] font-bold truncate cursor-pointer hover:brightness-110 transition-all shadow-sm border border-slate-200/50 dark:border-slate-800/60 mb-1 flex items-center gap-2 ${snapshot.isDragging ? 'text-white z-[100] shadow-2xl scale-105' : 'text-slate-700 dark:text-slate-200'}`}
           >
-            <span className={`w-1 h-1 rounded-full shrink-0 ${snapshot.isDragging ? 'bg-white' : ''}`} style={{ backgroundColor: snapshot.isDragging ? undefined : col?.color }}></span>
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${snapshot.isDragging ? 'bg-white' : ''}`} style={{ backgroundColor: snapshot.isDragging ? undefined : col?.color }}></span>
             <span className="truncate">{task.title}</span>
           </div>
         )}
@@ -117,32 +117,38 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
-      <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all theme-transition">
+      <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-xl">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl"><CalendarIcon size={20} /></div>
-            <h2 className="text-lg font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">{currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h2>
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl shadow-sm"><CalendarIcon size={22} /></div>
+            <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">{currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h2>
           </div>
-          <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-            <button onClick={() => navigateDate(-1)} className="p-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500"><ChevronLeft size={16} /></button>
-            <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1.5 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700">{t('todayView')}</button>
-            <button onClick={() => navigateDate(1)} className="p-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500"><ChevronRight size={16} /></button>
+          <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
+            <button onClick={() => navigateDate(-1)} className="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 transition-colors"><ChevronLeft size={18} /></button>
+            <button onClick={() => setCurrentDate(new Date())} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">{t('todayView')}</button>
+            <button onClick={() => navigateDate(1)} className="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 transition-colors"><ChevronRight size={18} /></button>
           </div>
         </div>
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shadow-inner">
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-2xl shadow-inner">
           {(['month', 'week', 'day'] as const).map(mode => (
-            <button key={mode} onClick={() => setViewMode(mode)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === mode ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>{t(mode as any)}</button>
+            <button 
+              key={mode} 
+              onClick={() => setViewMode(mode)} 
+              className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === mode ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-lg' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            >
+              {t(mode as any)}
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-950/30">
+      <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-950">
         <DragDropContext onDragEnd={handleDragEnd}>
             {viewMode === 'month' && (
-              <div className="grid grid-cols-7 h-full min-h-[600px] border-l border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-7 h-full min-h-[700px] border-l border-slate-100 dark:border-slate-800">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                  <div key={day} className="p-3 text-center text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest bg-white dark:bg-slate-900 border-r border-b border-slate-100 dark:border-slate-800">{day}</div>
+                  <div key={day} className="p-4 text-center text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest bg-white dark:bg-slate-900 border-r border-b border-slate-100 dark:border-slate-800">{day}</div>
                 ))}
                 {monthData.map((item, idx) => {
                   const dateTasks = getTasksForDate(item.date);
@@ -154,13 +160,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
                             <div 
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
-                                className={`min-h-[120px] p-2 border-r border-b border-slate-100 dark:border-slate-800 transition-all group ${!item.currentMonth ? 'bg-slate-50/40 dark:bg-slate-950/20 opacity-40' : 'bg-white dark:bg-slate-900 hover:bg-slate-50/50 dark:hover:bg-slate-800/50'} ${today ? 'bg-indigo-50/10 dark:bg-indigo-900/10' : ''} ${snapshot.isDraggingOver ? 'ring-2 ring-inset ring-indigo-500 bg-indigo-50/30 dark:bg-indigo-900/30' : ''}`}
+                                className={`min-h-[140px] p-2 border-r border-b border-slate-100 dark:border-slate-800 transition-all group ${!item.currentMonth ? 'bg-slate-50/40 dark:bg-white/[0.01] opacity-30' : 'bg-white dark:bg-slate-900 hover:bg-slate-50/50 dark:hover:bg-white/[0.02]'} ${today ? 'bg-indigo-50/10 dark:bg-indigo-900/10' : ''} ${snapshot.isDraggingOver ? 'ring-2 ring-inset ring-indigo-500 bg-indigo-50/30 dark:bg-indigo-900/30' : ''}`}
                             >
-                              <div className="flex items-center justify-between mb-1.5">
-                                <span className={`text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-lg ${today ? 'bg-indigo-600 text-white shadow-lg' : item.currentMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-700'}`}>{item.day}</span>
-                                <button onClick={() => onAddTaskOnDate(dateId)} className="opacity-0 group-hover:opacity-100 p-1 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 rounded-lg transition-all"><Plus size={12} /></button>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className={`text-[11px] font-black w-7 h-7 flex items-center justify-center rounded-xl transition-all ${today ? 'bg-indigo-600 text-white shadow-xl scale-110' : item.currentMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-700'}`}>{item.day}</span>
+                                <button onClick={() => onAddTaskOnDate(dateId)} className="opacity-0 group-hover:opacity-100 p-1.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 rounded-xl transition-all"><Plus size={14} /></button>
                               </div>
-                              <div className="space-y-0.5">
+                              <div className="space-y-1">
                                 {dateTasks.map((task, taskIdx) => <DraggableTask key={task.id} task={task} index={taskIdx} />)}
                               </div>
                               {provided.placeholder}
@@ -173,16 +179,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
             )}
 
             {viewMode === 'week' && (
-              <div className="flex flex-col h-full min-w-[800px]">
-                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-10">
+              <div className="flex flex-col h-full min-w-[900px]">
+                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
                   {weekDays.map((date, idx) => (
-                    <div key={idx} className={`p-4 border-r border-slate-200 dark:border-slate-800 text-center ${isToday(date) ? 'bg-indigo-50/20 dark:bg-indigo-900/10' : ''}`}>
-                      <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{date.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                      <p className={`text-xl font-black w-10 h-10 flex items-center justify-center mx-auto rounded-xl ${isToday(date) ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-700 dark:text-slate-300'}`}>{date.getDate()}</p>
+                    <div key={idx} className={`p-5 border-r border-slate-200 dark:border-slate-800 text-center transition-colors ${isToday(date) ? 'bg-indigo-50/20 dark:bg-indigo-900/10' : ''}`}>
+                      <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{date.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                      <p className={`text-2xl font-black w-12 h-12 flex items-center justify-center mx-auto rounded-2xl transition-all ${isToday(date) ? 'bg-indigo-600 text-white shadow-xl scale-110' : 'text-slate-800 dark:text-slate-100'}`}>{date.getDate()}</p>
                     </div>
                   ))}
                 </div>
-                <div className="grid grid-cols-7 flex-1 min-h-[500px]">
+                <div className="grid grid-cols-7 flex-1 min-h-[600px]">
                   {weekDays.map((date, idx) => {
                     const dateTasks = getTasksForDate(date);
                     const dateId = formatLocalDate(date);
@@ -192,9 +198,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
                           <div 
                             ref={provided.innerRef}
                             {...provided.droppableProps}
-                            className={`p-3 border-r border-slate-100 dark:border-slate-800 group hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors ${isToday(date) ? 'bg-indigo-50/5' : ''} ${snapshot.isDraggingOver ? 'bg-indigo-50/30 dark:bg-indigo-900/30 ring-1 ring-inset ring-indigo-500' : ''}`}
+                            className={`p-4 border-r border-slate-100 dark:border-slate-800 group hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition-colors ${isToday(date) ? 'bg-indigo-50/5' : ''} ${snapshot.isDraggingOver ? 'bg-indigo-50/30 dark:bg-indigo-900/30 ring-2 ring-inset ring-indigo-500/20' : ''}`}
                           >
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                               {dateTasks.map((task, taskIdx) => (
                                 <Draggable key={task.id} draggableId={task.id} index={taskIdx}>
                                   {(dragProvided, dragSnapshot) => (
@@ -203,11 +209,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
                                       {...dragProvided.draggableProps}
                                       {...dragProvided.dragHandleProps}
                                       onClick={() => onEditTask(task)} 
-                                      className={`bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md cursor-pointer transition-all ${dragSnapshot.isDragging ? 'z-[100] shadow-2xl ring-2 ring-indigo-500' : ''}`}
+                                      className={`bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-xl cursor-pointer transition-all ${dragSnapshot.isDragging ? 'z-[100] shadow-2xl ring-2 ring-indigo-500 scale-105 rotate-1' : ''}`}
                                     >
-                                         <div className="w-full h-1 rounded-full mb-2" style={{ backgroundColor: data.columns[task.status]?.color }} />
-                                         <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 leading-tight mb-2">{task.title}</p>
-                                         <div className="flex items-center justify-between"><span className="text-[8px] font-black text-slate-400 uppercase">{data.priorities.find(p => p.id === task.priority)?.title}</span><Avatar size="sm" name={data.assignees.find(a => a.id === task.assigneeId)?.name || '?'} /></div>
+                                         <div className="w-full h-1.5 rounded-full mb-3" style={{ backgroundColor: data.columns[task.status]?.color }} />
+                                         <p className="text-xs font-bold text-slate-800 dark:text-white leading-snug mb-3 line-clamp-2">{task.title}</p>
+                                         <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                                            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter">{data.priorities.find(p => p.id === task.priority)?.title}</span>
+                                            <Avatar size="sm" name={data.assignees.find(a => a.id === task.assigneeId)?.name || '?'} />
+                                         </div>
                                     </div>
                                   )}
                                 </Draggable>
@@ -225,30 +234,42 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
         </DragDropContext>
 
         {viewMode === 'day' && (
-          <div className="p-8 h-full bg-slate-50/50 dark:bg-slate-950/50">
-            <div className="max-w-2xl mx-auto space-y-6">
-              <div className="flex items-center gap-6 bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex flex-col items-center justify-center text-white shadow-xl">
-                  <span className="text-[10px] font-black uppercase tracking-widest mb-0.5">{currentDate.toLocaleDateString('pt-BR', { weekday: 'short' })}</span>
-                  <span className="text-3xl font-black">{currentDate.getDate()}</span>
+          <div className="p-10 h-full bg-slate-50/50 dark:bg-slate-950">
+            <div className="max-w-3xl mx-auto space-y-8">
+              <div className="flex items-center gap-8 bg-white dark:bg-slate-900 p-10 rounded-[3rem] border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-xl ring-1 ring-black/5 dark:ring-white/5">
+                <div className="w-24 h-24 bg-indigo-600 rounded-[2rem] flex flex-col items-center justify-center text-white shadow-2xl glow-effect scale-110">
+                  <span className="text-[11px] font-black uppercase tracking-widest mb-1">{currentDate.toLocaleDateString('pt-BR', { weekday: 'short' })}</span>
+                  <span className="text-4xl font-black">{currentDate.getDate()}</span>
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100">{currentDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</h3>
-                  <p className="text-slate-500 font-bold text-sm mt-1">{getTasksForDate(currentDate).length} {t('activeTasks')} para hoje</p>
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter leading-tight">{currentDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}</h3>
+                  <p className="text-slate-500 dark:text-slate-400 font-bold text-base mt-2">{getTasksForDate(currentDate).length} {t('activeTasks')} para hoje</p>
                 </div>
-                <button onClick={() => onAddTaskOnDate(formatLocalDate(currentDate))} className="ml-auto w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 transition-all shadow-lg active:scale-95 glow-effect"><Plus size={24} /></button>
+                <button onClick={() => onAddTaskOnDate(formatLocalDate(currentDate))} className="ml-auto w-16 h-16 bg-indigo-600 text-white rounded-[1.5rem] flex items-center justify-center hover:bg-indigo-700 transition-all shadow-2xl active:scale-95 glow-effect"><Plus size={32} /></button>
               </div>
-              <div className="space-y-3">
+              
+              <div className="space-y-4">
                 {getTasksForDate(currentDate).length === 0 ? (
-                  <div className="text-center p-16 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-300"><p className="text-sm font-bold opacity-50 uppercase tracking-widest">Nada planejado para hoje</p></div>
+                  <div className="text-center p-24 bg-white/50 dark:bg-slate-900/40 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-700">
+                    <p className="text-base font-black uppercase tracking-[0.2em] opacity-40">Nada planejado para hoje</p>
+                  </div>
                 ) : (
                   getTasksForDate(currentDate).map(task => {
                     const col = data.columns[task.status];
                     return (
-                      <div key={task.id} onClick={() => onEditTask(task)} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-center gap-4">
-                        <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: col?.color }} />
-                        <div className="flex-1"><h4 className="font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors">{task.title}</h4><p className="text-xs text-slate-400 dark:text-slate-500 line-clamp-1">{task.description}</p></div>
-                        <Avatar size="md" name={data.assignees.find(a => a.id === task.assigneeId)?.name || '?'} />
+                      <div key={task.id} onClick={() => onEditTask(task)} className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-2xl transition-all cursor-pointer group flex items-center gap-6 ring-1 ring-black/[0.02] dark:ring-white/[0.02]">
+                        <div className="w-2 h-14 rounded-full shadow-inner" style={{ backgroundColor: col?.color }} />
+                        <div className="flex-1">
+                          <h4 className="text-lg font-black text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors tracking-tight">{task.title}</h4>
+                          <p className="text-sm text-slate-400 dark:text-slate-500 font-medium line-clamp-1 mt-1">{task.description || 'Nenhuma descrição detalhada.'}</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                           <div className="text-right hidden sm:block">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('dueDate')}</p>
+                              <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{new Date(task.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                           </div>
+                           <Avatar size="md" name={data.assignees.find(a => a.id === task.assigneeId)?.name || '?'} />
+                        </div>
                       </div>
                     );
                   })

@@ -24,7 +24,11 @@
           extend: {
             fontFamily: { sans: ['Inter', 'sans-serif'] },
             colors: {
-              indigo: { 600: '#4f46e5', 700: '#4338ca' }
+              indigo: { 600: '#4f46e5', 700: '#4338ca' },
+              slate: {
+                950: '#020617', // Deep black-blue
+                1000: '#000000' // True black if needed
+              }
             }
           }
         }
@@ -35,13 +39,18 @@
       body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; transition: background-color 0.3s ease, color 0.3s ease; }
       
       /* Font Size Customization */
-      .font-size-sm { font-size: 0.875rem; }
+      .font-size-sm { font-size: 0.8rem; }
       .font-size-md { font-size: 1rem; }
-      .font-size-lg { font-size: 1.125rem; }
+      .font-size-lg { font-size: 1.2rem; }
 
-      .font-size-sm h1 { font-size: 1.5rem; }
+      .font-size-sm h1 { font-size: 1.4rem; }
       .font-size-md h1 { font-size: 1.875rem; }
-      .font-size-lg h1 { font-size: 2.25rem; }
+      .font-size-lg h1 { font-size: 2.4rem; }
+
+      /* Dark mode refinement: deeper backgrounds */
+      .dark body { background-color: #020617; }
+      .dark .bg-slate-900 { background-color: #0f172a; }
+      .dark .border-slate-800 { border-color: #1e293b; }
 
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
@@ -87,6 +96,9 @@
         top: 0;
         width: auto;
       }
+
+      /* Transitions for theme switching */
+      .theme-transition { transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease; }
     </style>
   <script type="importmap">
 {
@@ -103,7 +115,7 @@
 }
 </script>
 </head>
-  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300 overflow-x-hidden font-size-md">
+  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 overflow-x-hidden font-size-md theme-transition">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>
