@@ -53,13 +53,29 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
           </h4>
           
           <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 mt-3 pt-2 border-t border-slate-100 dark:border-[#2a2a2a]">
-             <div className="flex items-center gap-1 text-[9px] font-semibold">
+             {/* Calendar Tooltip */}
+             <div className="relative group/tooltip flex items-center gap-1 text-[9px] font-semibold">
                 <Calendar size={10} className="text-slate-300 dark:text-slate-600" />
-                <span className="tabular-nums">{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>
+                <span className="tabular-nums">{new Date(task.dueDate).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric'})}</span>
+                
+                <div className="absolute bottom-full left-0 mb-2 hidden group-hover/tooltip:block bg-slate-800 dark:bg-slate-700 text-white text-[8px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-[110] pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                  Vencimento: {new Date(task.dueDate).toLocaleDateString('pt-BR')}
+                  <div className="absolute top-full left-2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700" />
+                </div>
              </div>
+
              <div className="flex items-center gap-1.5 scale-90 origin-right">
                 <TaskAge createdAt={task.createdAt} />
-                {assigneeData && <Avatar name={assigneeData.name} url={assigneeData.avatar} size="sm" />}
+                {/* User/Assignee Tooltip */}
+                {assigneeData && (
+                  <div className="relative group/tooltip">
+                    <Avatar name={assigneeData.name} url={assigneeData.avatar} size="sm" />
+                    <div className="absolute bottom-full right-0 mb-2 hidden group-hover/tooltip:block bg-slate-800 dark:bg-slate-700 text-white text-[8px] px-2 py-1 rounded shadow-lg whitespace-nowrap z-[110] pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                      Responsável: {assigneeData.name}
+                      <div className="absolute top-full right-2 border-4 border-transparent border-t-slate-800 dark:border-t-slate-700" />
+                    </div>
+                  </div>
+                )}
              </div>
           </div>
         </div>
