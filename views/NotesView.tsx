@@ -42,6 +42,7 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
   const [newColor, setNewColor] = useState(NOTE_COLORS[0].bg);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
   const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
 
   useEffect(() => {
@@ -62,6 +63,9 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
         if (isCreating && !newTitle.trim() && !newContent.replace(/<[^>]*>/g, '').trim()) {
            setIsCreating(false);
         }
+      }
+      if (colorPickerRef.current && !colorPickerRef.current.contains(event.target as Node)) {
+        setShowColorPicker(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -101,12 +105,12 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
 
   return (
     <div className="animate-in fade-in duration-300 pb-10">
-      <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-        <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
-          <button onClick={() => setLayoutMode('grid')} className={`flex items-center gap-2 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${layoutMode === 'grid' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4 px-2">
+        <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner w-full md:w-auto overflow-x-auto">
+          <button onClick={() => setLayoutMode('grid')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${layoutMode === 'grid' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
             <LayoutGrid size={14} /> {t('grid')}
           </button>
-          <button onClick={() => setLayoutMode('list')} className={`flex items-center gap-2 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
+          <button onClick={() => setLayoutMode('list')} className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${layoutMode === 'list' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>
             <Rows3 size={14} /> {t('list')}
           </button>
         </div>
@@ -124,19 +128,17 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
                         <RichTextEditor content={newContent} onChange={setNewContent} placeholder={t('noteContent')} />
                     </div>
                     <div className="flex justify-between items-center px-4 py-3 border-t border-black/5 dark:border-white/10 mt-2">
-                        <div className="flex items-center gap-1">
-                            <div className="relative">
-                                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColorPicker(!showColorPicker); }} className="p-2.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl text-slate-700 dark:text-slate-300 transition-colors">
-                                    <Palette size={20} />
-                                </button>
-                                {showColorPicker && (
-                                    <div className="absolute bottom-full left-0 mb-3 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 grid grid-cols-4 gap-2.5 z-[100] w-56 animate-in zoom-in-95 duration-150">
-                                        {NOTE_COLORS.map(c => (
-                                            <button key={c.id} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setNewColor(c.bg); setShowColorPicker(false); }} className={`w-10 h-10 rounded-xl border-2 hover:scale-110 transition-all ${newColor === c.bg ? 'border-indigo-500 shadow-lg' : 'border-transparent'}`} style={{ backgroundColor: isDarkMode ? c.darkBg : c.bg }} />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                        <div className="flex items-center gap-1 relative" ref={colorPickerRef}>
+                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColorPicker(!showColorPicker); }} className="p-2.5 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl text-slate-700 dark:text-slate-300 transition-colors">
+                                <Palette size={20} />
+                            </button>
+                            {showColorPicker && (
+                                <div className="absolute bottom-full left-0 mb-3 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 grid grid-cols-4 gap-2.5 z-[100] w-56 animate-in zoom-in-95 duration-150">
+                                    {NOTE_COLORS.map(c => (
+                                        <button key={c.id} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setNewColor(c.bg); setShowColorPicker(false); }} className={`w-10 h-10 rounded-xl border-2 hover:scale-110 transition-all ${newColor === c.bg ? 'border-indigo-500 shadow-lg' : 'border-transparent'}`} style={{ backgroundColor: isDarkMode ? c.darkBg : c.bg }} />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className="flex gap-3">
                             <button onClick={() => { setIsCreating(false); setNewTitle(''); setNewContent(''); }} className="px-5 py-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white text-[10px] font-black uppercase tracking-widest transition-colors">{t('cancel')}</button>
@@ -160,11 +162,11 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
       )}
 
       {layoutMode === 'grid' ? (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6 px-1">
+          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 md:gap-6 space-y-4 md:space-y-6 px-4">
               {data.notes.map(note => ( <NoteCard key={note.id} note={note} onDelete={(id) => setNoteToDelete(id)} onUpdate={handleUpdate} t={t} isList={false} isDarkMode={isDarkMode} /> ))}
           </div>
       ) : (
-          <div className="flex flex-col gap-6 max-w-4xl mx-auto px-1">
+          <div className="flex flex-col gap-4 md:gap-6 max-w-4xl mx-auto px-4">
               {data.notes.map(note => ( <NoteCard key={note.id} note={note} onDelete={(id) => setNoteToDelete(id)} onUpdate={handleUpdate} t={t} isList={true} isDarkMode={isDarkMode} /> ))}
           </div>
       )}
@@ -216,6 +218,7 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
     const [showColors, setShowColors] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
+    const colorMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!isEditing) return;
@@ -238,6 +241,9 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
             if (cardRef.current && !cardRef.current.contains(e.target as Node) && isEditing) {
                 setIsEditing(false);
             }
+            if (colorMenuRef.current && !colorMenuRef.current.contains(e.target as Node)) {
+                setShowColors(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -250,7 +256,7 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
     };
 
     return (
-        <div ref={cardRef} className={`rounded-[2rem] border shadow-sm hover:shadow-xl transition-all group relative overflow-hidden flex flex-col ${isList ? 'w-full' : 'break-inside-avoid'}`} style={cardStyles}>
+        <div ref={cardRef} className={`rounded-[1.5rem] md:rounded-[2rem] border shadow-sm hover:shadow-xl transition-all group relative overflow-hidden flex flex-col ${isList ? 'w-full' : 'break-inside-avoid'}`} style={cardStyles}>
             {isSaving && (
                 <div className="absolute top-4 right-4 z-10 animate-in fade-in duration-200">
                     <div className="flex items-center gap-2 px-3 py-1 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-full text-[9px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest border border-white dark:border-slate-700 shadow-sm">
@@ -258,26 +264,26 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
                     </div>
                 </div>
             )}
-            <div className="p-6 md:p-8 flex-1" onClick={() => !isEditing && setIsEditing(true)}>
+            <div className="p-5 md:p-8 flex-1" onClick={() => !isEditing && setIsEditing(true)}>
                  {isEditing ? (
                      <div className="flex flex-col gap-4">
-                        <input value={title} onChange={e => setTitle(e.target.value)} className="bg-transparent font-black text-slate-900 dark:text-white outline-none w-full border-b border-black/10 dark:border-white/10 pb-2 text-xl placeholder-slate-500/50 dark:placeholder-slate-400" placeholder={t('noteTitle')} autoFocus />
+                        <input value={title} onChange={e => setTitle(e.target.value)} className="bg-transparent font-black text-slate-900 dark:text-white outline-none w-full border-b border-black/10 dark:border-white/10 pb-2 text-lg md:text-xl placeholder-slate-500/50 dark:placeholder-slate-400" placeholder={t('noteTitle')} autoFocus />
                         <RichTextEditor content={content} onChange={setContent} placeholder={t('noteContent')} />
                      </div>
                  ) : (
-                     <div className="note-content-rendered prose prose-slate dark:prose-invert max-w-none overflow-hidden break-words">
-                        {note.title && <h3 className="font-black text-slate-900 dark:text-white mb-4 text-xl leading-tight tracking-tight break-words">{note.title}</h3>}
-                        <div className="text-slate-800 dark:text-slate-100 text-sm leading-relaxed [&_h1]:text-2xl [&_h1]:font-black [&_h1]:mb-3 [&_h1]:text-slate-900 dark:[&_h1]:text-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-2 [&_h2]:text-slate-800 dark:[&_h2]:text-slate-200 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_strong]:font-black break-words" dangerouslySetInnerHTML={{ __html: note.content }} />
+                     <div className="note-content-rendered prose prose-slate dark:prose-invert max-w-none overflow-hidden">
+                        {note.title && <h3 className="font-black text-slate-900 dark:text-white mb-3 md:mb-4 text-lg md:text-xl leading-tight tracking-tight break-words">{note.title}</h3>}
+                        <div className="text-slate-800 dark:text-slate-100 text-xs md:text-sm leading-relaxed [&_h1]:text-xl md:[&_h1]:text-2xl [&_h1]:font-black [&_h1]:mb-3 [&_h1]:text-slate-900 dark:[&_h1]:text-white [&_h2]:text-lg md:[&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-2 [&_h2]:text-slate-800 dark:[&_h2]:text-slate-200 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3 [&_strong]:font-black break-words" dangerouslySetInnerHTML={{ __html: note.content }} />
                         {!note.title && !note.content.replace(/<[^>]*>/g, '').trim() && (
                             <span className="text-slate-400 dark:text-slate-500 italic text-xs font-medium">Nota vazia...</span>
                         )}
                      </div>
                  )}
             </div>
-            <div className={`flex items-center justify-between px-6 py-4 opacity-0 group-hover:opacity-100 transition-all border-t border-black/5 dark:border-white/5 bg-black/[0.03] dark:bg-white/[0.03] ${isEditing ? 'opacity-100' : ''}`}>
+            <div className={`flex items-center justify-between px-5 md:px-6 py-3 md:py-4 opacity-0 group-hover:opacity-100 transition-all border-t border-black/5 dark:border-white/5 bg-black/[0.03] dark:bg-white/[0.03] ${isEditing ? 'opacity-100' : ''}`}>
                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColors(!showColors); }} className="p-2.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl text-slate-800 dark:text-slate-200 transition-all">
+                    <div className="relative" ref={colorMenuRef}>
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowColors(!showColors); }} className="p-2 md:p-2.5 hover:bg-black/10 dark:hover:bg-white/10 rounded-xl text-slate-800 dark:text-slate-200 transition-all">
                             <Palette size={17} />
                         </button>
                         {showColors && (
@@ -289,13 +295,13 @@ const NoteCard: React.FC<{ note: Note; onDelete: (id: string) => void; onUpdate:
                         )}
                     </div>
                     {!isEditing && (
-                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(note.id); }} className="p-2.5 hover:bg-red-500/10 dark:hover:bg-red-500/20 rounded-xl text-slate-800 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 transition-all">
+                        <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(note.id); }} className="p-2 md:p-2.5 hover:bg-red-500/10 dark:hover:bg-red-500/20 rounded-xl text-slate-800 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 transition-all">
                             <Trash2 size={17} />
                         </button>
                     )}
                  </div>
                  {isEditing ? (
-                     <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); onUpdate(note, { title, content }); }} className="text-[10px] font-black uppercase tracking-widest px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-white transition-all shadow-lg shadow-indigo-100 dark:shadow-none active:scale-95">
+                     <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsEditing(false); onUpdate(note, { title, content }); }} className="text-[10px] font-black uppercase tracking-widest px-4 md:px-6 py-2 md:py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-xl text-white transition-all shadow-lg shadow-indigo-100 dark:shadow-none active:scale-95">
                          Concluir
                      </button>
                  ) : ( <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest opacity-60">{new Date(note.createdAt).toLocaleDateString()}</span> )}

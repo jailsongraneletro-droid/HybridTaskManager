@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 // Simplified to just string map since we only support PT-BR now
@@ -139,18 +138,18 @@ const translations = {
     columns: 'Colunas',
     manageColumns: 'Gerenciar Colunas',
     groupBy: 'Agrupar por',
-    groupByNone: 'Nenhum',
-    groupByStatus: 'Status',
-    groupByPriority: 'Prioridade',
-    groupByAssignee: 'Responsável',
+    groupByNone: 'Sem agrupamento',
+    groupByStatus: 'Por Status',
+    groupByPriority: 'Por Prioridade',
+    groupByAssigneeId: 'Por Responsável',
     
     // Shared
     daysOld: 'dias',
     today: 'Hoje',
     unassigned: 'Não atribuído',
-    // Fix: Added missing 'grid' and 'list' keys
     grid: 'Grade',
     list: 'Lista',
+    saving: 'Salvando...',
     
     // Confirmation Modals
     confirmDeleteTitle: 'Excluir Item',

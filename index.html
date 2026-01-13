@@ -34,6 +34,15 @@
       :root { scroll-padding-top: 80px; }
       body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; transition: background-color 0.3s ease, color 0.3s ease; }
       
+      /* Font Size Customization */
+      .font-size-sm { font-size: 0.875rem; }
+      .font-size-md { font-size: 1rem; }
+      .font-size-lg { font-size: 1.125rem; }
+
+      .font-size-sm h1 { font-size: 1.5rem; }
+      .font-size-md h1 { font-size: 1.875rem; }
+      .font-size-lg h1 { font-size: 2.25rem; }
+
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -94,7 +103,7 @@
 }
 </script>
 </head>
-  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300 overflow-x-hidden">
+  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50 transition-colors duration-300 overflow-x-hidden font-size-md">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>

@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { BoardData, Task } from '../types';
 import { PriorityBadge, StatusBadge, Avatar, TaskAge } from '../components/Shared';
-import { ArrowUpDown, Search, Trash2, Edit, GripVertical, Settings2, Eye, EyeOff, Layers, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowUpDown, Search, Trash2, Edit, GripVertical, Settings2, Eye, EyeOff, Layers, Check } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { useLanguage } from '../utils/i18n';
 
@@ -99,10 +99,22 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
   const [sortConfig, setSortConfig] = useState<{ key: keyof Task; direction: 'asc' | 'desc' } | null>(null);
   const [filter, setFilter] = useState('');
   const [columnOrder, setColumnOrder] = useState<ColumnId[]>(ALL_COLUMNS.map(c => c.id));
-  const [hiddenColumns, setHiddenColumns] = useState<ColumnId[]>([]);
+  const [hiddenColumns, setHiddenColumns] = useState<ColumnId[]>(['taskAge']);
   const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false);
   const [groupBy, setGroupBy] = useState<GroupByOption>('none');
   const [isGroupMenuOpen, setIsGroupMenuOpen] = useState(false);
+
+  const groupMenuRef = useRef<HTMLDivElement>(null);
+  const columnMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (groupMenuRef.current && !groupMenuRef.current.contains(event.target as Node)) setIsGroupMenuOpen(false);
+      if (columnMenuRef.current && !columnMenuRef.current.contains(event.target as Node)) setIsColumnMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const allTasks = Object.values(data.tasks) as Task[];
 
@@ -149,6 +161,12 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
     setColumnOrder(items as ColumnId[]);
   };
 
+  const toggleColumn = (id: ColumnId) => {
+    setHiddenColumns(prev => 
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    );
+  };
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-full relative">
       <div className="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
@@ -163,8 +181,44 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                 onChange={e => setFilter(e.target.value)}
               />
            </div>
-           <button onClick={() => setIsGroupMenuOpen(!isGroupMenuOpen)} className="p-2 text-slate-500 hover:text-indigo-600 border rounded-lg bg-white dark:bg-slate-800"><Layers size={14} /></button>
-           <button onClick={() => setIsColumnMenuOpen(!isColumnMenuOpen)} className="p-2 text-slate-500 hover:text-indigo-600 border rounded-lg bg-white dark:bg-slate-800"><Settings2 size={14} /></button>
+           
+           <div className="relative" ref={groupMenuRef}>
+             <button onClick={() => setIsGroupMenuOpen(!isGroupMenuOpen)} className={`p-2 border rounded-lg transition-all ${isGroupMenuOpen ? 'bg-indigo-600 text-white border-indigo-600' : 'text-slate-500 hover:text-indigo-600 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                <Layers size={14} />
+             </button>
+             {isGroupMenuOpen && (
+               <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-2xl z-[100] p-1 animate-in zoom-in-95 duration-150">
+                  <p className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 dark:border-slate-800/50 mb-1">{t('groupBy')}</p>
+                  {(['none', 'status', 'priority', 'assigneeId'] as GroupByOption[]).map(option => (
+                    <button key={option} onClick={() => { setGroupBy(option); setIsGroupMenuOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-bold transition-colors ${groupBy === option ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+                       {t(`groupBy${option.charAt(0).toUpperCase() + option.slice(1)}` as any)}
+                       {groupBy === option && <Check size={12} />}
+                    </button>
+                  ))}
+               </div>
+             )}
+           </div>
+
+           <div className="relative" ref={columnMenuRef}>
+             <button onClick={() => setIsColumnMenuOpen(!isColumnMenuOpen)} className={`p-2 border rounded-lg transition-all ${isColumnMenuOpen ? 'bg-indigo-600 text-white border-indigo-600' : 'text-slate-500 hover:text-indigo-600 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'}`}>
+                <Settings2 size={14} />
+             </button>
+             {isColumnMenuOpen && (
+               <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-2xl z-[100] p-1 animate-in zoom-in-95 duration-150">
+                  <p className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50 dark:border-slate-800/50 mb-1">{t('manageColumns')}</p>
+                  <div className="max-h-64 overflow-y-auto">
+                    {ALL_COLUMNS.map(col => (
+                      <button key={col.id} onClick={() => toggleColumn(col.id)} className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-colors ${!hiddenColumns.includes(col.id) ? 'text-slate-900 dark:text-white' : 'text-slate-400 line-through'} hover:bg-slate-50 dark:hover:bg-slate-800`}>
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${!hiddenColumns.includes(col.id) ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-transparent border-slate-200 dark:border-slate-700'}`}>
+                           {!hiddenColumns.includes(col.id) && <Check size={10} />}
+                        </div>
+                        {t(col.labelKey as any)}
+                      </button>
+                    ))}
+                  </div>
+               </div>
+             )}
+           </div>
          </div>
          <span className="text-[10px] font-bold text-slate-400">{sortedAndFilteredTasks.length} {t('tasksFound')}</span>
       </div>
@@ -190,10 +244,20 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                             {...dragProvided.draggableProps}
                             {...dragProvided.dragHandleProps}
                             className="px-3 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors group cursor-grab active:cursor-grabbing"
+                            onClick={() => {
+                              if (colId !== 'actions' && colId !== 'taskAge') {
+                                setSortConfig(prev => ({
+                                  key: colId as keyof Task,
+                                  direction: prev?.key === colId && prev.direction === 'asc' ? 'desc' : 'asc'
+                                }));
+                              }
+                            }}
                           >
                              <GripVertical size={10} className="opacity-0 group-hover:opacity-50" />
                              {t(colDef.labelKey as any)}
-                             {colId !== 'actions' && colId !== 'taskAge' && <ArrowUpDown size={10} className="opacity-30" />}
+                             {colId !== 'actions' && colId !== 'taskAge' && (
+                               <ArrowUpDown size={10} className={sortConfig?.key === colId ? 'text-indigo-600 opacity-100' : 'opacity-30'} />
+                             )}
                           </div>
                         )}
                       </Draggable>

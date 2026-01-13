@@ -375,9 +375,14 @@ const AppContent = () => {
   
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('hybridtask-theme');
     return saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  });
+
+  const [fontSize, setFontSize] = useState(() => {
+    return localStorage.getItem('hybridtask-font-size') || 'md';
   });
 
   useEffect(() => {
@@ -389,6 +394,13 @@ const AppContent = () => {
       localStorage.setItem('hybridtask-theme', 'light');
     }
   }, [isDarkMode]);
+
+  useEffect(() => {
+    const body = document.body;
+    body.classList.remove('font-size-sm', 'font-size-md', 'font-size-lg');
+    body.classList.add(`font-size-${fontSize}`);
+    localStorage.setItem('hybridtask-font-size', fontSize);
+  }, [fontSize]);
 
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -441,7 +453,6 @@ const AppContent = () => {
 
   const overdueTasksCount = useMemo(() => {
     const today = new Date().setHours(0,0,0,0);
-    // Fix: cast Object.values to Task[] to resolve 'unknown' type error
     return (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < today).length;
   }, [boardData.tasks]);
 
@@ -535,7 +546,6 @@ const AppContent = () => {
                   <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-200">
                     <div className="p-3 bg-slate-50/80 dark:bg-slate-800/80 border-b dark:border-slate-800 flex items-center justify-between"><span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{t('notifications')}</span><span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/40 text-red-600 text-[8px] font-black rounded-full">{overdueTasksCount} alertas</span></div>
                     <div className="max-h-80 overflow-y-auto">
-                      {/* Fix: cast Object.values to Task[] to resolve 'unknown' type error */}
                       {overdueTasksCount > 0 ? (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(task => <NotificationItem key={task.id} icon={AlertCircle} color="bg-red-500" title={task.title} time={new Date(task.dueDate).toLocaleDateString()} onClick={() => { setSelectedTask(task); setIsTaskModalOpen(true); setShowNotifications(false); }} />) : <div className="p-6 text-center"><p className="text-[10px] font-bold text-slate-400">{t('noNotifications')}</p></div>}
                     </div>
                   </div>
@@ -557,7 +567,7 @@ const AppContent = () => {
               <Route path="/table" element={<TableView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(); }} />} />
               <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }} onUpdate={fetchBoard} />} />
               <Route path="/notes" element={<NotesView data={boardData} onUpdate={fetchBoard} />} />
-              <Route path="/settings" element={<SettingsView data={boardData} onAddColumn={async (t, c) => { await DataService.addColumn(t, c); fetchBoard(); }} onUpdateColumn={async (id, u) => { await DataService.updateColumn(id, u); fetchBoard(); }} onDeleteColumn={async (id) => { await DataService.deleteColumn(id); fetchBoard(); }} onAddPriority={async (t, c) => { await DataService.addPriority(t, c); fetchBoard(); }} onUpdatePriority={async (id, u) => { await DataService.updatePriority(id, u); fetchBoard(); }} onDeletePriority={async (id) => { await DataService.deletePriority(id); fetchBoard(); }} onAddAssignee={async (n, e) => { await DataService.addAssignee(n, e); fetchBoard(); }} onDeleteAssignee={async (id) => { await DataService.deleteAssignee(id); fetchBoard(); }} onRestoreDefaults={async () => { await DataService.restoreDefaults(); fetchBoard(); }} />} />
+              <Route path="/settings" element={<SettingsView data={boardData} fontSize={fontSize} onFontSizeChange={setFontSize} onAddColumn={async (t, c) => { await DataService.addColumn(t, c); fetchBoard(); }} onUpdateColumn={async (id, u) => { await DataService.updateColumn(id, u); fetchBoard(); }} onDeleteColumn={async (id) => { await DataService.deleteColumn(id); fetchBoard(); }} onAddPriority={async (t, c) => { await DataService.addPriority(t, c); fetchBoard(); }} onUpdatePriority={async (id, u) => { await DataService.updatePriority(id, u); fetchBoard(); }} onDeletePriority={async (id) => { await DataService.deletePriority(id); fetchBoard(); }} onAddAssignee={async (n, e) => { await DataService.addAssignee(n, e); fetchBoard(); }} onDeleteAssignee={async (id) => { await DataService.deleteAssignee(id); fetchBoard(); }} onRestoreDefaults={async () => { await DataService.restoreDefaults(); fetchBoard(); }} />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
            </Routes>
         </div>
