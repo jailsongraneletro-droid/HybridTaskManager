@@ -31,23 +31,6 @@ export const SettingsView: React.FC<any> = ({
   return (
     <div className="max-w-3xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-2 duration-500">
       
-      {/* Escala da Interface */}
-      <section className={sectionClass}>
-        <div className={headerClass}>
-          <div className="flex items-center gap-2">
-            <Type size={14} />
-            <h3 className="text-[10px] font-black uppercase dark:text-white">Escala da Interface</h3>
-          </div>
-        </div>
-        <div className="p-4 flex gap-2">
-           {['sm', 'md', 'lg'].map(s => (
-             <button key={s} onClick={() => onFontSizeChange(s)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${fontSize === s ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-               {s === 'sm' ? 'Pequeno' : s === 'md' ? 'Médio' : 'Grande'}
-             </button>
-           ))}
-        </div>
-      </section>
-
       {/* Gestão de Colunas */}
       <section className={sectionClass}>
         <div className={headerClass}>
