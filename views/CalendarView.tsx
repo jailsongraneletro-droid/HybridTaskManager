@@ -1,7 +1,8 @@
+
 import React, { useState, useMemo } from 'react';
 import { BoardData, Task } from '../types';
 import { useLanguage } from '../utils/i18n';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Plus, LayoutList } from 'lucide-react';
 import { Avatar } from '../components/Shared';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { DataService } from '../services/dataService';
@@ -19,6 +20,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
 
   const allTasks = useMemo(() => Object.values(data.tasks) as Task[], [data.tasks]);
+  
   const daysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
 
@@ -49,6 +51,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
     const diff = d.getDate() - day;
     return new Date(d.setDate(diff));
   };
+  
   const weekDays = useMemo(() => {
     const startDate = getStartOfWeek(currentDate);
     return Array.from({ length: 7 }, (_, i) => {
@@ -121,7 +124,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 rounded-lg"><CalendarIcon size={14} /></div>
-            <h2 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-widest">{currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h2>
+            <h2 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-widest">
+              {viewMode === 'day' 
+                ? currentDate.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+                : currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+              }
+            </h2>
           </div>
           <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
             <button onClick={() => navigateDate(-1)} className="p-1.5 hover:bg-slate-50 dark:hover:bg-white/[0.05] text-slate-500 transition-colors"><ChevronLeft size={14} /></button>
@@ -226,6 +234,61 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
                       </Droppable>
                     );
                   })}
+                </div>
+              </div>
+            )}
+
+            {viewMode === 'day' && (
+              <div className="max-w-4xl mx-auto p-6 animate-in fade-in slide-in-from-bottom-4">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                     <div className="text-4xl font-black text-slate-900 dark:text-white">{currentDate.getDate()}</div>
+                     <div>
+                        <p className="text-xs font-black uppercase text-indigo-600 tracking-widest">{currentDate.toLocaleDateString('pt-BR', { weekday: 'long' })}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
+                     </div>
+                  </div>
+                  <button 
+                    onClick={() => onAddTaskOnDate(formatLocalDate(currentDate))}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none transition-all"
+                  >
+                    <Plus size={16} /> Adicionar Tarefa
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-6">
+                    <LayoutList size={18} className="text-slate-400" />
+                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Cronograma do Dia</h3>
+                  </div>
+                  
+                  {getTasksForDate(currentDate).length > 0 ? (
+                    <div className="space-y-3">
+                      {getTasksForDate(currentDate).map((task) => (
+                        <div 
+                          key={task.id}
+                          onClick={() => onEditTask(task)}
+                          className="flex items-center gap-4 p-4 bg-white dark:bg-[#0d0d0d] rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 group cursor-pointer transition-all shadow-sm"
+                        >
+                          <div className="w-1.5 h-10 rounded-full" style={{ backgroundColor: data.columns[task.status]?.color || '#555' }} />
+                          <div className="flex-1">
+                             <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 transition-colors">{task.title}</h4>
+                             <div className="flex items-center gap-3">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{data.columns[task.status]?.title}</span>
+                                <div className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600">Prioridade: {data.priorities.find(p => p.id === task.priority)?.title}</span>
+                             </div>
+                          </div>
+                          <Avatar name={data.assignees.find(a => a.id === task.assigneeId)?.name || '?'} size="md" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-20 text-center border-2 border-dashed dark:border-slate-800 rounded-3xl opacity-30">
+                       <Clock size={40} className="mx-auto mb-4 text-slate-400" />
+                       <p className="text-[10px] font-black uppercase tracking-widest">Nenhuma tarefa agendada para este dia</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { 
@@ -96,14 +97,31 @@ const AppContent = () => {
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
+    
+    if (destination.droppableId === source.droppableId && destination.index === source.index) {
+      return;
+    }
+
     const newBoard = { ...boardData };
     const sourceCol = newBoard.columns[source.droppableId];
     const destCol = newBoard.columns[destination.droppableId];
+
     if (sourceCol && destCol) {
-      sourceCol.taskIds.splice(source.index, 1);
+      // Remove o item usando o ID real, prevenindo erros se a lista visual estiver filtrada
+      const sourceTaskIdx = sourceCol.taskIds.indexOf(draggableId);
+      if (sourceTaskIdx !== -1) {
+        sourceCol.taskIds.splice(sourceTaskIdx, 1);
+      }
+      
+      // Insere na nova posição da coluna de destino
       destCol.taskIds.splice(destination.index, 0, draggableId);
-      setBoardData(newBoard);
+      
+      setBoardData({ ...newBoard });
+      
+      // Persiste a mudança de status e posição no banco
       await DataService.updateTaskPosition(draggableId, destination.droppableId, destination.index);
+      
+      // Sincroniza silenciosamente para manter a integridade dos dados
       fetchBoard(true); 
     }
   };
@@ -151,6 +169,11 @@ const AppContent = () => {
     { to: '/notes', label: t('notes'), icon: StickyNote },
     { to: '/settings', label: t('settings'), icon: Settings },
   ];
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsTaskModalOpen(true);
+  };
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-black overflow-hidden transition-all">
@@ -233,7 +256,7 @@ const AppContent = () => {
                   <div className="absolute top-full right-0 mt-1 w-60 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 z-[100] animate-in zoom-in-95 duration-150">
                     <div className="p-2 border-b border-slate-100 dark:border-slate-800 text-[9px] font-semibold uppercase text-slate-400">Avisos ({overdueCount})</div>
                     <div className="max-h-60 overflow-y-auto">
-                      {overdueCount > 0 ? (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(t => <NotificationItem key={t.id} icon={AlertCircle} color="bg-red-500" title={t.title} time={new Date(t.dueDate).toLocaleDateString()} onClick={() => { setSelectedTask(t); setIsTaskModalOpen(true); setShowNotifications(false); }} />) : <div className="p-4 text-center text-[9px] font-medium text-slate-400">Sem alertas</div>}
+                      {overdueCount > 0 ? (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(t => <NotificationItem key={t.id} icon={AlertCircle} color="bg-red-500" title={t.title} time={new Date(t.dueDate).toLocaleDateString()} onClick={() => { handleEditTask(t); setShowNotifications(false); }} />) : <div className="p-4 text-center text-[9px] font-medium text-slate-400">Sem alertas</div>}
                     </div>
                   </div>
                 )}
@@ -244,10 +267,10 @@ const AppContent = () => {
 
         <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar bg-slate-50 dark:bg-black">
            <Routes>
-              <Route path="/dashboard" element={<Dashboard data={boardData} />} />
-              <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />
-              <Route path="/table" element={<TableView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />
-              <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }} onUpdate={() => fetchBoard(true)} />} />
+              <Route path="/dashboard" element={<Dashboard data={boardData} onEditTask={handleEditTask} />} />
+              <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={handleEditTask} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />
+              <Route path="/table" element={<TableView data={boardData} onEditTask={handleEditTask} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />
+              <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={handleEditTask} onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }} onUpdate={() => fetchBoard(true)} />} />
               <Route path="/notes" element={<NotesView data={boardData} onUpdate={() => fetchBoard(true)} />} />
               <Route path="/settings" element={<SettingsView data={boardData} fontSize={fontSize} onFontSizeChange={setFontSize} onAddColumn={async (t, c) => { await DataService.addColumn(t, c); fetchBoard(true); }} onUpdateColumn={async (id, u) => { await DataService.updateColumn(id, u); fetchBoard(true); }} onDeleteColumn={async (id) => { await DataService.deleteColumn(id); fetchBoard(true); }} onAddPriority={async (t, c) => { await DataService.addPriority(t, c); fetchBoard(true); }} onUpdatePriority={async (id, u) => { await DataService.updatePriority(id, u); fetchBoard(true); }} onDeletePriority={async (id) => { await DataService.deletePriority(id); fetchBoard(true); }} onAddAssignee={async (n, e) => { await DataService.addAssignee(n, e); fetchBoard(true); }} onDeleteAssignee={async (id) => { await DataService.deleteAssignee(id); fetchBoard(true); }} onRestoreDefaults={async () => { await DataService.restoreDefaults(); fetchBoard(true); }} />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />

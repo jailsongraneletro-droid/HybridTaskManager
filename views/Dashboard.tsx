@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { BoardData, Task } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
@@ -6,9 +7,10 @@ import { useLanguage } from '../utils/i18n';
 
 interface DashboardProps {
   data: BoardData;
+  onEditTask: (task: Task) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
   const { t } = useLanguage();
   
   if (!data || !data.columnOrder || data.columnOrder.length === 0) {
@@ -127,7 +129,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
          </div>
          <div className="space-y-3">
             {recentTasks.length > 0 ? recentTasks.map(task => (
-               <div key={task.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/[0.02] border border-transparent hover:border-slate-100 dark:hover:border-[#262626] transition-all group">
+               <div 
+                  key={task.id} 
+                  onClick={() => onEditTask(task)}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/[0.02] border border-transparent hover:border-slate-100 dark:hover:border-[#262626] transition-all group cursor-pointer"
+               >
                   <div className="flex items-center gap-4">
                      <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: data.columns[task.status]?.color}} />
                      <div>
