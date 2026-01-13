@@ -20,15 +20,15 @@ interface ColumnDef {
   width: string;
 }
 
-// Reajuste de larguras para maior densidade de informação
+// Colunas ainda mais compactas para visualização densa
 const ALL_COLUMNS: ColumnDef[] = [
-  { id: 'title', labelKey: 'title', width: 'minmax(180px, 4fr)' },
-  { id: 'status', labelKey: 'status', width: '130px' },
-  { id: 'priority', labelKey: 'priority', width: '130px' },
-  { id: 'assigneeId', labelKey: 'assignee', width: '150px' },
-  { id: 'dueDate', labelKey: 'dueDate', width: '110px' },
-  { id: 'taskAge', labelKey: 'taskAge', width: '110px' },
-  { id: 'actions', labelKey: 'actions', width: '70px' }
+  { id: 'title', labelKey: 'title', width: 'minmax(150px, 5fr)' },
+  { id: 'status', labelKey: 'status', width: '110px' },
+  { id: 'priority', labelKey: 'priority', width: '110px' },
+  { id: 'assigneeId', labelKey: 'assignee', width: '130px' },
+  { id: 'dueDate', labelKey: 'dueDate', width: '95px' },
+  { id: 'taskAge', labelKey: 'taskAge', width: '95px' },
+  { id: 'actions', labelKey: 'actions', width: '60px' }
 ];
 
 interface TaskRowProps {
@@ -48,14 +48,14 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, visibleColumns, gridTemplate, d
 
   return (
     <div 
-      className="grid hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group items-center border-b border-slate-100 dark:border-white/[0.05] last:border-0"
+      className="grid hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors group items-center border-b border-slate-100 dark:border-white/[0.05] last:border-0"
       style={{ gridTemplateColumns: gridTemplate }}
     >
       {visibleColumns.map(colId => (
-        <div key={colId} className="px-4 py-1.5 text-xs text-slate-600 dark:text-slate-400 truncate">
+        <div key={colId} className="px-3 py-1 text-[11px] text-slate-600 dark:text-slate-400 truncate">
           {colId === 'title' && (
               <span 
-                className="font-semibold text-slate-800 dark:text-slate-100 cursor-pointer hover:text-indigo-600 transition-colors"
+                className="font-medium text-slate-800 dark:text-slate-100 cursor-pointer hover:text-indigo-600 transition-colors"
                 onClick={() => onEditTask(task)}
               >
                 {task.title}
@@ -72,21 +72,21 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, visibleColumns, gridTemplate, d
           
           {colId === 'assigneeId' && (
             assignee ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                   <Avatar url={assignee.avatar} name={assignee.name} size="sm" />
-                  <span className="truncate text-slate-700 dark:text-slate-300">{assignee.name}</span>
+                  <span className="truncate text-slate-700 dark:text-slate-400">{assignee.name}</span>
               </div>
-            ) : <span className="text-slate-400 dark:text-slate-700 italic text-[10px]">{t('unassigned')}</span>
+            ) : <span className="text-slate-300 dark:text-slate-700 italic text-[9px]">{t('unassigned')}</span>
           )}
           
-          {colId === 'dueDate' && <span className="dark:text-slate-300 tabular-nums">{new Date(task.dueDate).toLocaleDateString()}</span>}
+          {colId === 'dueDate' && <span className="dark:text-slate-400 tabular-nums">{new Date(task.dueDate).toLocaleDateString()}</span>}
           
           {colId === 'taskAge' && <TaskAge createdAt={task.createdAt} />}
           
           {colId === 'actions' && (
-            <div className="flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => onEditTask(task)} className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-md transition-all"><Edit size={14} /></button>
-              <button onClick={() => onDeleteTask(task.id)} className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-all"><Trash2 size={14} /></button>
+            <div className="flex items-center justify-end gap-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button onClick={() => onEditTask(task)} className="p-1 text-slate-400 hover:text-indigo-600 rounded transition-all"><Edit size={12} /></button>
+              <button onClick={() => onDeleteTask(task.id)} className="p-1 text-slate-400 hover:text-red-600 rounded transition-all"><Trash2 size={12} /></button>
             </div>
           )}
         </div>
@@ -185,31 +185,31 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-lg border border-slate-200 dark:border-white/[0.05] overflow-hidden flex flex-col h-full relative theme-transition">
-      <div className="p-2.5 border-b border-slate-200 dark:border-white/[0.05] flex items-center justify-between bg-slate-50/50 dark:bg-black/40">
+    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow border border-slate-200 dark:border-white/[0.05] overflow-hidden flex flex-col h-full relative theme-transition">
+      <div className="p-2 border-b border-slate-200 dark:border-white/[0.05] flex items-center justify-between bg-slate-50/50 dark:bg-black/40">
          <div className="flex items-center gap-2">
-           <div className="relative w-40 sm:w-56">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
+           <div className="relative w-36 sm:w-48">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
               <input 
                 type="text" 
                 placeholder={t('searchPlaceholder')} 
-                className="w-full pl-8 pr-3 py-1.5 text-[11px] bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all dark:text-white"
+                className="w-full pl-7 pr-2 py-1 text-[10px] bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-md outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all dark:text-white"
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
               />
            </div>
            
            <div className="relative" ref={groupMenuRef}>
-             <button onClick={() => setIsGroupMenuOpen(!isGroupMenuOpen)} className={`p-1.5 border rounded-lg transition-all ${isGroupMenuOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'text-slate-500 hover:text-indigo-600 bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 hover:shadow-md'}`}>
-                <Layers size={14} />
+             <button onClick={() => setIsGroupMenuOpen(!isGroupMenuOpen)} className={`p-1 border rounded-md transition-all ${isGroupMenuOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600 bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700'}`}>
+                <Layers size={12} />
              </button>
              {isGroupMenuOpen && (
-               <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-2xl shadow-2xl z-[100] p-1 animate-in zoom-in-95 duration-150 ring-1 ring-black/5">
-                  <p className="px-3 py-1.5 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-50 dark:border-white/[0.05] mb-1">{t('groupBy')}</p>
+               <div className="absolute top-full left-0 mt-1.5 w-44 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg shadow-xl z-[100] p-1 animate-in zoom-in-95 duration-150 ring-1 ring-black/5">
+                  <p className="px-2 py-1 text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-50 dark:border-white/[0.05] mb-1">{t('groupBy')}</p>
                   {(['none', 'status', 'priority', 'assigneeId'] as GroupByOption[]).map(option => (
-                    <button key={option} onClick={() => { setGroupBy(option); setIsGroupMenuOpen(false); }} className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${groupBy === option ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-zinc-800'}`}>
+                    <button key={option} onClick={() => { setGroupBy(option); setIsGroupMenuOpen(false); }} className={`w-full flex items-center justify-between px-2 py-1 rounded text-[10px] font-bold transition-all ${groupBy === option ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-zinc-800'}`}>
                        {t(`groupBy${option.charAt(0).toUpperCase() + option.slice(1)}` as any)}
-                       {groupBy === option && <Check size={12} />}
+                       {groupBy === option && <Check size={10} />}
                     </button>
                   ))}
                </div>
@@ -217,17 +217,17 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
            </div>
 
            <div className="relative" ref={columnMenuRef}>
-             <button onClick={() => setIsColumnMenuOpen(!isColumnMenuOpen)} className={`p-1.5 border rounded-lg transition-all ${isColumnMenuOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'text-slate-500 hover:text-indigo-600 bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 hover:shadow-md'}`}>
-                <Settings2 size={14} />
+             <button onClick={() => setIsColumnMenuOpen(!isColumnMenuOpen)} className={`p-1 border rounded-md transition-all ${isColumnMenuOpen ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600 bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-700'}`}>
+                <Settings2 size={12} />
              </button>
              {isColumnMenuOpen && (
-               <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-2xl shadow-2xl z-[100] p-1 animate-in zoom-in-95 duration-150 ring-1 ring-black/5">
-                  <p className="px-3 py-1.5 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-50 dark:border-white/[0.05] mb-1">{t('manageColumns')}</p>
-                  <div className="max-h-64 overflow-y-auto custom-scrollbar p-0.5">
+               <div className="absolute top-full left-0 mt-1.5 w-48 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 rounded-lg shadow-xl z-[100] p-1 animate-in zoom-in-95 duration-150 ring-1 ring-black/5">
+                  <p className="px-2 py-1 text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-50 dark:border-white/[0.05] mb-1">{t('manageColumns')}</p>
+                  <div className="max-h-56 overflow-y-auto custom-scrollbar p-0.5">
                     {ALL_COLUMNS.map(col => (
-                      <button key={col.id} onClick={() => toggleColumn(col.id)} className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${!hiddenColumns.includes(col.id) ? 'text-slate-900 dark:text-white' : 'text-slate-400 line-through decoration-slate-400/50'} hover:bg-slate-50 dark:hover:bg-zinc-800/50`}>
-                        <div className={`w-4 h-4 rounded-md border flex items-center justify-center transition-all ${!hiddenColumns.includes(col.id) ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-transparent border-slate-200 dark:border-zinc-700'}`}>
-                           {!hiddenColumns.includes(col.id) && <Check size={10} />}
+                      <button key={col.id} onClick={() => toggleColumn(col.id)} className={`w-full flex items-center gap-2 px-2 py-1 rounded text-[10px] font-bold transition-all ${!hiddenColumns.includes(col.id) ? 'text-slate-900 dark:text-white' : 'text-slate-400 line-through decoration-slate-400/50'} hover:bg-slate-50 dark:hover:bg-zinc-800/50`}>
+                        <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${!hiddenColumns.includes(col.id) ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-transparent border-slate-200 dark:border-zinc-700'}`}>
+                           {!hiddenColumns.includes(col.id) && <Check size={8} />}
                         </div>
                         {t(col.labelKey as any)}
                       </button>
@@ -237,7 +237,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
              )}
            </div>
          </div>
-         <span className="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-wider hidden sm:block">{sortedAndFilteredTasks.length} {t('tasksFound')}</span>
+         <span className="text-[8px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-wider hidden sm:block">{sortedAndFilteredTasks.length} {t('tasksFound')}</span>
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar dark:bg-black">
@@ -260,7 +260,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                             ref={dragProvided.innerRef}
                             {...dragProvided.draggableProps}
                             {...dragProvided.dragHandleProps}
-                            className="px-4 py-2 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-white/[0.02] transition-all group cursor-grab active:cursor-grabbing"
+                            className="px-3 py-1.5 text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1 hover:bg-slate-100 dark:hover:bg-white/[0.02] transition-all group cursor-grab active:cursor-grabbing"
                             onClick={() => {
                               if (colId !== 'actions' && colId !== 'taskAge') {
                                 setSortConfig(prev => ({
@@ -270,10 +270,10 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                               }
                             }}
                           >
-                             <GripVertical size={10} className="opacity-0 group-hover:opacity-40 transition-opacity" />
+                             <GripVertical size={8} className="opacity-0 group-hover:opacity-40 transition-opacity" />
                              <span className="flex-1 truncate">{t(colDef.labelKey as any)}</span>
                              {colId !== 'actions' && colId !== 'taskAge' && (
-                               <ArrowUpDown size={10} className={sortConfig?.key === colId ? 'text-indigo-600 opacity-100' : 'opacity-20'} />
+                               <ArrowUpDown size={8} className={sortConfig?.key === colId ? 'text-indigo-600 opacity-100' : 'opacity-20'} />
                              )}
                           </div>
                         )}
@@ -286,7 +286,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
             </Droppable>
           </DragDropContext>
 
-          <div className="pb-8">
+          <div className="pb-4">
              {Object.entries(groupedTasks).map(([groupKey, tasks]) => {
                 const isCollapsed = collapsedGroups.has(groupKey);
                 return (
@@ -294,14 +294,14 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                      {groupBy !== 'none' && (
                          <div 
                            onClick={() => toggleGroupCollapse(groupKey)}
-                           className="flex items-center gap-3 px-4 py-2 bg-slate-50/50 dark:bg-white/[0.01] hover:bg-slate-100 dark:hover:bg-white/[0.03] transition-colors cursor-pointer sticky top-[36px] z-[5] backdrop-blur-md"
+                           className="flex items-center gap-2 px-3 py-1.5 bg-slate-50/50 dark:bg-white/[0.01] hover:bg-slate-100 dark:hover:bg-white/[0.03] transition-colors cursor-pointer sticky top-[28px] z-[5] backdrop-blur-md"
                          >
                             <div className="text-slate-400 dark:text-zinc-600">
-                               {isCollapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                               {isCollapsed ? <ChevronRight size={10} /> : <ChevronDown size={10} />}
                             </div>
-                            <h4 className="font-black text-[10px] text-slate-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                            <h4 className="font-black text-[9px] text-slate-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                                {getGroupTitle(groupKey)}
-                               <span className="bg-slate-200/60 dark:bg-zinc-800 dark:text-zinc-300 px-2 py-0.5 rounded-full text-[9px] font-black">
+                               <span className="bg-slate-200/60 dark:bg-zinc-800 dark:text-zinc-300 px-1.5 py-0.5 rounded text-[8px] font-black">
                                  {(tasks as Task[]).length}
                                </span>
                             </h4>
