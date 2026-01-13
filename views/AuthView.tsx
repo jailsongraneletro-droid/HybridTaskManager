@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Mail, Lock, User as UserIcon, ArrowRight, Loader2, 
-  AlertCircle, ChevronLeft, Zap, Sparkles 
+  AlertCircle, ChevronLeft, Zap, Sparkles, CheckCircle2 
 } from 'lucide-react';
 import { DataService } from '../services/dataService';
 import { useLanguage } from '../utils/i18n';
@@ -14,6 +14,7 @@ export const AuthView: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -21,22 +22,45 @@ export const AuthView: React.FC = () => {
     password: ''
   });
 
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setSuccess('');
+
+    // Validações Básicas
+    if (!validateEmail(formData.email)) {
+      setError("Por favor, insira um e-mail válido.");
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (!isLogin && formData.name.trim().length < 2) {
+      setError("O nome deve ter pelo menos 2 caracteres.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       if (isLogin) {
         await DataService.login(formData.email, formData.password);
+        window.location.href = '/#/dashboard';
+        window.location.reload();
       } else {
         await DataService.signup(formData.name, formData.email, formData.password);
+        setSuccess(t('checkEmail'));
+        setIsLogin(true); // Muda para login após cadastro
       }
-      // Redireciona e força a recarga para inicializar o estado global corretamente
-      window.location.href = '/#/dashboard';
-      window.location.reload();
     } catch (err: any) {
-      setError(err.message === 'CONFIRM_EMAIL' ? t('checkEmail') : t('loginError'));
+      if (err.message === 'CONFIRM_EMAIL') {
+        setSuccess(t('checkEmail'));
+      } else {
+        setError(isLogin ? t('loginError') : t('signupError'));
+      }
     } finally {
       setLoading(false);
     }
@@ -59,14 +83,21 @@ export const AuthView: React.FC = () => {
               {isLogin ? t('welcomeBack') : t('createAccount')}
             </h1>
             <p className="text-sm text-slate-500 font-medium">
-              {isLogin ? t('enterDetails') : t('enterDetails')}
+              {isLogin ? "Acesse sua conta para continuar." : "Preencha os campos abaixo para começar."}
             </p>
           </div>
 
           {error && (
-            <div className={`p-4 rounded-2xl border mb-6 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 ${error === t('checkEmail') ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+            <div className="p-4 rounded-2xl border border-red-100 bg-red-50 text-red-700 mb-6 flex items-start gap-3 animate-in shake duration-300">
               <AlertCircle className="shrink-0 mt-0.5" size={16} />
               <p className="text-xs font-bold leading-tight">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="p-4 rounded-2xl border border-emerald-100 bg-emerald-50 text-emerald-700 mb-6 flex items-start gap-3 animate-in slide-in-from-top-2">
+              <CheckCircle2 className="shrink-0 mt-0.5" size={16} />
+              <p className="text-xs font-bold leading-tight">{success}</p>
             </div>
           )}
 
@@ -82,7 +113,7 @@ export const AuthView: React.FC = () => {
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                     className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-black rounded-2xl outline-none transition-all text-sm font-bold dark:text-white"
-                    placeholder="Seu nome"
+                    placeholder="Como deseja ser chamado?"
                   />
                 </div>
               </div>
@@ -98,7 +129,7 @@ export const AuthView: React.FC = () => {
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
                   className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-black rounded-2xl outline-none transition-all text-sm font-bold dark:text-white"
-                  placeholder="email@exemplo.com"
+                  placeholder="seu@email.com"
                 />
               </div>
             </div>
@@ -113,7 +144,7 @@ export const AuthView: React.FC = () => {
                   value={formData.password}
                   onChange={e => setFormData({ ...formData, password: e.target.value })}
                   className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-black rounded-2xl outline-none transition-all text-sm font-bold dark:text-white"
-                  placeholder="••••••••"
+                  placeholder="Min. 6 caracteres"
                 />
               </div>
             </div>
@@ -131,7 +162,7 @@ export const AuthView: React.FC = () => {
 
           <div className="mt-8 text-center">
             <button 
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); }}
               className="text-xs font-bold text-slate-500 hover:text-indigo-600 transition-colors"
             >
               {isLogin ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}
@@ -146,31 +177,16 @@ export const AuthView: React.FC = () => {
       {/* Direita: Visual Branding */}
       <div className="hidden lg:flex flex-1 bg-indigo-600 items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-violet-700 opacity-90"></div>
-        
-        <div className="absolute top-20 right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-black/10 rounded-full blur-3xl animate-pulse delay-700"></div>
-
         <div className="relative z-10 text-center max-w-lg">
           <div className="inline-flex p-4 bg-white/20 backdrop-blur-xl rounded-3xl mb-8 border border-white/20 shadow-2xl">
             <Sparkles className="text-white" size={40} />
           </div>
           <h2 className="text-4xl font-black text-white tracking-tighter leading-none mb-6 drop-shadow-lg">
-            A Próxima Geração de Gestão Ágil.
+            Sua Nova Central de Produtividade.
           </h2>
           <p className="text-lg text-white/80 font-medium leading-relaxed">
             Uma plataforma unificada para transformar seus processos complexos em fluxos de trabalho fluidos e inteligentes.
           </p>
-          
-          <div className="mt-12 grid grid-cols-2 gap-4">
-             <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-lg transition-transform hover:scale-105">
-                <div className="text-3xl font-black text-white mb-1">98%</div>
-                <div className="text-[10px] font-black uppercase text-white/60 tracking-widest">Satisfação</div>
-             </div>
-             <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-lg transition-transform hover:scale-105">
-                <div className="text-3xl font-black text-white mb-1">+50k</div>
-                <div className="text-[10px] font-black uppercase text-white/60 tracking-widest">Tarefas</div>
-             </div>
-          </div>
         </div>
       </div>
     </div>

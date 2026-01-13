@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { User } from '../types';
 import { Modal } from './Shared';
 import { useLanguage } from '../utils/i18n';
-import { User as UserIcon, Mail, Lock, Image as ImageIcon, Camera } from 'lucide-react';
+import { User as UserIcon, Mail, Lock, Image as ImageIcon, Camera, LogOut } from 'lucide-react';
+import { DataService } from '../services/dataService';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -35,6 +37,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
     onClose();
   };
 
+  const handleLogout = async () => {
+    await DataService.logout();
+    window.location.href = '/';
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -57,12 +64,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
       <form onSubmit={handleSubmit} className="space-y-4">
         
         {/* Avatar Selection */}
-        <div className="flex flex-col items-center gap-4 py-2 border-b border-slate-100 pb-6 mb-2">
+        <div className="flex flex-col items-center gap-4 py-2 border-b border-slate-100 dark:border-slate-800 pb-6 mb-2">
             <div className="relative group cursor-pointer" onClick={triggerFileInput}>
                 {avatar ? (
-                    <img src={avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-sm" />
+                    <img src={avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border-4 border-slate-100 dark:border-slate-800 shadow-sm" />
                 ) : (
-                    <div className="w-24 h-24 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 border-4 border-slate-50">
+                    <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 border-4 border-slate-50 dark:border-slate-900">
                         <ImageIcon size={32} />
                     </div>
                 )}
@@ -75,16 +82,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
                  <button 
                     type="button" 
                     onClick={triggerFileInput}
-                    className="text-sm text-indigo-600 font-medium hover:text-indigo-700 hover:underline flex items-center gap-1"
+                    className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
                 >
-                    <Camera size={16} />
+                    <Camera size={14} />
                     {t('uploadPhoto')}
                 </button>
                 {avatar && (
                      <button 
                         type="button" 
                         onClick={() => setAvatar('')}
-                        className="text-sm text-red-500 font-medium hover:text-red-700 hover:underline"
+                        className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700"
                     >
                         {t('removePhoto')}
                     </button>
@@ -100,14 +107,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
             />
 
              <div className="relative w-full">
-                <label className="block text-xs font-semibold text-slate-500 mb-1">{t('orPasteUrl')}</label>
+                <label className="block text-[9px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">{t('orPasteUrl')}</label>
                 <div className="relative">
-                    <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                     <input 
                         type="text" 
                         value={avatar}
                         onChange={e => setAvatar(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 text-xs"
+                        className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 text-[11px]"
                         placeholder="https://..."
                     />
                 </div>
@@ -116,14 +123,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
 
         {/* Name */}
         <div className="relative">
-            <label className="block text-xs font-semibold text-slate-500 mb-1">{t('name')}</label>
+            <label className="block text-[9px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">{t('name')}</label>
             <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                 <input 
                     type="text" 
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 text-[11px]"
                     required
                 />
             </div>
@@ -131,14 +138,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
 
         {/* Email */}
         <div className="relative">
-            <label className="block text-xs font-semibold text-slate-500 mb-1">{t('email')}</label>
+            <label className="block text-[9px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">{t('email')}</label>
             <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                 <input 
                     type="email" 
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 text-[11px]"
                     required
                 />
             </div>
@@ -146,23 +153,30 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
 
          {/* Password */}
          <div className="relative">
-            <label className="block text-xs font-semibold text-slate-500 mb-1">{t('password')}</label>
+            <label className="block text-[9px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-1.5 ml-1">{t('password')}</label>
             <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                 <input 
-                    type="text" 
+                    type="password" 
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-white text-slate-900 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter new password"
+                    className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 text-[11px]"
+                    placeholder="Deixe em branco para manter"
                 />
             </div>
         </div>
 
-        <div className="pt-4 flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg">{t('cancel')}</button>
-            <button type="submit" className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-sm shadow-indigo-200">
+        <div className="pt-6 flex flex-col gap-2">
+            <button type="submit" className="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 shadow-lg active:scale-95 transition-all">
                 {t('updateProfile')}
+            </button>
+            <button 
+              type="button" 
+              onClick={handleLogout}
+              className="w-full py-2.5 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all flex items-center justify-center gap-2"
+            >
+              <LogOut size={14} />
+              {t('logout')}
             </button>
         </div>
       </form>

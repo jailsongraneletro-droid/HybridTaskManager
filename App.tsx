@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { 
   ClipboardList, LayoutDashboard, Settings, Plus, Bell, Calendar, 
   Kanban, List, Menu, RefreshCw, StickyNote, Activity, Layers, 
-  ChevronFirst, ChevronLast, Sun, Moon, AlertCircle
+  ChevronFirst, ChevronLast, Sun, Moon, AlertCircle, X, LogOut
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User } from './types';
@@ -82,7 +83,16 @@ const AppContent = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await DataService.logout();
+    window.location.href = '/';
+  };
+
   useEffect(() => { fetchBoard(); }, []);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
@@ -145,7 +155,8 @@ const AppContent = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-black overflow-hidden transition-all">
-      <aside className={`hidden lg:flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-200 ${isSidebarCollapsed ? 'w-14' : 'w-48'}`}>
+      {/* Sidebar Desktop */}
+      <aside className={`hidden lg:flex flex-col bg-white dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-slate-800 transition-all duration-200 ${isSidebarCollapsed ? 'w-14' : 'w-48'}`}>
         <div className="p-3 flex items-center justify-center border-b border-slate-200 dark:border-slate-800">
            <div className="w-7 h-7 bg-indigo-600 rounded flex items-center justify-center shadow-lg"><ClipboardList className="text-white" size={14} /></div>
            {!isSidebarCollapsed && <span className="ml-2 font-black text-xs uppercase tracking-tighter dark:text-white">HybridTask</span>}
@@ -163,14 +174,54 @@ const AppContent = () => {
             <Avatar name={user.name} url={user.avatar} size="sm" />
             {!isSidebarCollapsed && <span className="text-[10px] font-black truncate dark:text-white">{user.name}</span>}
           </div>
+          <button onClick={handleLogout} className="w-full flex items-center gap-2 p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors">
+            <LogOut size={14} />
+            {!isSidebarCollapsed && <span className="text-[10px] font-black uppercase tracking-widest">{t('logout')}</span>}
+          </button>
         </div>
       </aside>
 
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm lg:hidden animate-in fade-in" onClick={() => setIsMobileMenuOpen(false)}>
+          <aside className="w-64 h-full bg-white dark:bg-[#0a0a0a] flex flex-col animate-in slide-in-from-left duration-200" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 bg-indigo-600 rounded flex items-center justify-center"><ClipboardList className="text-white" size={14} /></div>
+                <span className="font-black text-xs uppercase dark:text-white">HybridTask</span>
+              </div>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 text-slate-400"><X size={18} /></button>
+            </div>
+            <nav className="flex-1 p-3 space-y-1">
+              {navItems.map((item) => (
+                <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-white/[0.05]'}`}>
+                  <item.icon size={16} /> <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+            <div className="p-4 border-t dark:border-slate-800 space-y-2">
+               <div onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-white/[0.05] cursor-pointer">
+                 <Avatar name={user.name} url={user.avatar} size="md" />
+                 <div>
+                    <p className="text-xs font-black dark:text-white leading-none mb-1">{user.name}</p>
+                    <p className="text-[10px] text-slate-400 font-bold truncate max-w-[140px]">{user.email}</p>
+                 </div>
+               </div>
+               <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors font-black text-[10px] uppercase tracking-widest">
+                  <LogOut size={16} /> {t('logout')}
+               </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
       <main className="flex-1 flex flex-col min-w-0 relative">
-        <header className="h-10 flex items-center justify-between px-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-40">
+        <header className="h-10 flex items-center justify-between px-4 bg-white dark:bg-[#0a0a0a] border-b border-slate-200 dark:border-slate-800 z-40">
            <div className="flex items-center gap-2">
              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1 text-slate-500"><Menu size={18} /></button>
-             <h1 className="text-sm font-black tracking-tight dark:text-white uppercase">{navItems.find(i => location.pathname.startsWith(i.to))?.label || 'Painel'}</h1>
+             <h1 className="text-[11px] font-black tracking-widest dark:text-white uppercase truncate max-w-[120px] sm:max-w-none">
+                {navItems.find(i => location.pathname.startsWith(i.to))?.label || 'Painel'}
+             </h1>
            </div>
            <div className="flex items-center gap-1.5">
               <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05]">{isDarkMode ? <Sun size={14} /> : <Moon size={14} />}</button>
@@ -188,11 +239,11 @@ const AppContent = () => {
                   </div>
                 )}
               </div>
-              <button onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-sm flex items-center gap-1 hover:bg-indigo-700 transition-colors"><Plus size={14} /> Novo</button>
+              <button onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-sm flex items-center gap-1 hover:bg-indigo-700 transition-colors"><Plus size={14} /> <span className="hidden sm:inline">Novo</span></button>
            </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50 dark:bg-black">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar bg-slate-50 dark:bg-black">
            <Routes>
               <Route path="/dashboard" element={<Dashboard data={boardData} />} />
               <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={(t) => { setSelectedTask(t); setIsTaskModalOpen(true); }} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />

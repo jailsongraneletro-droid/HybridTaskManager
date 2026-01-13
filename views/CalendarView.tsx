@@ -103,12 +103,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
             onClick={() => onEditTask(task)} 
             style={{ 
                 ...provided.draggableProps.style,
-                backgroundColor: snapshot.isDragging ? col?.color : isToday(new Date(task.dueDate)) ? `${col?.color}20` : `${col?.color}10`, 
-                borderLeft: `2px solid ${col?.color}` 
+                backgroundColor: snapshot.isDragging ? col?.color : isToday(new Date(task.dueDate)) ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.03)', 
+                borderLeft: `3px solid ${col?.color || '#555'}` 
             }} 
-            className={`px-1 py-0.5 rounded text-[8px] font-bold truncate cursor-pointer hover:brightness-110 transition-all shadow-sm border border-slate-200/40 dark:border-slate-800/40 mb-0.5 flex items-center gap-1 ${snapshot.isDragging ? 'text-white z-[100] shadow-md scale-105' : 'text-slate-700 dark:text-slate-300'}`}
+            className={`px-1.5 py-1 rounded text-[9px] font-bold truncate cursor-pointer hover:brightness-125 transition-all shadow-sm border border-slate-200/20 dark:border-slate-800/20 mb-1 flex items-center gap-1.5 ${snapshot.isDragging ? 'text-white z-[100] shadow-xl scale-105' : 'text-slate-700 dark:text-slate-200'}`}
           >
-            <span className={`w-0.5 h-0.5 rounded-full shrink-0 ${snapshot.isDragging ? 'bg-white' : ''}`} style={{ backgroundColor: snapshot.isDragging ? undefined : col?.color }}></span>
             <span className="truncate">{task.title}</span>
           </div>
         )}
@@ -117,25 +116,25 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
   };
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all theme-transition">
-      <div className="p-2 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-xl">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <div className="p-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg shadow-sm"><CalendarIcon size={14} /></div>
-            <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">{currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h2>
+    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all theme-transition">
+      <div className="p-2.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/80 dark:bg-black/80 backdrop-blur-xl">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 rounded-lg"><CalendarIcon size={14} /></div>
+            <h2 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-widest">{currentDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h2>
           </div>
-          <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden shadow-sm">
-            <button onClick={() => navigateDate(-1)} className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 transition-colors"><ChevronLeft size={12} /></button>
-            <button onClick={() => setCurrentDate(new Date())} className="px-2 py-1 text-[8px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">{t('todayView')}</button>
-            <button onClick={() => navigateDate(1)} className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 transition-colors"><ChevronRight size={12} /></button>
+          <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+            <button onClick={() => navigateDate(-1)} className="p-1.5 hover:bg-slate-50 dark:hover:bg-white/[0.05] text-slate-500 transition-colors"><ChevronLeft size={14} /></button>
+            <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1 text-[9px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.05] transition-colors">{t('todayView')}</button>
+            <button onClick={() => navigateDate(1)} className="p-1.5 hover:bg-slate-50 dark:hover:bg-white/[0.05] text-slate-500 transition-colors"><ChevronRight size={14} /></button>
           </div>
         </div>
-        <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-slate-800/50 p-0.5 rounded-lg shadow-inner">
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-900/50 p-1 rounded-xl shadow-inner">
           {(['month', 'week', 'day'] as const).map(mode => (
             <button 
               key={mode} 
               onClick={() => setViewMode(mode)} 
-              className={`px-3 py-1 rounded text-[8px] font-black uppercase tracking-widest transition-all ${viewMode === mode ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+              className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${viewMode === mode ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               {t(mode as any)}
             </button>
@@ -143,12 +142,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-950">
+      <div className="flex-1 overflow-auto bg-slate-50/20 dark:bg-black custom-scrollbar">
         <DragDropContext onDragEnd={handleDragEnd}>
             {viewMode === 'month' && (
-              <div className="grid grid-cols-7 h-full min-h-[400px] border-l border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-7 h-full min-h-[500px] min-w-[700px] border-l border-slate-200 dark:border-slate-800">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                  <div key={day} className="p-2 text-center text-[8px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest bg-white dark:bg-slate-900 border-r border-b border-slate-100 dark:border-slate-800">{day}</div>
+                  <div key={day} className="p-2.5 text-center text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-[#0a0a0a] border-r border-b border-slate-200 dark:border-slate-800">{day}</div>
                 ))}
                 {monthData.map((item, idx) => {
                   const dateTasks = getTasksForDate(item.date);
@@ -160,13 +159,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
                             <div 
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
-                                className={`min-h-[80px] p-1 border-r border-b border-slate-100 dark:border-slate-800 transition-all group ${!item.currentMonth ? 'bg-slate-50/40 dark:bg-white/[0.01] opacity-30' : 'bg-white dark:bg-slate-900 hover:bg-slate-50/50 dark:hover:bg-white/[0.01]'} ${today ? 'bg-indigo-50/10 dark:bg-indigo-900/10' : ''} ${snapshot.isDraggingOver ? 'ring-1 ring-inset ring-indigo-500 bg-indigo-50/20 dark:bg-indigo-900/20' : ''}`}
+                                className={`min-h-[100px] p-1.5 border-r border-b border-slate-200 dark:border-slate-800 transition-all group ${!item.currentMonth ? 'bg-slate-100/30 dark:bg-white/[0.01] opacity-20' : 'bg-white dark:bg-[#0a0a0a] hover:bg-slate-50 dark:hover:bg-white/[0.02]'} ${today ? 'bg-zinc-100/50 dark:bg-zinc-800/30' : ''} ${snapshot.isDraggingOver ? 'ring-2 ring-inset ring-indigo-500/30 bg-indigo-50/10 dark:bg-indigo-900/10' : ''}`}
                             >
-                              <div className="flex items-center justify-between mb-1">
-                                <span className={`text-[9px] font-black w-5 h-5 flex items-center justify-center rounded transition-all ${today ? 'bg-indigo-600 text-white shadow scale-105' : item.currentMonth ? 'text-slate-700 dark:text-slate-300' : 'text-slate-300 dark:text-slate-700'}`}>{item.day}</span>
-                                <button onClick={() => onAddTaskOnDate(dateId)} className="opacity-0 group-hover:opacity-100 p-0.5 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 rounded transition-all"><Plus size={10} /></button>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className={`text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-lg transition-all ${today ? 'bg-white text-black shadow-lg scale-110' : item.currentMonth ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-700'}`}>{item.day}</span>
+                                <button onClick={() => onAddTaskOnDate(dateId)} className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-all"><Plus size={14} /></button>
                               </div>
-                              <div className="space-y-0.5">
+                              <div className="space-y-1">
                                 {dateTasks.map((task, taskIdx) => <DraggableTask key={task.id} task={task} index={taskIdx} />)}
                               </div>
                               {provided.placeholder}
@@ -179,16 +178,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
             )}
 
             {viewMode === 'week' && (
-              <div className="flex flex-col h-full min-w-[600px]">
-                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
+              <div className="flex flex-col h-full min-w-[800px]">
+                <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0a0a0a] sticky top-0 z-10 shadow-sm">
                   {weekDays.map((date, idx) => (
-                    <div key={idx} className={`p-2 border-r border-slate-200 dark:border-slate-800 text-center transition-colors ${isToday(date) ? 'bg-indigo-50/20 dark:bg-indigo-900/10' : ''}`}>
-                      <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">{date.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
-                      <p className={`text-sm font-black w-7 h-7 flex items-center justify-center mx-auto rounded transition-all ${isToday(date) ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-800 dark:text-slate-100'}`}>{date.getDate()}</p>
+                    <div key={idx} className={`p-3 border-r border-slate-200 dark:border-slate-800 text-center transition-colors ${isToday(date) ? 'bg-zinc-100/40 dark:bg-zinc-800/20' : ''}`}>
+                      <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{date.toLocaleDateString('pt-BR', { weekday: 'short' })}</p>
+                      <p className={`text-base font-black w-9 h-9 flex items-center justify-center mx-auto rounded-xl transition-all ${isToday(date) ? 'bg-white dark:bg-zinc-200 text-black shadow-sm' : 'text-slate-900 dark:text-white'}`}>{date.getDate()}</p>
                     </div>
                   ))}
                 </div>
-                <div className="grid grid-cols-7 flex-1 min-h-[400px]">
+                <div className="grid grid-cols-7 flex-1 min-h-[500px]">
                   {weekDays.map((date, idx) => {
                     const dateTasks = getTasksForDate(date);
                     const dateId = formatLocalDate(date);
@@ -198,9 +197,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
                           <div 
                             ref={provided.innerRef}
                             {...provided.droppableProps}
-                            className={`p-1.5 border-r border-slate-100 dark:border-slate-800 group hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition-colors ${isToday(date) ? 'bg-indigo-50/5' : ''} ${snapshot.isDraggingOver ? 'bg-indigo-50/30 dark:bg-indigo-900/30 ring-1 ring-inset ring-indigo-500/10' : ''}`}
+                            className={`p-2 border-r border-slate-200 dark:border-slate-800 group hover:bg-slate-50 dark:hover:bg-white/[0.01] transition-colors ${isToday(date) ? 'bg-zinc-50/30 dark:bg-zinc-900/10' : ''} ${snapshot.isDraggingOver ? 'bg-indigo-50/10 dark:bg-indigo-900/10 ring-2 ring-inset ring-indigo-500/10' : ''}`}
                           >
-                            <div className="space-y-1.5">
+                            <div className="space-y-2">
                               {dateTasks.map((task, taskIdx) => (
                                 <Draggable key={task.id} draggableId={task.id} index={taskIdx}>
                                   {(dragProvided, dragSnapshot) => (
@@ -209,11 +208,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
                                       {...dragProvided.draggableProps}
                                       {...dragProvided.dragHandleProps}
                                       onClick={() => onEditTask(task)} 
-                                      className={`bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow transition-all ${dragSnapshot.isDragging ? 'z-[100] shadow-xl ring-1 ring-indigo-500 scale-105' : ''}`}
+                                      className={`bg-white dark:bg-[#121212] p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all ${dragSnapshot.isDragging ? 'z-[100] shadow-2xl ring-2 ring-indigo-500 scale-105' : ''}`}
                                     >
-                                         <div className="w-full h-0.5 rounded-full mb-1" style={{ backgroundColor: data.columns[task.status]?.color }} />
-                                         <p className="text-[10px] font-bold text-slate-800 dark:text-white leading-tight mb-1 line-clamp-2">{task.title}</p>
-                                         <div className="flex items-center justify-between pt-0.5 opacity-80 scale-90 origin-left">
+                                         <div className="w-full h-1 rounded-full mb-2" style={{ backgroundColor: data.columns[task.status]?.color || '#555' }} />
+                                         <p className="text-[11px] font-black text-slate-900 dark:text-white leading-tight mb-2 line-clamp-3">{task.title}</p>
+                                         <div className="flex items-center justify-between opacity-80 scale-90 origin-left">
                                             <Avatar size="sm" name={data.assignees.find(a => a.id === task.assigneeId)?.name || '?'} />
                                          </div>
                                     </div>

@@ -26,6 +26,7 @@
         font-family: 'Inter', sans-serif; 
         font-size: 0.8125rem; 
         transition: background-color 0.2s ease;
+        -webkit-font-smoothing: antialiased;
       }
       
       .font-size-sm { font-size: 0.75rem; }
@@ -40,17 +41,18 @@
       .dark .bg-slate-50 { background-color: #000000 !important; }
       .dark .bg-slate-100 { background-color: #0d0d0d !important; }
       .dark .bg-slate-200 { background-color: #1a1a1a !important; }
+      .dark .bg-zinc-900 { background-color: #0a0a0a !important; }
       
-      /* Bordas */
-      .dark .border-slate-100 { border-color: #111111 !important; }
-      .dark .border-slate-200 { border-color: #1a1a1a !important; }
-      .dark .border-slate-800 { border-color: #1a1a1a !important; }
-      .dark .border-white\/\[0\.05\] { border-color: #1a1a1a !important; }
+      /* Bordas - Contraste aumentado para separação */
+      .dark .border-slate-100 { border-color: #1a1a1a !important; }
+      .dark .border-slate-200 { border-color: #262626 !important; }
+      .dark .border-slate-800 { border-color: #262626 !important; }
+      .dark .border-white\/\[0\.05\] { border-color: #262626 !important; }
       
       /* Texto */
       .dark .text-slate-900 { color: #ffffff !important; }
-      .dark .text-slate-800 { color: #f1f5f9 !important; }
-      .dark .text-slate-700 { color: #e2e8f0 !important; }
+      .dark .text-slate-800 { color: #f8fafc !important; }
+      .dark .text-slate-700 { color: #f1f5f9 !important; }
       .dark .text-slate-600 { color: #94a3b8 !important; }
       .dark .text-slate-500 { color: #64748b !important; }
       .dark .text-slate-400 { color: #475569 !important; }
@@ -58,19 +60,40 @@
       /* Inputs e Selects */
       .dark input, .dark select, .dark textarea {
         background-color: #0d0d0d !important;
-        border-color: #1a1a1a !important;
+        border-color: #262626 !important;
         color: #ffffff !important;
       }
 
       ::-webkit-scrollbar { width: 4px; height: 4px; }
       ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-      .dark ::-webkit-scrollbar-thumb { background: #262626; }
+      .dark ::-webkit-scrollbar-thumb { background: #333333; }
+
+      .col-resizer {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 4px;
+        height: 100%;
+        cursor: col-resize;
+        z-index: 10;
+        transition: background-color 0.2s;
+      }
+      .col-resizer:hover {
+        background-color: #4f46e5;
+      }
 
       .notes-grid { column-gap: 0.75rem; }
       .note-item { break-inside: avoid; margin-bottom: 0.75rem; }
       
       .glow-effect:hover {
         box-shadow: 0 0 15px rgba(79, 70, 229, 0.4);
+      }
+
+      @media (max-width: 640px) {
+        .mobile-scroll-x {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
       }
     </style>
   <script type="importmap">
