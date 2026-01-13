@@ -1,302 +1,167 @@
+
 import React, { useState } from 'react';
 import { BoardData } from '../types';
-import { Plus, Trash2, AlertCircle, RefreshCw, Palette, Layers, Flag, Users, Type, Check } from 'lucide-react';
+import { Plus, Trash2, RefreshCw, Palette, Layers, Flag, Type, Check, Users, Mail, UserPlus } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 
-interface SettingsViewProps {
-  data: BoardData;
-  fontSize: string;
-  onFontSizeChange: (size: string) => void;
-  onAddColumn: (title: string, color: string) => void;
-  onUpdateColumn: (id: string, updates: any) => void;
-  onDeleteColumn: (id: string) => void;
-  onAddPriority: (title: string, color: string) => void;
-  onUpdatePriority: (id: string, updates: any) => void;
-  onDeletePriority: (id: string) => void;
-  onAddAssignee: (name: string, email: string) => void;
-  onDeleteAssignee: (id: string) => void;
-  onRestoreDefaults: () => void;
-}
-
-export const SettingsView: React.FC<SettingsViewProps> = ({ 
+export const SettingsView: React.FC<any> = ({ 
   data, 
-  fontSize,
-  onFontSizeChange,
-  onAddColumn, 
+  fontSize, 
+  onFontSizeChange, 
+  onAddColumn,
   onUpdateColumn, 
-  onDeleteColumn,
+  onDeleteColumn, 
   onAddPriority,
-  onUpdatePriority,
-  onDeletePriority,
+  onUpdatePriority, 
+  onDeletePriority, 
   onAddAssignee,
   onDeleteAssignee,
-  onRestoreDefaults
+  onRestoreDefaults 
 }) => {
   const { t } = useLanguage();
-  
-  // Columns State
-  const [newColTitle, setNewColTitle] = useState('');
-  const [newColColor, setNewColColor] = useState('#6366f1');
+  const [restoring, setRestoring] = useState(false);
+  const [newCol, setNewCol] = useState({ title: '', color: '#4f46e5' });
+  const [newPrio, setNewPrio] = useState({ title: '', color: '#fee2e2' });
+  const [newAssignee, setNewAssignee] = useState({ name: '', email: '' });
 
-  // Priority State
-  const [newPrioTitle, setNewPrioTitle] = useState('');
-  const [newPrioColor, setNewPrioColor] = useState('#dbeafe');
-
-  // Assignee State
-  const [newAssigneeName, setNewAssigneeName] = useState('');
-  const [newAssigneeEmail, setNewAssigneeEmail] = useState('');
-  const [assigneeError, setAssigneeError] = useState('');
-  
-  // Restore State
-  const [isRestoring, setIsRestoring] = useState(false);
-  const [restoreSuccess, setRestoreSuccess] = useState('');
-
-  const handleAddColumnSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newColTitle.trim()) {
-      onAddColumn(newColTitle, newColColor);
-      setNewColTitle('');
-    }
-  };
-
-  const handleAddPrioritySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPrioTitle.trim()) {
-        onAddPriority(newPrioTitle, newPrioColor);
-        setNewPrioTitle('');
-    }
-  };
-
-  const handleAddAssigneeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAssigneeError('');
-
-    if (newAssigneeName.trim()) {
-      if (newAssigneeEmail) {
-          const exists = data.assignees.some(a => a.email === newAssigneeEmail);
-          if (exists) {
-              setAssigneeError('Este e-mail já está cadastrado.');
-              return;
-          }
-      }
-
-      onAddAssignee(newAssigneeName, newAssigneeEmail);
-      setNewAssigneeName('');
-      setNewAssigneeEmail('');
-    }
-  };
-
-  const handleRestore = async () => {
-      setIsRestoring(true);
-      setRestoreSuccess('');
-      try {
-          await onRestoreDefaults();
-          setRestoreSuccess(t('restoreSuccess'));
-      } catch (e) {
-          console.error(e);
-      } finally {
-          setIsRestoring(false);
-      }
-  };
-
-  const sectionClass = "bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden ring-1 ring-black/[0.02] dark:ring-white/[0.02]";
-  const headerClass = "p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/40";
-  const inputClass = "w-full px-5 py-3 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl border border-slate-200 dark:border-slate-700 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all text-sm font-medium shadow-inner";
+  const sectionClass = "bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-800 shadow-sm overflow-hidden mb-6";
+  const headerClass = "p-3 border-b dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 flex items-center justify-between";
+  const inputClass = "px-3 py-1.5 bg-white dark:bg-slate-800 dark:text-white rounded border dark:border-slate-700 outline-none text-[11px] font-bold shadow-inner w-full focus:ring-1 focus:ring-indigo-500 transition-all";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
+    <div className="max-w-3xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-2 duration-500">
       
-      <div>
-        <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{t('projectSettings')}</h2>
-        <p className="text-slate-500 dark:text-slate-400 font-medium text-base mt-1">{t('customizeBoard')}</p>
-      </div>
-
-      {/* Font Size Management */}
+      {/* Escala da Interface */}
       <section className={sectionClass}>
         <div className={headerClass}>
-          <div className="flex items-center gap-4">
-             <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-[1.2rem] shadow-sm"><Type size={22} /></div>
-             <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] text-[11px]">Tamanho da Interface</h3>
+          <div className="flex items-center gap-2">
+            <Type size={14} />
+            <h3 className="text-[10px] font-black uppercase dark:text-white">Escala da Interface</h3>
           </div>
         </div>
-        <div className="p-8">
-           <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 font-medium leading-relaxed">Personalize a escala visual do aplicativo para o seu conforto.</p>
-           <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1.5 rounded-[1.5rem] w-fit shadow-inner">
-              {(['sm', 'md', 'lg'] as const).map(size => (
-                <button 
-                  key={size} 
-                  onClick={() => onFontSizeChange(size)} 
-                  className={`px-8 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${fontSize === size ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xl' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                >
-                  {fontSize === size && <Check size={14} />}
-                  {size === 'sm' ? 'Pequeno' : size === 'md' ? 'Médio' : 'Grande'}
-                </button>
-              ))}
-           </div>
+        <div className="p-4 flex gap-2">
+           {['sm', 'md', 'lg'].map(s => (
+             <button key={s} onClick={() => onFontSizeChange(s)} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${fontSize === s ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+               {s === 'sm' ? 'Pequeno' : s === 'md' ? 'Médio' : 'Grande'}
+             </button>
+           ))}
         </div>
       </section>
 
-      {/* Category/Column Management */}
+      {/* Gestão de Colunas */}
       <section className={sectionClass}>
         <div className={headerClass}>
-          <div className="flex items-center gap-4">
-             <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-[1.2rem] shadow-sm"><Layers size={22} /></div>
-             <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] text-[11px]">{t('boardCategories')}</h3>
+          <div className="flex items-center gap-2">
+            <Layers size={14} />
+            <h3 className="text-[10px] font-black uppercase dark:text-white">Colunas do Kanban</h3>
           </div>
         </div>
-        
-        <div className="p-8 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             {data.columnOrder.map(colId => {
-               const col = data.columns[colId];
-               return (
-                 <div key={colId} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 group transition-all hover:border-indigo-300 dark:hover:border-indigo-900 hover:shadow-md">
-                    <div className="relative">
-                        <input 
-                          type="color" 
-                          value={col.color}
-                          onChange={(e) => onUpdateColumn(colId, { color: e.target.value })}
-                          className="w-10 h-10 rounded-xl cursor-pointer border-none bg-transparent shrink-0 shadow-sm"
-                        />
-                    </div>
-                    <input 
-                      type="text" 
-                      value={col.title}
-                      onChange={(e) => onUpdateColumn(colId, { title: e.target.value })}
-                      className="bg-transparent font-bold text-slate-800 dark:text-white outline-none border-b border-transparent focus:border-indigo-500 w-full text-sm py-1"
-                    />
-                    <button 
-                      onClick={() => onDeleteColumn(colId)}
-                      className="p-2.5 text-slate-300 dark:text-slate-700 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all shrink-0"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {data.columnOrder.map((id: string) => {
+              const col = data.columns[id];
+              return (
+                <div key={id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-black/40 rounded-xl border dark:border-slate-800 group shadow-sm">
+                   <input type="color" value={col.color} onChange={e => onUpdateColumn(id, {color: e.target.value})} className="w-5 h-5 border-none bg-transparent cursor-pointer rounded-full overflow-hidden" />
+                   <input value={col.title} onChange={e => onUpdateColumn(id, {title: e.target.value})} className="bg-transparent text-[11px] font-bold outline-none dark:text-white flex-1" />
+                   <button onClick={() => onDeleteColumn(id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex items-center gap-2 p-2 border-2 border-dashed dark:border-slate-800 rounded-xl">
+             <input type="color" value={newCol.color} onChange={e => setNewCol({...newCol, color: e.target.value})} className="w-5 h-5 rounded-full overflow-hidden" />
+             <input placeholder="Nova Coluna..." value={newCol.title} onChange={e => setNewCol({...newCol, title: e.target.value})} className="flex-1 bg-transparent text-[11px] font-bold outline-none dark:text-white" />
+             <button onClick={() => { if(newCol.title) onAddColumn(newCol.title, newCol.color); setNewCol({title:'', color:'#4f46e5'}); }} className="p-1.5 bg-indigo-600 text-white rounded-lg"><Plus size={14} /></button>
+          </div>
+        </div>
+      </section>
+
+      {/* Gestão de Prioridades */}
+      <section className={sectionClass}>
+        <div className={headerClass}>
+          <div className="flex items-center gap-2">
+            <Flag size={14} />
+            <h3 className="text-[10px] font-black uppercase dark:text-white">Prioridades</h3>
+          </div>
+        </div>
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {data.priorities.map((prio: any) => (
+              <div key={prio.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-black/40 rounded-xl border dark:border-slate-800 group shadow-sm">
+                 <input type="color" value={prio.color} onChange={e => onUpdatePriority(prio.id, {color: e.target.value})} className="w-5 h-5 border-none bg-transparent cursor-pointer rounded-full overflow-hidden" />
+                 <input value={prio.title} onChange={e => onUpdatePriority(prio.id, {title: e.target.value})} className="bg-transparent text-[11px] font-bold outline-none dark:text-white flex-1" />
+                 <button onClick={() => onDeletePriority(prio.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 p-2 border-2 border-dashed dark:border-slate-800 rounded-xl">
+             <input type="color" value={newPrio.color} onChange={e => setNewPrio({...newPrio, color: e.target.value})} className="w-5 h-5 rounded-full overflow-hidden" />
+             <input placeholder="Nova Prioridade..." value={newPrio.title} onChange={e => setNewPrio({...newPrio, title: e.target.value})} className="flex-1 bg-transparent text-[11px] font-bold outline-none dark:text-white" />
+             <button onClick={() => { if(newPrio.title) onAddPriority(newPrio.title, newPrio.color); setNewPrio({title:'', color:'#fee2e2'}); }} className="p-1.5 bg-indigo-600 text-white rounded-lg"><Plus size={14} /></button>
+          </div>
+        </div>
+      </section>
+
+      {/* Gestão de Responsáveis */}
+      <section className={sectionClass}>
+        <div className={headerClass}>
+          <div className="flex items-center gap-2">
+            <Users size={14} />
+            <h3 className="text-[10px] font-black uppercase dark:text-white">Equipe (Responsáveis)</h3>
+          </div>
+        </div>
+        <div className="p-4 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {data.assignees.map((a: any) => (
+              <div key={a.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-black/40 rounded-xl border dark:border-slate-800 group shadow-sm">
+                 <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center font-black text-indigo-600 dark:text-indigo-400 text-xs">
+                    {a.name.charAt(0)}
                  </div>
-               );
-             })}
+                 <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-bold dark:text-white truncate">{a.name}</p>
+                    <p className="text-[9px] text-slate-500 dark:text-slate-500 truncate">{a.email}</p>
+                 </div>
+                 <button onClick={() => onDeleteAssignee(a.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={14} /></button>
+              </div>
+            ))}
           </div>
-
-          <form onSubmit={handleAddColumnSubmit} className="mt-8 p-6 bg-indigo-50/30 dark:bg-indigo-900/10 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30 flex flex-col sm:flex-row items-end gap-5">
-             <div className="flex-1 w-full">
-               <label className="block text-[10px] font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest mb-2 ml-1">{t('newCategoryName')}</label>
-               <input 
-                 type="text" 
-                 value={newColTitle}
-                 onChange={(e) => setNewColTitle(e.target.value)}
-                 className={inputClass}
-                 required
-               />
+          <div className="p-3 border-2 border-dashed dark:border-slate-800 rounded-xl space-y-2">
+             <div className="flex items-center gap-2">
+                <Users size={14} className="text-slate-400" />
+                <input placeholder="Nome do integrante..." value={newAssignee.name} onChange={e => setNewAssignee({...newAssignee, name: e.target.value})} className="flex-1 bg-transparent text-[11px] font-bold outline-none dark:text-white" />
              </div>
-             <div className="w-full sm:w-auto">
-               <label className="block text-[10px] font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest mb-2 ml-1">{t('colorTag')}</label>
-               <div className="flex items-center gap-2 h-[52px] px-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner">
-                 <input 
-                   type="color" 
-                   value={newColColor}
-                   onChange={(e) => setNewColColor(e.target.value)}
-                   className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
-                 />
-               </div>
+             <div className="flex items-center gap-2">
+                <Mail size={14} className="text-slate-400" />
+                <input placeholder="Email (opcional)..." value={newAssignee.email} onChange={e => setNewAssignee({...newAssignee, email: e.target.value})} className="flex-1 bg-transparent text-[11px] font-bold outline-none dark:text-white" />
+                <button onClick={() => { if(newAssignee.name) onAddAssignee(newAssignee.name, newAssignee.email); setNewAssignee({name:'', email:''}); }} className="p-1.5 bg-emerald-600 text-white rounded-lg shadow-lg hover:bg-emerald-700 transition-all"><UserPlus size={14} /></button>
              </div>
-             <button type="submit" className="h-[52px] w-full sm:w-auto px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl flex items-center justify-center gap-3 shadow-2xl shadow-indigo-100 dark:shadow-none transition-all active:scale-95 text-[11px] uppercase tracking-widest glow-effect">
-               <Plus size={20} />
-               {t('addColumn')}
-             </button>
-          </form>
+          </div>
         </div>
       </section>
 
-      {/* Priority Management */}
+      {/* Ações do Sistema */}
       <section className={sectionClass}>
         <div className={headerClass}>
-          <div className="flex items-center gap-4">
-             <div className="p-2.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-[1.2rem] shadow-sm"><Flag size={22} /></div>
-             <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] text-[11px]">{t('managePriorities')}</h3>
+          <div className="flex items-center gap-2">
+            <RefreshCw size={14} />
+            <h3 className="text-[10px] font-black uppercase dark:text-white">Ações do Sistema</h3>
           </div>
         </div>
-        
-        <div className="p-8 space-y-6">
-           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             {data.priorities.map(prio => (
-                <div key={prio.id} className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 group hover:border-amber-300 dark:hover:border-amber-900 hover:shadow-md transition-all">
-                    <input 
-                      type="color" 
-                      value={prio.color}
-                      onChange={(e) => onUpdatePriority(prio.id, { color: e.target.value })}
-                      className="w-10 h-10 rounded-xl cursor-pointer border-none bg-transparent shrink-0 shadow-sm"
-                    />
-                    <input 
-                        type="text" 
-                        value={prio.title}
-                        onChange={(e) => onUpdatePriority(prio.id, { title: e.target.value })}
-                        className="bg-transparent font-bold text-slate-800 dark:text-white outline-none border-b border-transparent focus:border-amber-500 w-full text-sm py-1"
-                    />
-                    <button onClick={() => onDeletePriority(prio.id)} className="p-2.5 text-slate-300 dark:text-slate-700 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all shrink-0">
-                      <Trash2 size={18} />
-                    </button>
-                </div>
-             ))}
-           </div>
-
-           <form onSubmit={handleAddPrioritySubmit} className="mt-8 p-6 bg-amber-50/30 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-900/30 flex flex-col sm:flex-row items-end gap-5">
-             <div className="flex-1 w-full">
-               <label className="block text-[10px] font-black text-amber-900 dark:text-amber-400 uppercase tracking-widest mb-2 ml-1">{t('newPriorityName')}</label>
-               <input 
-                 type="text" 
-                 value={newPrioTitle}
-                 onChange={(e) => setNewPrioTitle(e.target.value)}
-                 className={inputClass}
-                 required
-               />
-             </div>
-             <div className="w-full sm:w-auto">
-               <label className="block text-[10px] font-black text-amber-900 dark:text-amber-400 uppercase tracking-widest mb-2 ml-1">{t('colorTag')}</label>
-               <div className="flex items-center gap-2 h-[52px] px-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-inner">
-                 <input 
-                   type="color" 
-                   value={newPrioColor}
-                   onChange={(e) => setNewPrioColor(e.target.value)}
-                   className="w-8 h-8 rounded-lg cursor-pointer border-none bg-transparent"
-                 />
-               </div>
-             </div>
-             <button type="submit" className="h-[52px] w-full sm:w-auto px-8 bg-amber-600 hover:bg-amber-700 text-white font-black rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 text-[11px] uppercase tracking-widest shadow-2xl shadow-amber-100 dark:shadow-none">
-               <Plus size={20} />
-               {t('addPriority')}
-             </button>
-          </form>
+        <div className="p-4">
+           <button 
+             onClick={async() => { setRestoring(true); await onRestoreDefaults(); setRestoring(false); }} 
+             disabled={restoring}
+             className="w-full sm:w-auto px-6 py-2.5 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 text-[10px] font-black uppercase rounded-xl hover:bg-red-100 transition-all flex items-center justify-center gap-2"
+           >
+             {restoring ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={14} />}
+             {restoring ? 'Restaurando...' : 'Restaurar Padrões de Fábrica'}
+           </button>
+           <p className="mt-3 text-[9px] font-medium text-slate-400 leading-relaxed">
+             Aviso: Restaurar padrões apagará todas as suas tarefas, colunas e prioridades personalizadas permanentemente.
+           </p>
         </div>
       </section>
-
-      {/* Restore Defaults */}
-      <section className={sectionClass}>
-        <div className={headerClass}>
-          <div className="flex items-center gap-4">
-             <div className="p-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-[1.2rem] shadow-sm"><RefreshCw size={22} /></div>
-             <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] text-[11px]">{t('troubleshooting')}</h3>
-          </div>
-        </div>
-        <div className="p-8">
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 font-medium leading-relaxed">{t('restoreDefaultsDesc')}</p>
-            
-            <button 
-                onClick={handleRestore}
-                disabled={isRestoring}
-                className="px-8 py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-black rounded-2xl flex items-center gap-3 transition-all disabled:opacity-50 text-[11px] uppercase tracking-widest shadow-sm"
-            >
-                <RefreshCw size={20} className={isRestoring ? 'animate-spin' : ''} />
-                {isRestoring ? t('restoring') : t('restoreDefaults')}
-            </button>
-
-            {restoreSuccess && (
-                <div className="mt-6 p-5 bg-emerald-50 dark:bg-emerald-900/10 text-emerald-700 dark:text-emerald-400 rounded-2xl text-sm font-bold flex items-center gap-4 border border-emerald-100 dark:border-emerald-900/20 animate-in fade-in slide-in-from-top-2">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm animate-pulse"></div>
-                    {restoreSuccess}
-                </div>
-            )}
-        </div>
-      </section>
-
     </div>
   );
 };

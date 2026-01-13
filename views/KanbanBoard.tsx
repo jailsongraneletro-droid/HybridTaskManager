@@ -29,7 +29,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onClick}
-          className={`bg-white dark:bg-zinc-900 p-2.5 rounded-xl border border-slate-200 dark:border-white/[0.05] shadow-sm mb-2 group hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-lg transition-all relative ring-1 ring-black/[0.03] dark:ring-white/[0.01] ${
+          className={`bg-white dark:bg-[#0a0a0a] p-2.5 rounded-xl border border-slate-200 dark:border-[#1a1a1a] shadow-sm mb-2 group hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-lg transition-all relative ${
             snapshot.isDragging ? 'rotate-1 scale-102 shadow-xl ring-1 ring-indigo-500/50 z-[100]' : ''
           }`}
           style={provided.draggableProps.style}
@@ -37,7 +37,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={onDelete}
-              className="p-1 text-slate-300 dark:text-zinc-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+              className="p-1 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
             >
               <Trash2 size={12} />
             </button>
@@ -45,17 +45,17 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
 
           <div className="flex justify-between items-start mb-1.5 pr-4">
             <PriorityBadge priority={priorityData} />
-            <GripHorizontal size={10} className="text-slate-100 dark:text-zinc-800 opacity-50" />
+            <GripHorizontal size={10} className="text-slate-100 dark:text-slate-800 opacity-50" />
           </div>
           
           <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-2 line-clamp-2 leading-tight text-[11px] tracking-tight">
             {task.title}
           </h4>
           
-          <div className="flex items-center justify-between text-slate-400 dark:text-zinc-600 mt-3 pt-2 border-t border-slate-100 dark:border-white/[0.05]">
+          <div className="flex items-center justify-between text-slate-400 dark:text-slate-600 mt-3 pt-2 border-t border-slate-100 dark:border-[#1a1a1a]">
              <div className="flex items-center gap-1 text-[9px] font-bold">
-                <Calendar size={10} className="text-slate-300 dark:text-zinc-700" />
-                <span className="dark:text-zinc-500 tabular-nums">{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>
+                <Calendar size={10} className="text-slate-300 dark:text-slate-700" />
+                <span className="dark:text-slate-500 tabular-nums">{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>
              </div>
              <div className="flex items-center gap-1.5 scale-90 origin-right">
                 <TaskAge createdAt={task.createdAt} />
@@ -77,14 +77,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
           const tasks = column.taskIds.map(taskId => data.tasks[taskId]);
 
           return (
-            <div key={column.id} className="min-w-[250px] max-w-[250px] flex flex-col h-full rounded-2xl bg-slate-100/40 dark:bg-black/60 border border-slate-200/50 dark:border-white/[0.05] shadow-inner overflow-hidden flex-shrink-0">
+            <div key={column.id} className="min-w-[250px] max-w-[250px] flex flex-col h-full rounded-2xl bg-slate-100/40 dark:bg-black border border-slate-200/50 dark:border-[#1a1a1a] shadow-inner overflow-hidden flex-shrink-0">
               <div 
-                className="p-3 flex items-center justify-between border-t-2 bg-white/60 dark:bg-zinc-900/40 backdrop-blur-xl sticky top-0 z-10 shadow-sm"
+                className="p-3 flex items-center justify-between border-t-2 bg-white/60 dark:bg-[#0a0a0a]/40 backdrop-blur-xl sticky top-0 z-10 shadow-sm"
                 style={{ borderColor: column.color }}
               >
                 <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2 text-[9px] uppercase tracking-[0.1em] whitespace-nowrap">
                   {column.title}
-                  <span className="bg-slate-200/80 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-1.5 py-0.5 rounded text-[8px] font-black shadow-sm tabular-nums">
+                  <span className="bg-slate-200/80 dark:bg-[#1a1a1a] text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded text-[8px] font-black shadow-sm tabular-nums">
                     {tasks.length}
                   </span>
                 </h3>
@@ -95,7 +95,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                   <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
-                    className={`flex-1 p-2 transition-all overflow-y-auto custom-scrollbar ${snapshot.isDraggingOver ? 'bg-indigo-50/10 dark:bg-indigo-500/[0.01]' : ''}`}
+                    className={`flex-1 p-2 transition-all overflow-y-auto custom-scrollbar ${snapshot.isDraggingOver ? 'bg-indigo-50/10 dark:bg-white/[0.02]' : ''}`}
                   >
                     {tasks.map((task, index) => (
                       <TaskCard 
@@ -111,7 +111,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                     {provided.placeholder}
                     {tasks.length === 0 && (
                       <div className="h-full flex flex-col items-center justify-center py-10 opacity-10 select-none grayscale pointer-events-none">
-                         <Layers size={32} className="text-slate-400 dark:text-zinc-600 mb-2" />
+                         <Layers size={32} className="text-slate-400 dark:text-slate-600 mb-2" />
                          <p className="text-[8px] font-black uppercase tracking-widest text-center">{column.title} vazio</p>
                       </div>
                     )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BoardData, Task } from '../types';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { CheckCircle, AlertTriangle, TrendingUp, Activity, Layers, BarChart3 } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import { CheckCircle, AlertTriangle, Activity, Layers, BarChart3 } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 
 interface DashboardProps {
@@ -10,84 +10,88 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   const { t } = useLanguage();
-  const tasks = Object.values(data.tasks) as Task[];
   
-  const doneColumnId = data.columnOrder.find(id => {
-      const colTitle = data.columns[id].title.toLowerCase().trim();
-      return ['done', 'concluído', 'concluido', 'finalizado', 'complete', 'completed'].includes(colTitle);
-  }) || (data.columnOrder.length > 0 ? data.columnOrder[data.columnOrder.length - 1] : 'Done');
+  // Garantir que temos dados antes de tentar renderizar para evitar erro no dashboard
+  if (!data || !data.columnOrder || data.columnOrder.length === 0) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <p className="text-slate-400 text-xs font-black uppercase tracking-widest">Aguardando dados...</p>
+      </div>
+    );
+  }
 
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === doneColumnId).length;
-  const overdueTasks = tasks.filter(t => {
-      if (t.status === doneColumnId) return false;
-      if (!t.dueDate) return false;
-      const today = new Date().setHours(0,0,0,0);
-      return new Date(t.dueDate).getTime() < today;
-  }).length;
+  const tasks = Object.values(data.tasks) as Task[];
+  const doneId = data.columnOrder.find(id => data.columns[id]?.title.toLowerCase().includes('concl')) || 'Done';
+  
+  const stats = {
+    total: tasks.length,
+    done: tasks.filter(t => t.status === doneId).length,
+    overdue: tasks.filter(t => t.status !== doneId && t.dueDate && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).length
+  };
 
-  const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  const rate = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
 
-  const statusData = data.columnOrder.map(colId => {
-      const col = data.columns[colId];
-      return { name: col.title, value: tasks.filter(t => t.status === colId).length, color: col.color };
-  });
-
-  const priorityData = data.priorities.map(prio => ({
-      name: prio.title, count: tasks.filter(t => t.priority === prio.id).length
+  const statusData = data.columnOrder.map(id => ({ 
+    name: data.columns[id]?.title || id, 
+    value: tasks.filter(t => t.status === id).length, 
+    color: data.columns[id]?.color || '#6366f1' 
+  }));
+  
+  const priorityData = data.priorities.map(p => ({ 
+    name: p.title, 
+    count: tasks.filter(t => t.priority === p.id).length 
   }));
 
-  const StatCard = ({ title, value, icon: Icon, color, subtext, trend }: any) => (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between group hover:shadow-lg transition-all duration-300">
-      <div className="flex items-start justify-between mb-3">
-        <div className={`p-2.5 rounded-xl ${color} shadow-md text-white group-hover:scale-105 transition-transform`}><Icon size={18} /></div>
-        {trend && <div className="px-2 py-0.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full text-[8px] font-black uppercase tracking-wider flex items-center gap-1"><TrendingUp size={10} /> {trend}</div>}
+  const StatCard = ({ title, value, icon: Icon, color, subtext }: any) => (
+    <div className="bg-white dark:bg-[#0a0a0a] p-3.5 rounded-xl border border-slate-200 dark:border-[#1a1a1a] shadow-sm flex flex-col justify-between group">
+      <div className="flex justify-between items-start mb-2">
+        <div className={`p-1.5 rounded-lg ${color} text-white shadow-sm`}><Icon size={14} /></div>
       </div>
       <div>
-        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{title}</p>
-        <h3 className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter">{value}</h3>
-        {subtext && <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-2">{subtext}</p>}
+        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{title}</p>
+        <h3 className="text-xl font-black text-slate-900 dark:text-white leading-none mt-1">{value}</h3>
+        <p className="text-[8px] font-bold text-slate-400 dark:text-slate-600 mt-1 uppercase">{subtext}</p>
       </div>
     </div>
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title={t('completionRate')} value={`${completionRate}%`} icon={CheckCircle} color="bg-gradient-to-br from-green-400 to-emerald-600" subtext={`${completedTasks} de ${totalTasks} finalizadas`} trend="+5%" />
-        <StatCard title={t('overdueTasks')} value={overdueTasks} icon={AlertTriangle} color="bg-gradient-to-br from-rose-400 to-red-600" subtext={t('pastDue')} />
-        <StatCard title={t('totalWorkload')} value={totalTasks} icon={Activity} color="bg-gradient-to-br from-indigo-400 to-violet-600" subtext={t('activeTasks')} />
+    <div className="space-y-4 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard title="Taxa de Conclusão" value={`${rate}%`} icon={CheckCircle} color="bg-emerald-600" subtext={`${stats.done} concluidas`} />
+        <StatCard title="Atrasadas" value={stats.overdue} icon={AlertTriangle} color="bg-rose-600" subtext="Requer atenção" />
+        <StatCard title="Carga Total" value={stats.total} icon={Activity} color="bg-indigo-600" subtext="Tarefas no fluxo" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[350px]">
-          <div className="flex items-center gap-2 mb-6"><div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg"><Layers size={16} /></div><h3 className="text-base font-black text-slate-800 dark:text-white tracking-tight">{t('taskStatusDist')}</h3></div>
-          <div className="flex-1 min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={statusData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value" animationDuration={1000}>
-                  {statusData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />)}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', background: '#ffffff', color: '#1e293b', fontSize: '10px' }} />
-                <Legend verticalAlign="bottom" height={24} iconType="circle" wrapperStyle={{ paddingTop: '10px', fontWeight: 'bold', fontSize: '10px' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white dark:bg-[#0a0a0a] p-4 rounded-xl border border-slate-200 dark:border-[#1a1a1a] shadow-sm h-60">
+          <h3 className="text-[10px] font-black uppercase mb-4 text-slate-800 dark:text-white flex items-center gap-1.5"><Layers size={12} /> Status</h3>
+          <ResponsiveContainer width="100%" height="85%">
+            <PieChart>
+              <Pie data={statusData} innerRadius={40} outerRadius={60} dataKey="value" animationDuration={800}>
+                {statusData.map((e, i) => <Cell key={i} fill={e.color} />)}
+              </Pie>
+              <Tooltip 
+                contentStyle={{backgroundColor: '#0a0a0a', border: '1px solid #1a1a1a', fontSize: '9px', borderRadius: '8px'}} 
+                itemStyle={{color: '#ffffff'}}
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
-
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[350px]">
-          <div className="flex items-center gap-2 mb-6"><div className="p-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg"><BarChart3 size={16} /></div><h3 className="text-base font-black text-slate-800 dark:text-white tracking-tight">{t('tasksByPriority')}</h3></div>
-          <div className="flex-1 min-h-0">
-             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={priorityData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs><linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#6366f1" /><stop offset="100%" stopColor="#a855f7" /></linearGradient></defs>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 700 }} />
-                <YAxis axisLine={false} tickLine={false} allowDecimals={false} tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 500 }} />
-                <Tooltip cursor={{fill: 'rgba(99, 102, 241, 0.05)', radius: 8}} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.1)', background: '#ffffff', fontSize: '10px' }} />
-                <Bar dataKey="count" fill="url(#barGradient)" radius={[8, 8, 0, 0]} barSize={36} animationDuration={1000} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        <div className="bg-white dark:bg-[#0a0a0a] p-4 rounded-xl border border-slate-200 dark:border-[#1a1a1a] shadow-sm h-60">
+          <h3 className="text-[10px] font-black uppercase mb-4 text-slate-800 dark:text-white flex items-center gap-1.5"><BarChart3 size={12} /> Prioridades</h3>
+          <ResponsiveContainer width="100%" height="85%">
+            <BarChart data={priorityData}>
+              <XAxis dataKey="name" tick={{fontSize: 8, fill: '#64748b'}} axisLine={false} tickLine={false} />
+              <YAxis hide />
+              <Tooltip 
+                cursor={{fill: 'transparent'}} 
+                contentStyle={{backgroundColor: '#0a0a0a', border: '1px solid #1a1a1a', fontSize: '9px', borderRadius: '8px'}} 
+                itemStyle={{color: '#ffffff'}}
+              />
+              <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={20} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>

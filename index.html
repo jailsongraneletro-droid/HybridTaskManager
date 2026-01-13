@@ -3,18 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HybridTask | Gestão de Projetos, Kanban e Produtividade Ágil</title>
-    <meta name="description" content="O HybridTask é a ferramenta definitiva para gestão de projetos. Combine quadros Kanban, tabelas dinâmicas, notas inteligentes e dashboards de analytics para otimizar o workflow da sua equipe." />
-    <meta name="keywords" content="gerenciador de tarefas, quadro kanban, gestão ágil, produtividade, software de projetos, dashboard de metas, notas de projeto, kanban gratuito" />
-    <meta name="theme-color" content="#4f46e5" />
-    
-    <!-- Open Graph / Social Media -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="HybridTask | O Melhor Gerenciador de Projetos e Kanban Online" />
-    <meta property="og:description" content="Aumente sua produtividade com a melhor ferramenta gratuita de Kanban e gestão de tarefas estruturada." />
-    <meta property="og:image" content="https://api.dicebear.com/7.x/icons/svg?seed=clipboard&backgroundColor=4f46e5&color=ffffff" />
-    <link rel="icon" type="image/svg+xml" href="https://api.dicebear.com/7.x/icons/svg?seed=clipboard&backgroundColor=4f46e5&color=ffffff" />
-
+    <title>HybridTask | Gestão Compacta</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
@@ -25,69 +14,64 @@
             fontFamily: { sans: ['Inter', 'sans-serif'] },
             colors: {
               indigo: { 600: '#4f46e5', 700: '#4338ca' },
-              slate: {
-                950: '#020617', 
-                1000: '#000000'
-              }
+              slate: { 950: '#020617' }
             }
           }
         }
       }
     </script>
     <style>
-      :root { scroll-padding-top: 80px; }
-      body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; transition: background-color 0.3s ease, color 0.3s ease; }
+      :root { scroll-padding-top: 60px; }
+      body { 
+        font-family: 'Inter', sans-serif; 
+        font-size: 0.8125rem; 
+        transition: background-color 0.2s ease;
+      }
       
-      /* Font Size Customization */
       .font-size-sm { font-size: 0.75rem; }
-      .font-size-md { font-size: 0.9375rem; }
-      .font-size-lg { font-size: 1.05rem; }
+      .font-size-md { font-size: 0.8125rem; }
+      .font-size-lg { font-size: 0.875rem; }
 
-      .font-size-sm h1 { font-size: 1.3rem; }
-      .font-size-md h1 { font-size: 1.8rem; }
-      .font-size-lg h1 { font-size: 2.2rem; }
+      /* PADRÃO DARK MODE UNIFICADO */
+      .dark body { background-color: #000000; color: #cbd5e1; }
+      
+      /* Superfícies Principais */
+      .dark .bg-white { background-color: #0a0a0a !important; }
+      .dark .bg-slate-50 { background-color: #000000 !important; }
+      .dark .bg-slate-100 { background-color: #0d0d0d !important; }
+      .dark .bg-slate-200 { background-color: #1a1a1a !important; }
+      
+      /* Bordas */
+      .dark .border-slate-100 { border-color: #111111 !important; }
+      .dark .border-slate-200 { border-color: #1a1a1a !important; }
+      .dark .border-slate-800 { border-color: #1a1a1a !important; }
+      .dark .border-white\/\[0\.05\] { border-color: #1a1a1a !important; }
+      
+      /* Texto */
+      .dark .text-slate-900 { color: #ffffff !important; }
+      .dark .text-slate-800 { color: #f1f5f9 !important; }
+      .dark .text-slate-700 { color: #e2e8f0 !important; }
+      .dark .text-slate-600 { color: #94a3b8 !important; }
+      .dark .text-slate-500 { color: #64748b !important; }
+      .dark .text-slate-400 { color: #475569 !important; }
 
-      /* Dark mode refinement: Elegant Black UI */
-      .dark body { background-color: #000000; color: #e2e8f0; }
-      .dark .bg-slate-900 { background-color: #0a0a0a; }
-      .dark .bg-slate-950 { background-color: #000000; }
-      .dark .border-slate-800 { border-color: #1a1a1a; }
-      .dark .border-slate-700 { border-color: #262626; }
+      /* Inputs e Selects */
+      .dark input, .dark select, .dark textarea {
+        background-color: #0d0d0d !important;
+        border-color: #1a1a1a !important;
+        color: #ffffff !important;
+      }
 
-      ::-webkit-scrollbar { width: 5px; height: 5px; }
-      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
       ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
       .dark ::-webkit-scrollbar-thumb { background: #262626; }
+
+      .notes-grid { column-gap: 0.75rem; }
+      .note-item { break-inside: avoid; margin-bottom: 0.75rem; }
       
-      .sidebar-tooltip { position: relative; }
-      .sidebar-tooltip::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        left: calc(100% + 12px);
-        top: 50%;
-        transform: translateY(-50%) translateX(-8px);
-        background: #1e293b;
-        color: #ffffff;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        white-space: nowrap;
-        opacity: 0;
-        pointer-events: none;
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
+      .glow-effect:hover {
+        box-shadow: 0 0 15px rgba(79, 70, 229, 0.4);
       }
-      .dark .sidebar-tooltip::after { background: #4f46e5; }
-      .sidebar-tooltip:hover::after { opacity: 1; transform: translateY(-50%) translateX(0); }
-
-      .icon-shadow { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)); }
-      .dark .icon-shadow { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8)); }
-      .glow-effect { box-shadow: 0 4px 20px 0 rgba(79, 70, 229, 0.2); }
-
-      /* Transitions for theme switching */
-      .theme-transition { transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease; }
     </style>
   <script type="importmap">
 {
@@ -99,12 +83,13 @@
     "react": "https://esm.sh/react@^19.2.3",
     "recharts": "https://esm.sh/recharts@^3.5.1",
     "@hello-pangea/dnd": "https://esm.sh/@hello-pangea/dnd@^18.0.1",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.87.1"
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.87.1",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0"
   }
 }
 </script>
 </head>
-  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-200 transition-colors duration-300 overflow-x-hidden font-size-md theme-transition">
+  <body class="bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-200 overflow-x-hidden font-size-md theme-transition">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>

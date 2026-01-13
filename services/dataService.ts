@@ -1,3 +1,4 @@
+
 import { BoardData, Column, Task, User, Priority, Assignee, Note } from '../types';
 import { supabase, supabaseAdmin } from '../utils/supabaseClient';
 import { DEFAULT_PRIORITIES, DEFAULT_COLUMNS } from '../constants';
@@ -8,29 +9,20 @@ export const DataService = {
 
   getCurrentUser: async (): Promise<User | null> => {
     try {
-        const { data, error: sessionError } = await supabase.auth.getSession().catch(() => ({ data: { session: null }, error: null }));
-        const session = data?.session;
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !session?.user) return null;
         
-        try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .maybeSingle();
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
 
-            if (profile) {
-                return { id: profile.id, name: profile.name, email: profile.email, avatar: profile.avatar };
-            }
-        } catch (innerError) {
-            console.warn("Network error fetching profile:", innerError);
-        }
-        
         return {
             id: session.user.id,
-            name: session.user.user_metadata.name || session.user.email,
+            name: profile?.name || session.user.user_metadata.name || session.user.email,
             email: session.user.email!,
-            avatar: session.user.user_metadata.avatar
+            avatar: profile?.avatar || session.user.user_metadata.avatar
         };
     } catch (e) {
         console.error("Critical error in getCurrentUser:", e);
@@ -108,22 +100,14 @@ export const DataService = {
     throw new Error("Falha ao criar conta");
   },
 
-  adminForcePasswordReset: async (email: string, newPassword: string) => {
-    if (!supabaseAdmin) throw new Error("Service role key missing.");
-    const { data: profile } = await supabase.from('profiles').select('id').eq('email', email).single();
-    if (!profile) throw new Error("Usuário não encontrado.");
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(profile.id, { password: newPassword });
-    if (error) throw error;
-    return true;
-  },
-
   logout: async () => {
     await supabase.auth.signOut();
   },
 
   seedUserData: async (user: User) => {
+    // Garantir colunas padrão
     const { count: colCount } = await supabase.from('kanban_columns').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-    if (colCount === 0) {
+    if (!colCount || colCount === 0) {
         for (let i = 0; i < DEFAULT_COLUMNS.length; i++) {
             const col = DEFAULT_COLUMNS[i];
             await supabase.from('kanban_columns').insert({
@@ -131,16 +115,18 @@ export const DataService = {
             });
         }
     }
+    // Garantir prioridades padrão
     const { count: prioCount } = await supabase.from('kanban_priorities').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-    if (prioCount === 0) {
+    if (!prioCount || prioCount === 0) {
         for (const prio of DEFAULT_PRIORITIES) {
             await supabase.from('kanban_priorities').insert({
                 id: `${prio.id}_${user.id}`, title: prio.title, color: prio.color, user_id: user.id
             });
         }
     }
+    // Garantir ao menos o próprio usuário como assignee
     const { count: assCount } = await supabase.from('kanban_assignees').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-    if (assCount === 0) {
+    if (!assCount || assCount === 0) {
         await supabase.from('kanban_assignees').insert({ name: user.name, email: user.email, avatar: user.avatar, user_id: user.id });
     }
   },
@@ -249,7 +235,7 @@ export const DataService = {
     if (!user) throw new Error("Não autenticado");
     const { count } = await supabase.from('kanban_columns').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
     
-    const colId = crypto.randomUUID(); // Gerar ID no cliente para evitar erro 23502
+    const colId = crypto.randomUUID(); 
     
     const { error } = await supabase.from('kanban_columns').insert({
       id: colId,
@@ -278,7 +264,7 @@ export const DataService = {
     const user = await DataService.getCurrentUser();
     if (!user) throw new Error("Não autenticado");
     
-    const prioId = crypto.randomUUID(); // Gerar ID no cliente para evitar erro 23502
+    const prioId = crypto.randomUUID(); 
     
     const { error } = await supabase.from('kanban_priorities').insert({
       id: prioId,
