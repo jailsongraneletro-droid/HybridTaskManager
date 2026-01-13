@@ -26,8 +26,8 @@
             colors: {
               indigo: { 600: '#4f46e5', 700: '#4338ca' },
               slate: {
-                950: '#020617', // Deep black-blue
-                1000: '#000000' // True black if needed
+                950: '#020617', 
+                1000: '#000000'
               }
             }
           }
@@ -39,23 +39,25 @@
       body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; transition: background-color 0.3s ease, color 0.3s ease; }
       
       /* Font Size Customization */
-      .font-size-sm { font-size: 0.8rem; }
-      .font-size-md { font-size: 1rem; }
-      .font-size-lg { font-size: 1.2rem; }
+      .font-size-sm { font-size: 0.75rem; }
+      .font-size-md { font-size: 0.9375rem; }
+      .font-size-lg { font-size: 1.05rem; }
 
-      .font-size-sm h1 { font-size: 1.4rem; }
-      .font-size-md h1 { font-size: 1.875rem; }
-      .font-size-lg h1 { font-size: 2.4rem; }
+      .font-size-sm h1 { font-size: 1.3rem; }
+      .font-size-md h1 { font-size: 1.8rem; }
+      .font-size-lg h1 { font-size: 2.2rem; }
 
-      /* Dark mode refinement: deeper backgrounds */
-      .dark body { background-color: #020617; }
-      .dark .bg-slate-900 { background-color: #0f172a; }
-      .dark .border-slate-800 { border-color: #1e293b; }
+      /* Dark mode refinement: Elegant Black UI */
+      .dark body { background-color: #000000; color: #e2e8f0; }
+      .dark .bg-slate-900 { background-color: #0a0a0a; }
+      .dark .bg-slate-950 { background-color: #000000; }
+      .dark .border-slate-800 { border-color: #1a1a1a; }
+      .dark .border-slate-700 { border-color: #262626; }
 
-      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar { width: 5px; height: 5px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-      .dark ::-webkit-scrollbar-thumb { background: #334155; }
+      .dark ::-webkit-scrollbar-thumb { background: #262626; }
       
       .sidebar-tooltip { position: relative; }
       .sidebar-tooltip::after {
@@ -81,21 +83,8 @@
       .sidebar-tooltip:hover::after { opacity: 1; transform: translateY(-50%) translateX(0); }
 
       .icon-shadow { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)); }
-      .dark .icon-shadow { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5)); }
-      .glow-effect { box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.3); }
-
-      input[type="date"]::-webkit-calendar-picker-indicator {
-        background: transparent;
-        bottom: 0;
-        color: transparent;
-        cursor: pointer;
-        height: auto;
-        left: 0;
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: auto;
-      }
+      .dark .icon-shadow { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8)); }
+      .glow-effect { box-shadow: 0 4px 20px 0 rgba(79, 70, 229, 0.2); }
 
       /* Transitions for theme switching */
       .theme-transition { transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease; }
