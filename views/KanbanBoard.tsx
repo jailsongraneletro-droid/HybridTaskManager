@@ -48,12 +48,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
             <GripHorizontal size={10} className="text-slate-100 dark:text-slate-800 opacity-50" />
           </div>
           
-          <h4 className="font-bold text-slate-800 dark:text-white mb-2 line-clamp-2 leading-tight text-[11px] tracking-tight">
+          <h4 className="font-semibold text-slate-800 dark:text-white mb-2 line-clamp-2 leading-tight text-[11px] tracking-tight">
             {task.title}
           </h4>
           
           <div className="flex items-center justify-between text-slate-400 dark:text-slate-500 mt-3 pt-2 border-t border-slate-100 dark:border-[#2a2a2a]">
-             <div className="flex items-center gap-1 text-[9px] font-bold">
+             <div className="flex items-center gap-1 text-[9px] font-semibold">
                 <Calendar size={10} className="text-slate-300 dark:text-slate-600" />
                 <span className="tabular-nums">{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>
              </div>
@@ -82,9 +82,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                 className="p-3.5 flex items-center justify-between border-t-2 bg-white/60 dark:bg-[#0d0d0d] backdrop-blur-xl sticky top-0 z-10 shadow-sm"
                 style={{ borderColor: column.color }}
               >
-                <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] whitespace-nowrap">
+                <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] whitespace-nowrap">
                   {column.title}
-                  <span className="bg-slate-200/80 dark:bg-[#222] text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded text-[8px] font-black shadow-sm tabular-nums">
+                  <span className="bg-slate-200/80 dark:bg-[#222] text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded text-[8px] font-bold shadow-sm tabular-nums">
                     {tasks.length}
                   </span>
                 </h3>
@@ -112,7 +112,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                     {tasks.length === 0 && (
                       <div className="h-full flex flex-col items-center justify-center py-10 opacity-10 select-none pointer-events-none">
                          <Layers size={40} className="text-slate-400 dark:text-slate-300 mb-2" />
-                         <p className="text-[9px] font-black uppercase tracking-widest text-center">{column.title} vazio</p>
+                         <p className="text-[9px] font-bold uppercase tracking-widest text-center">{column.title} vazio</p>
                       </div>
                     )}
                   </div>

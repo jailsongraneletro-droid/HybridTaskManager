@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { 
@@ -29,8 +28,8 @@ const NotificationItem = ({ icon: Icon, color, title, time, onClick }: any) => (
       <Icon size={12} className="text-white" />
     </div>
     <div className="min-w-0">
-      <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 truncate leading-tight">{title}</p>
-      <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">{time}</p>
+      <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-100 truncate leading-tight">{title}</p>
+      <p className="text-[8px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">{time}</p>
     </div>
   </div>
 );
@@ -129,7 +128,7 @@ const AppContent = () => {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-black gap-4 animate-in fade-in">
         <RefreshCw className="animate-spin text-indigo-600" size={32} />
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sincronizando ambiente...</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Sincronizando ambiente...</p>
       </div>
     );
   }
@@ -159,11 +158,11 @@ const AppContent = () => {
       <aside className={`hidden lg:flex flex-col bg-white dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-slate-800 transition-all duration-200 ${isSidebarCollapsed ? 'w-14' : 'w-48'}`}>
         <div className="p-3 flex items-center justify-center border-b border-slate-200 dark:border-slate-800">
            <div className="w-7 h-7 bg-indigo-600 rounded flex items-center justify-center shadow-lg"><ClipboardList className="text-white" size={14} /></div>
-           {!isSidebarCollapsed && <span className="ml-2 font-black text-xs uppercase tracking-tighter dark:text-white">HybridTask</span>}
+           {!isSidebarCollapsed && <span className="ml-2 font-bold text-xs uppercase tracking-tighter dark:text-white">HybridTask</span>}
         </div>
         <nav className="flex-1 p-1.5 space-y-0.5 mt-2 overflow-y-auto custom-scrollbar">
           {navItems.map((item) => (
-            <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] font-bold transition-all ${isActive ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/[0.05] dark:text-slate-400'}`}>
+            <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] font-semibold transition-all ${isActive ? 'bg-indigo-600 text-white shadow' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/[0.05] dark:text-slate-400'}`}>
               <item.icon size={15} /> {!isSidebarCollapsed && <span>{item.label}</span>}
             </NavLink>
           ))}
@@ -172,11 +171,11 @@ const AppContent = () => {
           <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="w-full flex items-center justify-center p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] rounded-lg">{isSidebarCollapsed ? <ChevronLast size={14} /> : <ChevronFirst size={14} />}</button>
           <div onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-white/[0.05] rounded-lg cursor-pointer">
             <Avatar name={user.name} url={user.avatar} size="sm" />
-            {!isSidebarCollapsed && <span className="text-[10px] font-black truncate dark:text-white">{user.name}</span>}
+            {!isSidebarCollapsed && <span className="text-[10px] font-bold truncate dark:text-white">{user.name}</span>}
           </div>
           <button onClick={handleLogout} className="w-full flex items-center gap-2 p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors">
             <LogOut size={14} />
-            {!isSidebarCollapsed && <span className="text-[10px] font-black uppercase tracking-widest">{t('logout')}</span>}
+            {!isSidebarCollapsed && <span className="text-[10px] font-bold uppercase tracking-widest">{t('logout')}</span>}
           </button>
         </div>
       </aside>
@@ -188,13 +187,13 @@ const AppContent = () => {
             <div className="p-4 border-b dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-indigo-600 rounded flex items-center justify-center"><ClipboardList className="text-white" size={14} /></div>
-                <span className="font-black text-xs uppercase dark:text-white">HybridTask</span>
+                <span className="font-bold text-xs uppercase dark:text-white">HybridTask</span>
               </div>
               <button onClick={() => setIsMobileMenuOpen(false)} className="p-1 text-slate-400"><X size={18} /></button>
             </div>
             <nav className="flex-1 p-3 space-y-1">
               {navItems.map((item) => (
-                <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-white/[0.05]'}`}>
+                <NavLink key={item.to} to={item.to} className={({ isActive }) => `flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all ${isActive ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-white/[0.05]'}`}>
                   <item.icon size={16} /> <span>{item.label}</span>
                 </NavLink>
               ))}
@@ -203,11 +202,11 @@ const AppContent = () => {
                <div onClick={() => setIsProfileModalOpen(true)} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-white/[0.05] cursor-pointer">
                  <Avatar name={user.name} url={user.avatar} size="md" />
                  <div>
-                    <p className="text-xs font-black dark:text-white leading-none mb-1">{user.name}</p>
-                    <p className="text-[10px] text-slate-400 font-bold truncate max-w-[140px]">{user.email}</p>
+                    <p className="text-xs font-bold dark:text-white leading-none mb-1">{user.name}</p>
+                    <p className="text-[10px] text-slate-400 font-medium truncate max-w-[140px]">{user.email}</p>
                  </div>
                </div>
-               <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors font-black text-[10px] uppercase tracking-widest">
+               <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition-colors font-bold text-[10px] uppercase tracking-widest">
                   <LogOut size={16} /> {t('logout')}
                </button>
             </div>
@@ -219,7 +218,7 @@ const AppContent = () => {
         <header className="h-10 flex items-center justify-between px-4 bg-white dark:bg-[#0a0a0a] border-b border-slate-200 dark:border-slate-800 z-40">
            <div className="flex items-center gap-2">
              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1 text-slate-500"><Menu size={18} /></button>
-             <h1 className="text-[11px] font-black tracking-widest dark:text-white uppercase truncate max-w-[120px] sm:max-w-none">
+             <h1 className="text-[11px] font-bold tracking-widest dark:text-white uppercase truncate max-w-[120px] sm:max-w-none">
                 {navItems.find(i => location.pathname.startsWith(i.to))?.label || 'Painel'}
              </h1>
            </div>
@@ -232,14 +231,14 @@ const AppContent = () => {
                 </button>
                 {showNotifications && (
                   <div className="absolute top-full right-0 mt-1 w-60 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 z-[100] animate-in zoom-in-95 duration-150">
-                    <div className="p-2 border-b border-slate-100 dark:border-slate-800 text-[9px] font-black uppercase text-slate-400">Avisos ({overdueCount})</div>
+                    <div className="p-2 border-b border-slate-100 dark:border-slate-800 text-[9px] font-semibold uppercase text-slate-400">Avisos ({overdueCount})</div>
                     <div className="max-h-60 overflow-y-auto">
-                      {overdueCount > 0 ? (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(t => <NotificationItem key={t.id} icon={AlertCircle} color="bg-red-500" title={t.title} time={new Date(t.dueDate).toLocaleDateString()} onClick={() => { setSelectedTask(t); setIsTaskModalOpen(true); setShowNotifications(false); }} />) : <div className="p-4 text-center text-[9px] font-bold text-slate-400">Sem alertas</div>}
+                      {overdueCount > 0 ? (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(t => <NotificationItem key={t.id} icon={AlertCircle} color="bg-red-500" title={t.title} time={new Date(t.dueDate).toLocaleDateString()} onClick={() => { setSelectedTask(t); setIsTaskModalOpen(true); setShowNotifications(false); }} />) : <div className="p-4 text-center text-[9px] font-medium text-slate-400">Sem alertas</div>}
                     </div>
                   </div>
                 )}
               </div>
-              <button onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 py-1 rounded-lg font-black text-[10px] uppercase shadow-sm flex items-center gap-1 hover:bg-indigo-700 transition-colors"><Plus size={14} /> <span className="hidden sm:inline">Novo</span></button>
+              <button onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 py-1 rounded-lg font-bold text-[10px] uppercase shadow-sm flex items-center gap-1 hover:bg-indigo-700 transition-colors"><Plus size={14} /> <span className="hidden sm:inline">Novo</span></button>
            </div>
         </header>
 

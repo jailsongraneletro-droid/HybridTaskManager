@@ -55,7 +55,7 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, visibleColumns, columnWidths, d
         >
           {colId === 'title' && (
               <span 
-                className="font-black text-slate-800 dark:text-white cursor-pointer hover:text-indigo-600 transition-colors truncate block"
+                className="font-semibold text-slate-800 dark:text-white cursor-pointer hover:text-indigo-600 transition-colors truncate block"
                 onClick={() => onEditTask(task)}
               >
                 {task.title}
@@ -74,12 +74,12 @@ const TaskRow: React.FC<TaskRowProps> = ({ task, visibleColumns, columnWidths, d
             assignee ? (
               <div className="flex items-center gap-1.5 truncate">
                   <Avatar url={assignee.avatar} name={assignee.name} size="sm" />
-                  <span className="truncate text-slate-700 dark:text-slate-400 font-bold">{assignee.name}</span>
+                  <span className="truncate text-slate-700 dark:text-slate-400 font-semibold">{assignee.name}</span>
               </div>
             ) : <span className="text-slate-300 dark:text-slate-700 italic text-[9px]">{t('unassigned')}</span>
           )}
           
-          {colId === 'dueDate' && <span className="dark:text-slate-400 tabular-nums font-bold">{new Date(task.dueDate).toLocaleDateString()}</span>}
+          {colId === 'dueDate' && <span className="dark:text-slate-400 tabular-nums font-semibold">{new Date(task.dueDate).toLocaleDateString()}</span>}
           
           {colId === 'taskAge' && <TaskAge createdAt={task.createdAt} />}
           
@@ -198,7 +198,6 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
     );
   };
 
-  // Fix: Added missing toggleGroupCollapse function
   const toggleGroupCollapse = (key: string) => {
     setCollapsedGroups(prev => {
       const next = new Set(prev);
@@ -224,7 +223,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
               <input 
                 type="text" 
                 placeholder={t('searchPlaceholder')} 
-                className="w-full pl-9 pr-3 py-1.5 text-[11px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all dark:text-white font-medium"
+                className="w-full pl-9 pr-3 py-1.5 text-[11px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all dark:text-white font-semibold"
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
               />
@@ -236,9 +235,9 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
              </button>
              {isGroupMenuOpen && (
                <div className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[100] p-1.5 animate-in zoom-in-95 duration-150 ring-1 ring-black/5">
-                  <p className="px-2 py-1.5 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b dark:border-slate-800 mb-1.5">{t('groupBy')}</p>
+                  <p className="px-2 py-1.5 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b dark:border-slate-800 mb-1.5">{t('groupBy')}</p>
                   {(['none', 'status', 'priority', 'assigneeId'] as GroupByOption[]).map(option => (
-                    <button key={option} onClick={() => { setGroupBy(option); setIsGroupMenuOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-bold transition-all ${groupBy === option ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.05]'}`}>
+                    <button key={option} onClick={() => { setGroupBy(option); setIsGroupMenuOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-[11px] font-semibold transition-all ${groupBy === option ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.05]'}`}>
                        {t(`groupBy${option.charAt(0).toUpperCase() + option.slice(1)}` as any)}
                        {groupBy === option && <Check size={12} />}
                     </button>
@@ -253,10 +252,10 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
              </button>
              {isColumnMenuOpen && (
                <div className="absolute top-full left-0 mt-2 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-[100] p-1.5 animate-in zoom-in-95 duration-150 ring-1 ring-black/5">
-                  <p className="px-2 py-1.5 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b dark:border-slate-800 mb-1.5">{t('manageColumns')}</p>
+                  <p className="px-2 py-1.5 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b dark:border-slate-800 mb-1.5">{t('manageColumns')}</p>
                   <div className="max-h-64 overflow-y-auto custom-scrollbar p-1">
                     {ALL_COLUMNS.map(col => (
-                      <button key={col.id} onClick={() => toggleColumn(col.id)} className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ${!hiddenColumns.includes(col.id) ? 'text-slate-900 dark:text-white' : 'text-slate-400 line-through decoration-slate-400/50'} hover:bg-slate-50 dark:hover:bg-white/[0.05]`}>
+                      <button key={col.id} onClick={() => toggleColumn(col.id)} className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${!hiddenColumns.includes(col.id) ? 'text-slate-900 dark:text-white' : 'text-slate-400 line-through decoration-slate-400/50'} hover:bg-slate-50 dark:hover:bg-white/[0.05]`}>
                         <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${!hiddenColumns.includes(col.id) ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm' : 'bg-transparent border-slate-200 dark:border-slate-800'}`}>
                            {!hiddenColumns.includes(col.id) && <Check size={10} />}
                         </div>
@@ -268,7 +267,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
              )}
            </div>
          </div>
-         <span className="text-[9px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest hidden sm:block">{sortedAndFilteredTasks.length} {t('tasksFound')}</span>
+         <span className="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest hidden sm:block">{sortedAndFilteredTasks.length} {t('tasksFound')}</span>
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar dark:bg-black mobile-scroll-x">
@@ -289,7 +288,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                           <div 
                             ref={dragProvided.innerRef}
                             {...dragProvided.draggableProps}
-                            className="px-3 py-2 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-all group flex-shrink-0 relative select-none"
+                            className="px-3 py-2 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-white/[0.05] transition-all group flex-shrink-0 relative select-none"
                             style={{ 
                               ...dragProvided.draggableProps.style,
                               width: columnWidths[colId] || 100 
@@ -338,9 +337,9 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
                             <div className="text-slate-400 dark:text-zinc-600">
                                {isCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
                             </div>
-                            <h4 className="font-black text-[10px] text-slate-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                            <h4 className="font-bold text-[10px] text-slate-500 dark:text-zinc-400 uppercase tracking-widest flex items-center gap-2">
                                {getGroupTitle(groupKey)}
-                               <span className="bg-slate-200/60 dark:bg-zinc-800 dark:text-zinc-300 px-2 py-0.5 rounded text-[9px] font-black">
+                               <span className="bg-slate-200/60 dark:bg-zinc-800 dark:text-zinc-300 px-2 py-0.5 rounded text-[9px] font-bold">
                                  {(tasks as Task[]).length}
                                </span>
                             </h4>

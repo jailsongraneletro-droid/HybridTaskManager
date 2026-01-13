@@ -14,7 +14,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
   if (!data || !data.columnOrder || data.columnOrder.length === 0) {
     return (
       <div className="h-full flex items-center justify-center">
-        <p className="text-slate-400 text-xs font-black uppercase tracking-widest">Aguardando dados...</p>
+        <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest">Aguardando dados...</p>
       </div>
     );
   }
@@ -57,9 +57,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
         <div className={`p-2 rounded-xl ${color} text-white shadow-sm`}><Icon size={16} /></div>
       </div>
       <div>
-        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{title}</p>
-        <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1.5">{value}</h3>
-        <p className="text-[9px] font-bold text-slate-500 dark:text-slate-500 mt-1.5 uppercase tracking-tight">{subtext}</p>
+        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{title}</p>
+        <h3 className="text-2xl font-bold text-slate-900 dark:text-white leading-none mt-1.5">{value}</h3>
+        <p className="text-[9px] font-semibold text-slate-500 dark:text-slate-500 mt-1.5 uppercase tracking-tight">{subtext}</p>
       </div>
     </div>
   );
@@ -77,7 +77,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Distribuição por Status */}
         <div className="lg:col-span-1 bg-white dark:bg-[#0d0d0d] p-5 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
-          <h3 className="text-[10px] font-black uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Layers size={14} /> Distribuição de Status</h3>
+          <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Layers size={14} /> Distribuição de Status</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -94,7 +94,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
             {statusData.map((s, i) => (
               <div key={i} className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full" style={{backgroundColor: s.color}} />
-                <span className="text-[9px] font-bold text-slate-500 uppercase">{s.name}: {s.value}</span>
+                <span className="text-[9px] font-semibold text-slate-500 uppercase">{s.name}: {s.value}</span>
               </div>
             ))}
           </div>
@@ -102,12 +102,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
 
         {/* Carga por Responsável */}
         <div className="lg:col-span-2 bg-white dark:bg-[#0d0d0d] p-5 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
-          <h3 className="text-[10px] font-black uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Users size={14} /> Carga por Responsável</h3>
+          <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Users size={14} /> Carga por Responsável</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={assigneeWorkload} layout="vertical" margin={{ left: -10, right: 20 }}>
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" tick={{fontSize: 9, fill: '#64748b', fontWeight: 800}} axisLine={false} tickLine={false} width={70} />
+                <YAxis dataKey="name" type="category" tick={{fontSize: 9, fill: '#64748b', fontWeight: 600}} axisLine={false} tickLine={false} width={70} />
                 <Tooltip 
                   cursor={{fill: 'rgba(255,255,255,0.02)'}} 
                   contentStyle={{backgroundColor: '#0a0a0a', border: '1px solid #262626', fontSize: '10px', borderRadius: '8px', color: '#fff'}} 
@@ -123,7 +123,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
       {/* Atividades Recentes */}
       <div className="bg-white dark:bg-[#0d0d0d] p-5 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-[10px] font-black uppercase text-slate-800 dark:text-white flex items-center gap-2"><Clock size={14} /> Atividades Recentes</h3>
+            <h3 className="text-[10px] font-bold uppercase text-slate-800 dark:text-white flex items-center gap-2"><Clock size={14} /> Atividades Recentes</h3>
          </div>
          <div className="space-y-3">
             {recentTasks.length > 0 ? recentTasks.map(task => (
@@ -131,20 +131,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ data }) => {
                   <div className="flex items-center gap-4">
                      <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: data.columns[task.status]?.color}} />
                      <div>
-                        <p className="text-[11px] font-black text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors">{task.title}</p>
-                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{data.columns[task.status]?.title || task.status} • {new Date(task.createdAt).toLocaleDateString()}</p>
+                        <p className="text-[11px] font-semibold text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors">{task.title}</p>
+                        <p className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">{data.columns[task.status]?.title || task.status} • {new Date(task.createdAt).toLocaleDateString()}</p>
                      </div>
                   </div>
                   <div className="flex items-center gap-3">
                      <div className="hidden sm:block">
-                        <span className="text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase">{data.priorities.find(p => p.id === task.priority)?.title}</span>
+                        <span className="text-[9px] font-semibold text-slate-300 dark:text-slate-700 uppercase">{data.priorities.find(p => p.id === task.priority)?.title}</span>
                      </div>
                      <ArrowRight size={12} className="text-slate-300 dark:text-slate-700 group-hover:translate-x-1 transition-transform" />
                   </div>
                </div>
             )) : (
               <div className="text-center py-10 opacity-30">
-                 <p className="text-[10px] font-black uppercase tracking-widest">Nenhuma atividade registrada</p>
+                 <p className="text-[10px] font-semibold uppercase tracking-widest">Nenhuma atividade registrada</p>
               </div>
             )}
          </div>
