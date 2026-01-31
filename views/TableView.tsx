@@ -216,14 +216,14 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
 
   return (
     <div className="bg-white dark:bg-[#0d0d0d] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-full relative theme-transition">
-      <div className="p-2.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-black/40 backdrop-blur-md">
+      <div className="p-3 sm:p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-black/40 backdrop-blur-md">
          <div className="flex items-center gap-2">
            <div className="relative w-40 sm:w-60">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
               <input 
                 type="text" 
                 placeholder={t('searchPlaceholder')} 
-                className="w-full pl-9 pr-3 py-1.5 text-[11px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all dark:text-white font-semibold"
+                className="w-full pl-9 pr-3 py-2 text-[11px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all dark:text-white font-semibold"
                 value={filter}
                 onChange={e => setFilter(e.target.value)}
               />
@@ -267,7 +267,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
              )}
            </div>
          </div>
-         <span className="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest hidden sm:block">{sortedAndFilteredTasks.length} {t('tasksFound')}</span>
+        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest hidden sm:block">{sortedAndFilteredTasks.length} {t('tasksFound')}</span>
       </div>
 
       <div className="flex-1 overflow-auto custom-scrollbar dark:bg-black mobile-scroll-x">

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useId } from 'react';
 import { Task, BoardData } from '../types';
 import { Modal } from './Shared';
-import { Trash2, AlertCircle, Calendar as CalendarIcon, User as UserIcon } from 'lucide-react';
+import { Trash2, AlertCircle, User as UserIcon } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 import { Link } from 'react-router-dom';
 
@@ -16,12 +16,16 @@ interface TaskModalProps {
 
 export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit, onDelete, initialData, boardData }) => {
   const { t } = useLanguage();
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const timeInputRef = useRef<HTMLInputElement>(null);
+  const dateInputId = useId();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<string>('');
   const [status, setStatus] = useState<string>('');
   const [assigneeId, setAssigneeId] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [dueTime, setDueTime] = useState('09:00');
   const [validationError, setValidationError] = useState('');
 
   const isConfigMissing = !boardData || boardData.columnOrder.length === 0 || boardData.priorities.length === 0;
@@ -42,11 +46,16 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
             const m = String(dateObj.getMonth() + 1).padStart(2, '0');
             const d = String(dateObj.getDate()).padStart(2, '0');
             setDueDate(`${y}-${m}-${d}`);
+            const hh = String(dateObj.getHours()).padStart(2, '0');
+            const mm = String(dateObj.getMinutes()).padStart(2, '0');
+            setDueTime(`${hh}:${mm}`);
           } else {
             setDueDate(rawDate);
+            setDueTime('09:00');
           }
         } else {
           setDueDate('');
+          setDueTime('09:00');
         }
         setValidationError('');
     }
@@ -58,22 +67,36 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
     if (isConfigMissing) return;
 
     if (dueDate) {
-        const [year, month, day] = dueDate.split('-').map(Number);
-        const selectedDate = new Date(year, month - 1, day);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); 
-        if (selectedDate.getTime() < today.getTime() && !(initialData as any)?.id) {
-            setValidationError(t('dateInPastError'));
-            return;
-        }
+      const [year, month, day] = dueDate.split('-').map(Number);
+      const [hours, minutes] = (dueTime || '09:00').split(':').map(Number);
+      const selectedDateTime = new Date(year, month - 1, day, hours, minutes, 0);
+      const now = new Date();
+      if (selectedDateTime.getTime() < now.getTime() && !(initialData as any)?.id) {
+        setValidationError(t('dateInPastError'));
+        return;
+      }
     }
 
-    const finalDueDate = dueDate ? new Date(dueDate + 'T12:00:00').toISOString() : new Date().toISOString();
+    const [y, m, d] = dueDate.split('-').map(Number);
+    const [hh, mm] = (dueTime || '09:00').split(':').map(Number);
+    const finalDueDate = dueDate
+      ? new Date(y, m - 1, d, hh, mm, 0).toISOString()
+      : new Date().toISOString();
     onSubmit({ title, description, priority, status, assigneeId, dueDate: finalDueDate });
     onClose();
   };
 
-  const inputClasses = "w-full px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-xs placeholder-slate-400";
+  const inputClasses = "w-full px-3.5 py-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 transition-all text-[11px] placeholder-slate-400";
+
+  const openDatePicker = () => {
+    const el = dateInputRef.current as any;
+    el?.showPicker?.();
+  };
+
+  const openTimePicker = () => {
+    const el = timeInputRef.current as any;
+    el?.showPicker?.();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={(initialData as any)?.id ? t('edit') : t('newTask')}>
@@ -95,7 +118,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
           <input required type="text" className={inputClasses} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título da tarefa" />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('status')}</label>
             <select required className={inputClasses} value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -114,31 +137,55 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
            <div>
             <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('assignee')}</label>
             <div className="relative">
-                <select className={`${inputClasses} pl-8`} value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
+              <select className={`${inputClasses} pl-9`} value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
                 <option value="">{t('unassigned')}</option>
                 {boardData?.assignees.map((a) => (
                     <option key={a.id} value={a.id}>{a.name}</option>
                 ))}
                 </select>
-                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"><UserIcon size={14} /></div>
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><UserIcon size={14} /></div>
             </div>
           </div>
           <div>
             <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('dueDate')}</label>
-            <div className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <input required type="date" className="w-full pl-3 pr-10 py-2 bg-transparent text-slate-900 dark:text-slate-100 outline-none text-xs relative z-10" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0"><CalendarIcon size={14} /></div>
+            <div className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:ring-1 focus-within:ring-indigo-500">
+                <input
+                  ref={dateInputRef}
+                  required
+                  type="date"
+                  id={dateInputId}
+                  className="date-input w-full px-3.5 py-2.5 bg-transparent text-slate-900 dark:text-slate-100 outline-none text-[11px] relative z-10 cursor-pointer"
+                  value={dueDate}
+                  onClick={openDatePicker}
+                  onFocus={openDatePicker}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
+            </div>
+          </div>
+          <div>
+            <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Horário</label>
+            <div className="relative group rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus-within:ring-1 focus-within:ring-indigo-500">
+                <input
+                  ref={timeInputRef}
+                  required
+                  type="time"
+                  className="time-input w-full px-3.5 py-2.5 bg-transparent text-slate-900 dark:text-slate-100 outline-none text-[11px] relative z-10 cursor-pointer"
+                  value={dueTime}
+                  onClick={openTimePicker}
+                  onFocus={openTimePicker}
+                  onChange={(e) => setDueTime(e.target.value)}
+                />
             </div>
           </div>
         </div>
 
         <div>
           <label className="block text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{t('description')}</label>
-          <textarea className={`${inputClasses} min-h-[80px]`} value={description} onChange={(e) => setDescription(e.target.value)} />
+          <textarea className={`${inputClasses} min-h-[96px]`} value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
 
         <div className="pt-4 flex justify-between items-center border-t border-slate-100 dark:border-slate-800/50">

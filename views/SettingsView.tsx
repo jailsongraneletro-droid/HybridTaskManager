@@ -25,11 +25,11 @@ export const SettingsView: React.FC<any> = ({
   const [newAssignee, setNewAssignee] = useState({ name: '', email: '' });
 
   const sectionClass = "bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-800 shadow-sm overflow-hidden mb-6";
-  const headerClass = "p-3 border-b dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 flex items-center justify-between";
+  const headerClass = "p-3 sm:p-3.5 border-b dark:border-slate-800 bg-slate-50/50 dark:bg-black/20 flex items-center justify-between";
   const inputClass = "px-3 py-1.5 bg-white dark:bg-slate-800 dark:text-white rounded border dark:border-slate-700 outline-none text-[11px] font-bold shadow-inner w-full focus:ring-1 focus:ring-indigo-500 transition-all";
 
   return (
-    <div className="max-w-3xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="max-w-4xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-2 duration-500">
       
       {/* Gestão de Colunas */}
       <section className={sectionClass}>
@@ -39,7 +39,7 @@ export const SettingsView: React.FC<any> = ({
             <h3 className="text-[10px] font-black uppercase dark:text-white">Colunas do Kanban</h3>
           </div>
         </div>
-        <div className="p-4 space-y-4">
+        <div className="p-4 sm:p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {data.columnOrder.map((id: string) => {
               const col = data.columns[id];
@@ -68,7 +68,7 @@ export const SettingsView: React.FC<any> = ({
             <h3 className="text-[10px] font-black uppercase dark:text-white">Prioridades</h3>
           </div>
         </div>
-        <div className="p-4 space-y-4">
+        <div className="p-4 sm:p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {data.priorities.map((prio: any) => (
               <div key={prio.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-black/40 rounded-xl border dark:border-slate-800 group shadow-sm">
@@ -94,7 +94,7 @@ export const SettingsView: React.FC<any> = ({
             <h3 className="text-[10px] font-black uppercase dark:text-white">Equipe (Responsáveis)</h3>
           </div>
         </div>
-        <div className="p-4 space-y-4">
+        <div className="p-4 sm:p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {data.assignees.map((a: any) => (
               <div key={a.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-black/40 rounded-xl border dark:border-slate-800 group shadow-sm">
@@ -131,7 +131,7 @@ export const SettingsView: React.FC<any> = ({
             <h3 className="text-[10px] font-black uppercase dark:text-white">Ações do Sistema</h3>
           </div>
         </div>
-        <div className="p-4">
+        <div className="p-4 sm:p-5">
            <button 
              onClick={async() => { setRestoring(true); await onRestoreDefaults(); setRestoring(false); }} 
              disabled={restoring}

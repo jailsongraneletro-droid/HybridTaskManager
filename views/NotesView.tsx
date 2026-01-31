@@ -69,8 +69,9 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
 
   return (
     <div className="animate-in fade-in duration-300">
-      <div className="flex justify-center mb-8">
-        <div className={`w-full max-w-lg bg-white dark:bg-slate-900 rounded-xl shadow border dark:border-slate-800 transition-all ${isCreating ? 'shadow-xl' : 'cursor-text'}`}>
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-center mb-6 sm:mb-8">
+          <div className={`w-full max-w-lg bg-white dark:bg-slate-900 rounded-xl shadow border dark:border-slate-800 transition-all ${isCreating ? 'shadow-xl' : 'cursor-text'}`}>
           {!isCreating ? (
             <div onClick={() => setIsCreating(true)} className="p-2.5 px-5 text-slate-400 text-xs font-bold flex items-center justify-between">
               <span>{t('takeANote')}</span>
@@ -89,39 +90,40 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
               </div>
             </div>
           )}
+          </div>
         </div>
-      </div>
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="notes" direction="vertical">
-          {(provided) => (
-            <div ref={provided.innerRef} {...provided.droppableProps} className="notes-grid columns-2 md:columns-3 lg:columns-4 xl:columns-6 gap-3">
-              {localNotes.map((note, index) => (
-                <Draggable key={note.id} draggableId={note.id} index={index}>
-                  {(dragProvided) => (
-                    <div 
-                      ref={dragProvided.innerRef} 
-                      {...dragProvided.draggableProps} 
-                      className="note-item group"
-                      onClick={() => setEditingNote(note)}
-                    >
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="notes" direction="vertical">
+            {(provided) => (
+              <div ref={provided.innerRef} {...provided.droppableProps} className="notes-grid columns-2 md:columns-3 lg:columns-4 xl:columns-6 gap-4">
+                {localNotes.map((note, index) => (
+                  <Draggable key={note.id} draggableId={note.id} index={index}>
+                    {(dragProvided) => (
                       <div 
-                        className="rounded-lg border shadow-sm hover:shadow-md transition-all p-3 relative" 
-                        style={{ backgroundColor: document.documentElement.classList.contains('dark') ? NOTE_COLORS.find(c => c.bg === note.color)?.darkBg : note.color, borderColor: NOTE_COLORS.find(c => c.bg === note.color)?.border }}
+                        ref={dragProvided.innerRef} 
+                        {...dragProvided.draggableProps} 
+                        className="note-item group"
+                        onClick={() => setEditingNote(note)}
                       >
-                        <div {...dragProvided.dragHandleProps} className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-40 text-slate-500"><GripVertical size={12} /></div>
-                        {note.title && <h3 className="font-black text-[11px] mb-1.5 dark:text-white line-clamp-1">{note.title}</h3>}
-                        <div className="text-[10px] leading-snug text-slate-600 dark:text-slate-400 line-clamp-[12]" dangerouslySetInnerHTML={{ __html: note.content }} />
+                        <div 
+                          className="rounded-xl border shadow-sm hover:shadow-md transition-all p-3 relative" 
+                          style={{ backgroundColor: document.documentElement.classList.contains('dark') ? NOTE_COLORS.find(c => c.bg === note.color)?.darkBg : note.color, borderColor: NOTE_COLORS.find(c => c.bg === note.color)?.border }}
+                        >
+                          <div {...dragProvided.dragHandleProps} className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-40 text-slate-500"><GripVertical size={12} /></div>
+                          {note.title && <h3 className="font-black text-[11px] mb-1.5 dark:text-white line-clamp-1">{note.title}</h3>}
+                          <div className="text-[10px] leading-snug text-slate-600 dark:text-slate-400 line-clamp-[12]" dangerouslySetInnerHTML={{ __html: note.content }} />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
 
       {/* Editor Expandido (Modal focado) */}
       <Modal isOpen={!!editingNote} onClose={() => setEditingNote(null)} title="Editar Nota">

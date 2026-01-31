@@ -43,6 +43,7 @@ export interface Task {
   assigneeId?: string;
   dueDate: string; // ISO Date string
   createdAt: string; // ISO Date string
+  position?: number;
   tags?: string[];
 }
 

@@ -76,6 +76,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
 
   const getTasksForDate = (date: Date) => {
     return allTasks.filter(task => {
+      if (!task.dueDate) return false;
       const taskDate = new Date(task.dueDate);
       return taskDate.getDate() === date.getDate() && taskDate.getMonth() === date.getMonth() && taskDate.getFullYear() === date.getFullYear();
     });
@@ -120,7 +121,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all theme-transition">
-      <div className="p-2.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/80 dark:bg-black/80 backdrop-blur-xl">
+      <div className="p-3 sm:p-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/80 dark:bg-black/80 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 rounded-lg"><CalendarIcon size={14} /></div>
@@ -150,10 +151,10 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-slate-50/20 dark:bg-black custom-scrollbar">
+      <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-black custom-scrollbar">
         <DragDropContext onDragEnd={handleDragEnd}>
             {viewMode === 'month' && (
-              <div className="grid grid-cols-7 h-full min-h-[500px] min-w-[700px] border-l border-slate-200 dark:border-slate-800">
+              <div className="grid grid-cols-7 h-full min-h-[520px] min-w-[700px] border-l border-slate-200 dark:border-slate-800">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
                   <div key={day} className="p-2.5 text-center text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-[#0a0a0a] border-r border-b border-slate-200 dark:border-slate-800">{day}</div>
                 ))}
@@ -167,7 +168,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
                             <div 
                                 ref={provided.innerRef}
                                 {...provided.droppableProps}
-                                className={`min-h-[100px] p-1.5 border-r border-b border-slate-200 dark:border-slate-800 transition-all group ${!item.currentMonth ? 'bg-slate-100/30 dark:bg-white/[0.01] opacity-20' : 'bg-white dark:bg-[#0a0a0a] hover:bg-slate-50 dark:hover:bg-white/[0.02]'} ${today ? 'bg-zinc-100/50 dark:bg-zinc-800/30' : ''} ${snapshot.isDraggingOver ? 'ring-2 ring-inset ring-indigo-500/30 bg-indigo-50/10 dark:bg-indigo-900/10' : ''}`}
+                              className={`min-h-[110px] p-1.5 border-r border-b border-slate-200 dark:border-slate-800 transition-all group ${!item.currentMonth ? 'bg-slate-100/30 dark:bg-white/[0.01] opacity-20' : 'bg-white dark:bg-[#0a0a0a] hover:bg-slate-50 dark:hover:bg-white/[0.02]'} ${today ? 'bg-zinc-100/50 dark:bg-zinc-800/30' : ''} ${snapshot.isDraggingOver ? 'ring-2 ring-inset ring-indigo-500/30 bg-indigo-50/10 dark:bg-indigo-900/10' : ''}`}
                             >
                               <div className="flex items-center justify-between mb-2">
                                 <span className={`text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-lg transition-all ${today ? 'bg-white text-black shadow-lg scale-110' : item.currentMonth ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-700'}`}>{item.day}</span>

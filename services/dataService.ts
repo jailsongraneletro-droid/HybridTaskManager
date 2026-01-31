@@ -1,6 +1,6 @@
 
 import { BoardData, Column, Task, User, Priority, Assignee, Note } from '../types';
-import { supabase, supabaseAdmin } from '../utils/supabaseClient';
+import { supabase } from '../utils/supabaseClient';
 import { DEFAULT_PRIORITIES, DEFAULT_COLUMNS } from '../constants';
 
 export const DataService = {
@@ -36,6 +36,11 @@ export const DataService = {
     if (password) {
       const { error: authError } = await supabase.auth.updateUser({ password });
       if (authError) throw authError;
+    }
+
+    if (email) {
+      const { error: emailError } = await supabase.auth.updateUser({ email });
+      if (emailError) throw emailError;
     }
     
     const { data: profile, error: profileError } = await supabase
@@ -139,6 +144,7 @@ export const DataService = {
     await supabase.from('kanban_columns').delete().eq('user_id', user.id);
     await supabase.from('kanban_priorities').delete().eq('user_id', user.id);
     await supabase.from('kanban_assignees').delete().eq('user_id', user.id);
+    await supabase.from('kanban_notes').delete().eq('user_id', user.id);
 
     await DataService.seedUserData(user);
     return await DataService.fetchBoardData(user.id);
@@ -156,8 +162,15 @@ export const DataService = {
     const tasks: Record<string, Task> = {};
     tasksRes.data?.forEach((t: any) => {
       tasks[t.id] = { 
-        id: t.id, title: t.title, description: t.description || '', status: t.status, 
-        priority: t.priority, assigneeId: t.assignee_id, dueDate: t.due_date, createdAt: t.created_at 
+        id: t.id,
+        title: t.title,
+        description: t.description || '',
+        status: t.status,
+        priority: t.priority,
+        assigneeId: t.assignee_id,
+        dueDate: t.due_date,
+        createdAt: t.created_at,
+        position: typeof t.position === 'number' ? t.position : undefined
       };
     });
 
@@ -168,8 +181,20 @@ export const DataService = {
       columnOrder.push(c.id);
     });
 
+    const tasksByColumn: Record<string, Task[]> = {};
     Object.values(tasks).forEach(task => {
-      if (columns[task.status]) columns[task.status].taskIds.push(task.id);
+      if (!columns[task.status]) return;
+      if (!tasksByColumn[task.status]) tasksByColumn[task.status] = [];
+      tasksByColumn[task.status].push(task);
+    });
+
+    Object.keys(columns).forEach(colId => {
+      const colTasks = tasksByColumn[colId] || [];
+      const hasPosition = colTasks.some(t => typeof t.position === 'number');
+      const sorted = hasPosition
+        ? [...colTasks].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+        : colTasks;
+      columns[colId].taskIds = sorted.map(t => t.id);
     });
 
     return {
@@ -189,18 +214,25 @@ export const DataService = {
     const cleanAssigneeId = (task.assigneeId && task.assigneeId.trim() !== '') ? task.assigneeId : null;
     const cleanPriority = (task.priority && task.priority.trim() !== '') ? task.priority : null;
 
+    const { count } = await supabase
+      .from('kanban_tasks')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('status', task.status);
+
     const { data, error } = await supabase.from('kanban_tasks').insert({
       title: task.title, 
       description: task.description, 
       status: task.status,
       priority: cleanPriority, 
       assignee_id: cleanAssigneeId,
-      due_date: task.dueDate, 
+      due_date: task.dueDate,
+      position: count || 0,
       user_id: user.id
     }).select().single();
     
     if (error) throw error;
-    return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at };
+    return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at, position: data.position };
   },
 
   updateTask: async (taskId: string, updates: Partial<Task>): Promise<Task> => {
@@ -213,16 +245,31 @@ export const DataService = {
       status: updates.status,
       priority: cleanPriority, 
       assignee_id: cleanAssigneeId,
-      due_date: updates.dueDate
+      due_date: updates.dueDate,
+      position: updates.position
     }).eq('id', taskId).select().single();
     
     if (error) throw error;
-    return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at };
+    return { ...data, assigneeId: data.assignee_id, dueDate: data.due_date, createdAt: data.created_at, position: data.position };
   },
 
   updateTaskPosition: async (taskId: string, newStatus: string, newPosition: number): Promise<void> => {
-    const { error } = await supabase.from('kanban_tasks').update({ status: newStatus }).eq('id', taskId);
+    const { error } = await supabase
+      .from('kanban_tasks')
+      .update({ status: newStatus, position: newPosition })
+      .eq('id', taskId);
     if (error) throw error;
+  },
+
+  updateTaskOrder: async (columnId: string, orderedTaskIds: string[]): Promise<void> => {
+    const updates = orderedTaskIds.map((id, index) => ({ id, status: columnId, position: index }));
+    for (const upd of updates) {
+      const { error } = await supabase.from('kanban_tasks').update({
+        status: upd.status,
+        position: upd.position
+      }).eq('id', upd.id);
+      if (error) throw error;
+    }
   },
 
   deleteTask: async (taskId: string): Promise<void> => {
@@ -330,6 +377,25 @@ export const DataService = {
 
   deleteNote: async (id: string): Promise<void> => {
     const { error } = await supabase.from('kanban_notes').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  savePushSubscription: async (subscription: PushSubscription) => {
+    const user = await DataService.getCurrentUser();
+    if (!user) throw new Error("Não autenticado");
+
+    const json = subscription.toJSON();
+    const endpoint = subscription.endpoint;
+    const p256dh = json.keys?.p256dh || '';
+    const auth = json.keys?.auth || '';
+
+    const { error } = await supabase.from('push_subscriptions').upsert({
+      user_id: user.id,
+      endpoint,
+      p256dh,
+      auth
+    }, { onConflict: 'endpoint' });
+
     if (error) throw error;
   }
 };

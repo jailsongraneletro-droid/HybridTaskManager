@@ -22,7 +22,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
   }
 
   const tasks = Object.values(data.tasks) as Task[];
-  const doneId = data.columnOrder.find(id => data.columns[id]?.title.toLowerCase().includes('concl')) || 'Done';
+  const doneId = data.columnOrder.find(id => {
+    const title = data.columns[id]?.title?.toLowerCase() || '';
+    return /conclu|done/.test(title);
+  }) || data.columnOrder[data.columnOrder.length - 1] || 'Done';
   
   const stats = {
     total: tasks.length,
@@ -54,7 +57,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
   }, [tasks]);
 
   const StatCard = ({ title, value, icon: Icon, color, subtext }: any) => (
-    <div className="bg-white dark:bg-[#0d0d0d] p-4 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm flex flex-col justify-between group hover:shadow-md transition-all">
+    <div className="bg-white dark:bg-[#0d0d0d] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm flex flex-col justify-between group hover:shadow-md transition-all">
       <div className="flex justify-between items-start mb-3">
         <div className={`p-2 rounded-xl ${color} text-white shadow-sm`}><Icon size={16} /></div>
       </div>
@@ -67,7 +70,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
   );
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-500 max-w-7xl mx-auto">
+    <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto">
       {/* Top Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
         <StatCard title="Conclusão" value={`${rate}%`} icon={CheckCircle} color="bg-emerald-500" subtext={`${stats.done} concluidas`} />
@@ -78,7 +81,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Distribuição por Status */}
-        <div className="lg:col-span-1 bg-white dark:bg-[#0d0d0d] p-5 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
+        <div className="lg:col-span-1 bg-white dark:bg-[#0d0d0d] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
           <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Layers size={14} /> Distribuição de Status</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
@@ -103,7 +106,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
         </div>
 
         {/* Carga por Responsável */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#0d0d0d] p-5 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
+        <div className="lg:col-span-2 bg-white dark:bg-[#0d0d0d] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
           <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Users size={14} /> Carga por Responsável</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -123,7 +126,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
       </div>
 
       {/* Atividades Recentes */}
-      <div className="bg-white dark:bg-[#0d0d0d] p-5 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
+      <div className="bg-white dark:bg-[#0d0d0d] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
          <div className="flex items-center justify-between mb-6">
             <h3 className="text-[10px] font-bold uppercase text-slate-800 dark:text-white flex items-center gap-2"><Clock size={14} /> Atividades Recentes</h3>
          </div>

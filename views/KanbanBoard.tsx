@@ -24,16 +24,16 @@ interface TaskCardProps {
 
 const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assigneeData, onClick, onDelete, isReorderable }) => {
   return (
-    <Draggable draggableId={task.id} index={index} isDragDisabled={false}>
+    <Draggable draggableId={task.id} index={index} isDragDisabled={!isReorderable}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onClick}
-          className={`bg-white dark:bg-[#121212] p-3 rounded-xl border border-slate-200 dark:border-[#2a2a2a] shadow-sm mb-3 group hover:border-indigo-400 dark:hover:border-slate-500 hover:shadow-lg transition-all relative ${
+          className={`bg-white dark:bg-[#121212] p-3 rounded-2xl border border-slate-200/80 dark:border-[#2a2a2a] shadow-sm mb-3 group hover:border-indigo-400 dark:hover:border-slate-500 hover:shadow-lg hover:-translate-y-0.5 transition-all relative ${
             snapshot.isDragging ? 'rotate-1 scale-102 shadow-xl ring-1 ring-indigo-500/50 z-[100]' : ''
-          }`}
+          } ${isReorderable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
           style={provided.draggableProps.style}
         >
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -47,7 +47,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
 
           <div className="flex justify-between items-start mb-2 pr-4">
             <PriorityBadge priority={priorityData} />
-            <GripHorizontal size={10} className="text-slate-100 dark:text-slate-800 opacity-50" />
+            {isReorderable && <GripHorizontal size={10} className="text-slate-200 dark:text-slate-800 opacity-50" />}
           </div>
           
           <h4 className="font-semibold text-slate-800 dark:text-white mb-2 line-clamp-2 leading-tight text-[11px] tracking-tight">
@@ -119,7 +119,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex h-full overflow-x-auto gap-5 pb-6 custom-scrollbar items-start mobile-scroll-x">
+      <div className="flex h-full overflow-x-auto gap-4 sm:gap-5 pb-6 custom-scrollbar items-start mobile-scroll-x">
         {data.columnOrder.map((columnId) => {
           const column = data.columns[columnId];
           const tasks = getSortedFilteredTasks(columnId, column.taskIds);
@@ -127,9 +127,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
           const isReorderable = !columnFilters[columnId] && (columnSorting[columnId] === 'none' || !columnSorting[columnId]);
 
           return (
-            <div key={column.id} className="min-w-[280px] max-w-[280px] flex flex-col h-full rounded-2xl bg-slate-100/40 dark:bg-[#080808] border border-slate-200 dark:border-[#333] shadow-inner overflow-hidden flex-shrink-0 transition-all">
+            <div key={column.id} className="min-w-[280px] max-w-[280px] sm:min-w-[300px] sm:max-w-[300px] flex flex-col h-full rounded-2xl bg-white/70 dark:bg-[#0b0b0b] border border-slate-200/80 dark:border-[#333] shadow-sm overflow-hidden flex-shrink-0 transition-all">
               <div 
-                className="p-3.5 flex flex-col border-t-2 bg-white/60 dark:bg-[#0d0d0d] backdrop-blur-xl sticky top-0 z-10 shadow-sm"
+                className="p-3.5 flex flex-col border-t-2 bg-white/80 dark:bg-[#0d0d0d] backdrop-blur-xl sticky top-0 z-10 shadow-sm"
                 style={{ borderColor: column.color }}
               >
                 <div className="flex items-center justify-between mb-2">
@@ -178,7 +178,18 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                            ].map(mode => (
                              <button 
                                key={mode.id} 
-                               onClick={() => setColumnSorting({...columnSorting, [columnId]: mode.id as any})}
+                               onClick={() => {
+                                 if (mode.id === 'none') {
+                                   setColumnSorting(prev => {
+                                     const next = { ...prev } as any;
+                                     delete next[columnId];
+                                     return next;
+                                   });
+                                   setColumnFilters(prev => ({ ...prev, [columnId]: '' }));
+                                   return;
+                                 }
+                                 setColumnSorting({ ...columnSorting, [columnId]: mode.id as any });
+                               }}
                                className={`flex-1 px-2 py-1 rounded-md text-[8px] font-bold uppercase tracking-tighter border transition-all ${columnSorting[columnId] === mode.id || (mode.id === 'none' && !columnSorting[columnId]) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'}`}
                              >
                                {mode.label}
@@ -186,9 +197,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
                            ))}
                         </div>
                      </div>
-                     {!isReorderable && (
-                        <p className="text-[7px] font-medium text-amber-600 dark:text-amber-500 text-center uppercase tracking-tighter">Arranjo manual pausado durante filtro/ordem</p>
-                     )}
+                    {!isReorderable && (
+                      <p className="text-[7px] font-medium text-amber-600 dark:text-amber-500 text-center uppercase tracking-tighter">Arranjo manual pausado durante filtro/ordem</p>
+                    )}
                   </div>
                 )}
               </div>

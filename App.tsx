@@ -49,6 +49,35 @@ const AppContent = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
+  const [dueQueue, setDueQueue] = useState<Task[]>([]);
+  const [activeDue, setActiveDue] = useState<Task | null>(null);
+
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
+
+  const doneColumnId = useMemo(() => {
+    const normalized = (value: string) => value.toLowerCase();
+    const idByTitle = boardData.columnOrder.find(id => {
+      const title = boardData.columns[id]?.title || '';
+      return /conclu|done/.test(normalized(title));
+    });
+    return idByTitle || boardData.columnOrder[boardData.columnOrder.length - 1] || 'Done';
+  }, [boardData.columnOrder, boardData.columns]);
+
+  const isTaskOverdue = (task: Task) => {
+    if (!task?.dueDate) return false;
+    const today = new Date().setHours(0,0,0,0);
+    return task.status !== doneColumnId && new Date(task.dueDate).getTime() < today;
+  };
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDarkMode);
@@ -94,6 +123,38 @@ const AppContent = () => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (!user) return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+    const registerPush = async () => {
+      try {
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        if (Notification.permission === 'default') {
+          await Notification.requestPermission();
+        }
+        if (Notification.permission !== 'granted') return;
+
+        const existing = await reg.pushManager.getSubscription();
+        if (!existing) {
+          const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+          if (!vapidKey) return;
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey)
+          });
+          await DataService.savePushSubscription(sub);
+        } else {
+          await DataService.savePushSubscription(existing);
+        }
+      } catch (e) {
+        console.error('Push registration failed:', e);
+      }
+    };
+
+    registerPush();
+  }, [user]);
+
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
@@ -117,12 +178,17 @@ const AppContent = () => {
       destCol.taskIds.splice(destination.index, 0, draggableId);
       
       setBoardData({ ...newBoard });
+
+      if (user) {
+        persistColumnOrder(user.id, sourceCol.id, sourceCol.taskIds);
+        persistColumnOrder(user.id, destCol.id, destCol.taskIds);
+      }
       
-      // Persiste a mudança de status e posição no banco
-      await DataService.updateTaskPosition(draggableId, destination.droppableId, destination.index);
-      
-      // Sincroniza silenciosamente para manter a integridade dos dados
-      fetchBoard(true); 
+      // Persiste a ordem no banco
+      await DataService.updateTaskOrder(sourceCol.id, sourceCol.taskIds);
+      if (sourceCol.id !== destCol.id) {
+        await DataService.updateTaskOrder(destCol.id, destCol.taskIds);
+      }
     }
   };
 
@@ -137,10 +203,59 @@ const AppContent = () => {
   };
 
   const overdueCount = useMemo(() => {
-    const today = new Date().setHours(0,0,0,0);
     const tasks = Object.values(boardData.tasks) as Task[];
-    return tasks.filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < today).length;
-  }, [boardData.tasks]);
+    return tasks.filter(isTaskOverdue).length;
+  }, [boardData.tasks, doneColumnId]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (typeof window === 'undefined' || !('Notification' in window)) return;
+
+    const notifiedKey = `hybridtask-notified:${user.id}`;
+    const readNotified = () => new Set<string>(JSON.parse(localStorage.getItem(notifiedKey) || '[]'));
+    const writeNotified = (set: Set<string>) => localStorage.setItem(notifiedKey, JSON.stringify(Array.from(set)));
+
+    const checkAndNotify = () => {
+      if (document.visibilityState !== 'visible') return;
+      const tasks = Object.values(boardData.tasks) as Task[];
+      const now = Date.now();
+      const notified = readNotified();
+
+      tasks.forEach(task => {
+        if (!task?.dueDate) return;
+        if (task.status === doneColumnId) return;
+        const due = new Date(task.dueDate).getTime();
+        if (Number.isNaN(due)) return;
+        if (due <= now && !notified.has(task.id)) {
+          setDueQueue((prev) => (prev.some((t) => t.id === task.id) ? prev : [...prev, task]));
+          if (Notification.permission === 'granted') {
+            new Notification('Tarefa vencida', {
+              body: task.title,
+              tag: task.id
+            });
+            notified.add(task.id);
+          } else if (Notification.permission === 'default') {
+            Notification.requestPermission();
+            notified.add(task.id);
+          } else {
+            notified.add(task.id);
+          }
+        }
+      });
+
+      writeNotified(notified);
+    };
+
+    const interval = window.setInterval(checkAndNotify, 30000);
+    checkAndNotify();
+    return () => window.clearInterval(interval);
+  }, [boardData.tasks, doneColumnId, user]);
+
+  useEffect(() => {
+    if (activeDue || dueQueue.length === 0) return;
+    setActiveDue(dueQueue[0]);
+    setDueQueue((prev) => prev.slice(1));
+  }, [activeDue, dueQueue]);
 
   if (loading) {
     return (
@@ -177,6 +292,25 @@ const AppContent = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-black overflow-hidden transition-all">
+      {activeDue && (
+        <div className="fixed bottom-4 right-4 z-[120] w-[280px] sm:w-[320px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0a0a0a] shadow-2xl p-3">
+          <div className="flex items-start gap-2">
+            <div className="mt-0.5 p-1.5 rounded-lg bg-red-500 shadow-sm">
+              <AlertCircle size={12} className="text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-widest text-red-500">Tarefa vencida</p>
+              <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-100 truncate mt-0.5">{activeDue.title}</p>
+              <p className="text-[9px] text-slate-400 mt-0.5">Vencimento: {new Date(activeDue.dueDate).toLocaleString()}</p>
+            </div>
+            <button onClick={() => setActiveDue(null)} className="text-slate-400 hover:text-slate-600"><X size={14} /></button>
+          </div>
+          <div className="mt-3 flex justify-end gap-2">
+            <button onClick={() => setActiveDue(null)} className="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-white/[0.05] rounded-lg">Dispensar</button>
+            <button onClick={() => { handleEditTask(activeDue); setActiveDue(null); }} className="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Abrir</button>
+          </div>
+        </div>
+      )}
       {/* Sidebar Desktop */}
       <aside className={`hidden lg:flex flex-col bg-white dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-slate-800 transition-all duration-200 ${isSidebarCollapsed ? 'w-14' : 'w-48'}`}>
         <div className="p-3 flex items-center justify-center border-b border-slate-200 dark:border-slate-800">
@@ -238,10 +372,10 @@ const AppContent = () => {
       )}
 
       <main className="flex-1 flex flex-col min-w-0 relative">
-        <header className="h-10 flex items-center justify-between px-4 bg-white dark:bg-[#0a0a0a] border-b border-slate-200 dark:border-slate-800 z-40">
+        <header className="h-12 flex items-center justify-between px-3 sm:px-4 bg-white dark:bg-[#0a0a0a] border-b border-slate-200 dark:border-slate-800 z-40">
            <div className="flex items-center gap-2">
              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1 text-slate-500"><Menu size={18} /></button>
-             <h1 className="text-[11px] font-bold tracking-widest dark:text-white uppercase truncate max-w-[120px] sm:max-w-none">
+             <h1 className="text-[11px] sm:text-xs font-bold tracking-widest dark:text-white uppercase truncate max-w-[140px] sm:max-w-none">
                 {navItems.find(i => location.pathname.startsWith(i.to))?.label || 'Painel'}
              </h1>
            </div>
@@ -256,16 +390,16 @@ const AppContent = () => {
                   <div className="absolute top-full right-0 mt-1 w-60 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 z-[100] animate-in zoom-in-95 duration-150">
                     <div className="p-2 border-b border-slate-100 dark:border-slate-800 text-[9px] font-semibold uppercase text-slate-400">Avisos ({overdueCount})</div>
                     <div className="max-h-60 overflow-y-auto">
-                      {overdueCount > 0 ? (Object.values(boardData.tasks) as Task[]).filter(t => t.status !== 'Done' && new Date(t.dueDate).getTime() < new Date().setHours(0,0,0,0)).map(t => <NotificationItem key={t.id} icon={AlertCircle} color="bg-red-500" title={t.title} time={new Date(t.dueDate).toLocaleDateString()} onClick={() => { handleEditTask(t); setShowNotifications(false); }} />) : <div className="p-4 text-center text-[9px] font-medium text-slate-400">Sem alertas</div>}
+                      {overdueCount > 0 ? (Object.values(boardData.tasks) as Task[]).filter(isTaskOverdue).map(t => <NotificationItem key={t.id} icon={AlertCircle} color="bg-red-500" title={t.title} time={new Date(t.dueDate).toLocaleDateString()} onClick={() => { handleEditTask(t); setShowNotifications(false); }} />) : <div className="p-4 text-center text-[9px] font-medium text-slate-400">Sem alertas</div>}
                     </div>
                   </div>
                 )}
               </div>
-              <button onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 py-1 rounded-lg font-bold text-[10px] uppercase shadow-sm flex items-center gap-1 hover:bg-indigo-700 transition-colors"><Plus size={14} /> <span className="hidden sm:inline">Novo</span></button>
+              <button onClick={() => { setSelectedTask(undefined); setIsTaskModalOpen(true); }} className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] uppercase shadow-sm flex items-center gap-1 hover:bg-indigo-700 transition-colors"><Plus size={14} /> <span className="hidden sm:inline">Novo</span></button>
            </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar bg-slate-50 dark:bg-black">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 custom-scrollbar bg-slate-50 dark:bg-black">
            <Routes>
               <Route path="/dashboard" element={<Dashboard data={boardData} onEditTask={handleEditTask} />} />
               <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={handleEditTask} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />

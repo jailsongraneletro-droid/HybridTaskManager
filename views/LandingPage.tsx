@@ -62,12 +62,12 @@ export const LandingPage: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <header className="pt-32 pb-20 px-6">
+      <header className="pt-28 sm:pt-32 pb-16 sm:pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tighter leading-[1.1] mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tighter leading-[1.1] mb-5 sm:mb-6">
             {t('landingHeroTitle')}
           </h1>
-          <p className="text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-10 font-medium leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto mb-8 sm:mb-10 font-medium leading-relaxed">
             {t('landingHeroSub')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -79,7 +79,7 @@ export const LandingPage: React.FC = () => {
       </header>
 
       {/* Features Grid */}
-      <section id="features" className="py-20 px-6 bg-slate-50/50 dark:bg-zinc-950/50">
+      <section id="features" className="py-16 sm:py-20 px-6 bg-slate-50/50 dark:bg-zinc-950/50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tighter mb-4">{t('landingBenefitsTitle')}</h2>
@@ -95,7 +95,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* User Manual Section */}
-      <section id="manual" className="py-20 px-6 bg-white dark:bg-black">
+      <section id="manual" className="py-16 sm:py-20 px-6 bg-white dark:bg-black">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row gap-12 items-center">
             <div className="flex-1">
@@ -140,7 +140,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Blog Previews for SEO */}
-      <section id="blog" className="py-20 px-6 bg-slate-50/50 dark:bg-zinc-950/50">
+      <section id="blog" className="py-16 sm:py-20 px-6 bg-slate-50/50 dark:bg-zinc-950/50">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-12">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white uppercase tracking-tighter">Insights do Blog</h2>

@@ -22,19 +22,13 @@ const getEnvVar = (key: string, viteKey: string, fallback: string): string => {
 const supabaseUrl = getEnvVar(
   'REACT_APP_SUPABASE_URL', 
   'VITE_SUPABASE_URL', 
-  "https://wrmlpdwbyggzwcbtaknr.supabase.co"
+  ""
 );
 
 const supabaseAnonKey = getEnvVar(
   'REACT_APP_SUPABASE_ANON_KEY', 
   'VITE_SUPABASE_ANON_KEY', 
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybWxwZHdieWdnendjYnRha25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU1ODYxNjQsImV4cCI6MjA4MTE2MjE2NH0.ShakDrL7hTEdC16ztUYyydW__nBhVXARONNstiYxKNI"
-);
-
-const supabaseServiceRoleKey = getEnvVar(
-  'REACT_APP_SUPABASE_SERVICE_KEY',
-  'VITE_SUPABASE_SERVICE_KEY',
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndybWxwZHdieWdnendjYnRha25yIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTU4NjE2NCwiZXhwIjoyMDgxMTYyMTY0fQ.by6YllE9177aaw4hfjFs515RyMX4nlV1EcUBcxuq7vo" 
+  ""
 );
 
 if (!supabaseUrl || !supabaseAnonKey) {
@@ -69,12 +63,4 @@ if (globalAny._supabaseInstance) {
 
 export const supabase = client;
 
-export const supabaseAdmin = supabaseServiceRoleKey 
-  ? createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-        detectSessionInUrl: false
-      }
-    })
-  : null;
+export const supabaseAdmin = null;
