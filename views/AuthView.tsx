@@ -66,7 +66,7 @@ export const AuthView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-slate-50 overflow-hidden animate-in fade-in duration-500">
+    <div className="min-h-screen flex bg-white dark:bg-[#111315] overflow-hidden animate-in fade-in duration-500">
       {/* Esquerda: Formulário */}
       <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-24 py-12 relative z-10">
         <button onClick={() => navigate('/')} className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-1 text-[10px] font-bold uppercase text-slate-400 hover:text-indigo-600 transition-colors">

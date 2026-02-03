@@ -106,7 +106,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200 border border-slate-200 dark:border-slate-800">
-        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-white/[0.03]">
           <h2 className="text-base font-bold text-slate-800 dark:text-white tracking-tight uppercase">{title}</h2>
           <button onClick={onClose} className="relative p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-white/50 dark:bg-slate-800 rounded-lg group">
              <Circle size={16} className="fill-current opacity-10" />

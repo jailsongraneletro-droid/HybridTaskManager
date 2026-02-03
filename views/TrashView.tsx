@@ -95,7 +95,7 @@ export const TrashView: React.FC<TrashViewProps> = ({ onUpdate }) => {
       ) : (
         <div className="space-y-2">
           {withMeta.map(({ task, deletedAt, daysLeft }) => (
-            <div key={task.id} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0a0a0a] flex items-center justify-between gap-3">
+            <div key={task.id} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1d21] flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-100 truncate">{task.title}</p>
                 <div className="text-[9px] text-slate-400 flex items-center gap-2 mt-1">

@@ -215,8 +215,8 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
   };
 
   return (
-    <div className="bg-white dark:bg-[#0d0d0d] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-full relative theme-transition">
-      <div className="p-3 sm:p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 backdrop-blur-md">
+    <div className="bg-white dark:bg-[#1a1d21] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-full relative theme-transition">
+      <div className="p-3 sm:p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-white/[0.03] backdrop-blur-md">
          <div className="flex items-center gap-2">
            <div className="relative w-40 sm:w-60">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />

@@ -31,7 +31,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={onClick}
-          className={`bg-white dark:bg-[#121212] p-3 rounded-2xl border border-slate-200/80 dark:border-[#2a2a2a] shadow-sm mb-3 group hover:border-indigo-400 dark:hover:border-slate-500 hover:shadow-lg hover:-translate-y-0.5 transition-all relative ${
+          className={`bg-white dark:bg-[#24282d] p-3 rounded-2xl border border-slate-200/80 dark:border-[#2a2f36] shadow-sm mb-3 group hover:border-indigo-400 dark:hover:border-slate-500 hover:shadow-lg hover:-translate-y-0.5 transition-all relative ${
             snapshot.isDragging ? 'rotate-1 scale-102 shadow-xl ring-1 ring-indigo-500/50 z-[100]' : ''
           } ${isReorderable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'}`}
           style={provided.draggableProps.style}
@@ -130,15 +130,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
           const isReorderable = !columnFilters[columnId] && (columnSorting[columnId] === 'none' || !columnSorting[columnId]);
 
           return (
-            <div key={column.id} className="min-w-[280px] max-w-[280px] sm:min-w-[300px] sm:max-w-[300px] flex flex-col h-full rounded-2xl bg-white/70 dark:bg-[#0b0b0b] border border-slate-200/80 dark:border-[#333] shadow-sm overflow-hidden flex-shrink-0 transition-all">
+            <div key={column.id} className="min-w-[280px] max-w-[280px] sm:min-w-[300px] sm:max-w-[300px] flex flex-col h-full rounded-2xl bg-white/70 dark:bg-[#1a1d21] border border-slate-200/80 dark:border-[#2a2f36] shadow-sm overflow-hidden flex-shrink-0 transition-all">
               <div 
-                className="p-3.5 flex flex-col border-t-2 bg-white/80 dark:bg-[#0d0d0d] backdrop-blur-xl sticky top-0 z-10 shadow-sm"
+                className="p-3.5 flex flex-col border-t-2 bg-white/80 dark:bg-[#1a1d21] backdrop-blur-xl sticky top-0 z-10 shadow-sm"
                 style={{ borderColor: column.color }}
               >
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-[10px] uppercase tracking-[0.15em] whitespace-nowrap">
                     {column.title}
-                    <span className="bg-slate-200/80 dark:bg-[#222] text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded text-[8px] font-bold shadow-sm tabular-nums">
+                    <span className="bg-slate-200/80 dark:bg-[#24282d] text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded text-[8px] font-bold shadow-sm tabular-nums">
                       {tasks.length}
                     </span>
                   </h3>
@@ -154,7 +154,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
 
                 {/* Painel de Filtro e Ordenação - Agora abre como uma sub-seção fixa no topo da coluna */}
                 {isSettingOpen && (
-                  <div className="space-y-3 p-2.5 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200 mb-2">
+                  <div className="space-y-3 p-2.5 bg-slate-50 dark:bg-white/[0.03] rounded-xl border border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200 mb-2">
                      <div className="relative">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                         <input 

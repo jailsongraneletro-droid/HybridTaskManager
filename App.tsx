@@ -298,7 +298,7 @@ const AppContent = () => {
 
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-50 gap-4 animate-in fade-in">
+      <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-[#111315] gap-4 animate-in fade-in">
         <RefreshCw className="animate-spin text-indigo-600" size={32} />
         <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Sincronizando ambiente...</p>
       </div>
@@ -331,9 +331,9 @@ const AppContent = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-50 overflow-hidden transition-all">
+    <div className="flex h-screen bg-slate-50 dark:bg-[#111315] overflow-hidden transition-all">
       {activeDue && (
-        <div className="fixed bottom-4 right-4 z-[120] w-[280px] sm:w-[320px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0a0a0a] shadow-2xl p-3">
+        <div className="fixed bottom-4 right-4 z-[120] w-[280px] sm:w-[320px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1d21] shadow-2xl p-3">
           <div className="flex items-start gap-2">
             <div className="mt-0.5 p-1.5 rounded-lg bg-red-500 shadow-sm">
               <AlertCircle size={12} className="text-white" />
@@ -352,7 +352,7 @@ const AppContent = () => {
         </div>
       )}
       {/* Sidebar Desktop */}
-      <aside className={`hidden lg:flex flex-col bg-white dark:bg-[#0a0a0a] border-r border-slate-200 dark:border-slate-800 transition-all duration-200 ${isSidebarCollapsed ? 'w-14' : 'w-48'}`}>
+      <aside className={`hidden lg:flex flex-col bg-white dark:bg-[#1a1d21] border-r border-slate-200 dark:border-slate-800 transition-all duration-200 ${isSidebarCollapsed ? 'w-14' : 'w-48'}`}>
         <div className="p-3 flex items-center justify-center border-b border-slate-200 dark:border-slate-800">
            <div className="w-7 h-7 bg-indigo-600 rounded flex items-center justify-center shadow-lg"><ClipboardList className="text-white" size={14} /></div>
            {!isSidebarCollapsed && <span className="ml-2 font-bold text-xs uppercase tracking-tighter dark:text-white">HybridTask</span>}
@@ -380,7 +380,7 @@ const AppContent = () => {
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[60] bg-slate-950/60 backdrop-blur-sm lg:hidden animate-in fade-in" onClick={() => setIsMobileMenuOpen(false)}>
-          <aside className="w-64 h-full bg-white dark:bg-[#0a0a0a] flex flex-col animate-in slide-in-from-left duration-200" onClick={e => e.stopPropagation()}>
+          <aside className="w-64 h-full bg-white dark:bg-[#1a1d21] flex flex-col animate-in slide-in-from-left duration-200" onClick={e => e.stopPropagation()}>
             <div className="p-4 border-b dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 bg-indigo-600 rounded flex items-center justify-center"><ClipboardList className="text-white" size={14} /></div>
@@ -412,7 +412,7 @@ const AppContent = () => {
       )}
 
       <main className="flex-1 flex flex-col min-w-0 relative">
-        <header className="h-12 flex items-center justify-between px-3 sm:px-4 bg-white dark:bg-[#0a0a0a] border-b border-slate-200 dark:border-slate-800 z-40">
+        <header className="h-12 flex items-center justify-between px-3 sm:px-4 bg-white dark:bg-[#1a1d21] border-b border-slate-200 dark:border-slate-800 z-40">
            <div className="flex items-center gap-2">
              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1 text-slate-500"><Menu size={18} /></button>
              <h1 className="text-[11px] sm:text-xs font-bold tracking-widest dark:text-white uppercase truncate max-w-[140px] sm:max-w-none">
@@ -439,7 +439,7 @@ const AppContent = () => {
            </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 custom-scrollbar bg-slate-50 dark:bg-slate-50">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 custom-scrollbar bg-slate-50 dark:bg-[#111315]">
            <Routes>
               <Route path="/dashboard" element={<Dashboard data={boardData} onEditTask={handleEditTask} />} />
               <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={handleEditTask} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />

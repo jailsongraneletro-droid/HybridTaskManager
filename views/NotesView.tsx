@@ -15,7 +15,7 @@ interface NotesViewProps {
 }
 
 const NOTE_COLORS = [
-  { id: 'white', bg: '#ffffff', darkBg: '#0a0a0a', border: '#e2e8f0', darkBorder: '#262626', accent: '#a3a3a3' },
+  { id: 'white', bg: '#ffffff', darkBg: '#24282d', border: '#e2e8f0', darkBorder: '#2a2f36', accent: '#a3a3a3' },
   { id: 'red', bg: '#fee2e2', darkBg: '#450a0a', border: '#fecaca', darkBorder: '#7f1d1d', accent: '#ef4444' },
   { id: 'orange', bg: '#ffedd5', darkBg: '#431407', border: '#fed7aa', darkBorder: '#7c2d12', accent: '#f97316' },
   { id: 'yellow', bg: '#fef9c3', darkBg: '#422006', border: '#fde047', darkBorder: '#713f12', accent: '#eab308' },
@@ -108,7 +108,14 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
                       >
                         <div 
                           className="rounded-xl border shadow-sm hover:shadow-md transition-all p-3 relative" 
-                          style={{ backgroundColor: document.documentElement.classList.contains('dark') ? NOTE_COLORS.find(c => c.bg === note.color)?.darkBg : note.color, borderColor: NOTE_COLORS.find(c => c.bg === note.color)?.border }}
+                          style={{
+                            backgroundColor: document.documentElement.classList.contains('dark')
+                              ? NOTE_COLORS.find(c => c.bg === note.color)?.darkBg
+                              : note.color,
+                            borderColor: document.documentElement.classList.contains('dark')
+                              ? NOTE_COLORS.find(c => c.bg === note.color)?.darkBorder
+                              : NOTE_COLORS.find(c => c.bg === note.color)?.border
+                          }}
                         >
                           <div {...dragProvided.dragHandleProps} className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-40 text-slate-500"><GripVertical size={12} /></div>
                           {note.title && <h3 className="font-black text-[11px] mb-1.5 dark:text-white line-clamp-1">{note.title}</h3>}

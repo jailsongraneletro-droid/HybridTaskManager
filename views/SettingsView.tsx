@@ -25,7 +25,7 @@ export const SettingsView: React.FC<any> = ({
   const [newAssignee, setNewAssignee] = useState({ name: '', email: '' });
 
   const sectionClass = "bg-white dark:bg-slate-900 rounded-xl border dark:border-slate-800 shadow-sm overflow-hidden mb-6";
-  const headerClass = "p-3 sm:p-3.5 border-b dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between";
+  const headerClass = "p-3 sm:p-3.5 border-b dark:border-slate-800 bg-slate-50/50 dark:bg-white/[0.03] flex items-center justify-between";
   const inputClass = "px-3 py-1.5 bg-white dark:bg-slate-800 dark:text-white rounded border dark:border-slate-700 outline-none text-[11px] font-bold shadow-inner w-full focus:ring-1 focus:ring-indigo-500 transition-all";
 
   return (
@@ -44,7 +44,7 @@ export const SettingsView: React.FC<any> = ({
             {data.columnOrder.map((id: string) => {
               const col = data.columns[id];
               return (
-                <div key={id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border dark:border-slate-800 group shadow-sm">
+                <div key={id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-white/[0.03] rounded-xl border dark:border-slate-800 group shadow-sm">
                    <input type="color" value={col.color} onChange={e => onUpdateColumn(id, {color: e.target.value})} className="w-5 h-5 border-none bg-transparent cursor-pointer rounded-full overflow-hidden" />
                    <input value={col.title} onChange={e => onUpdateColumn(id, {title: e.target.value})} className="bg-transparent text-[11px] font-bold outline-none dark:text-white flex-1" />
                    <button onClick={() => onDeleteColumn(id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
@@ -71,7 +71,7 @@ export const SettingsView: React.FC<any> = ({
         <div className="p-4 sm:p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {data.priorities.map((prio: any) => (
-              <div key={prio.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border dark:border-slate-800 group shadow-sm">
+              <div key={prio.id} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-white/[0.03] rounded-xl border dark:border-slate-800 group shadow-sm">
                  <input type="color" value={prio.color} onChange={e => onUpdatePriority(prio.id, {color: e.target.value})} className="w-5 h-5 border-none bg-transparent cursor-pointer rounded-full overflow-hidden" />
                  <input value={prio.title} onChange={e => onUpdatePriority(prio.id, {title: e.target.value})} className="bg-transparent text-[11px] font-bold outline-none dark:text-white flex-1" />
                  <button onClick={() => onDeletePriority(prio.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
@@ -97,7 +97,7 @@ export const SettingsView: React.FC<any> = ({
         <div className="p-4 sm:p-5 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {data.assignees.map((a: any) => (
-              <div key={a.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border dark:border-slate-800 group shadow-sm">
+              <div key={a.id} className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/[0.03] rounded-xl border dark:border-slate-800 group shadow-sm">
                  <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center font-black text-indigo-600 dark:text-indigo-400 text-xs">
                     {a.name.charAt(0)}
                  </div>

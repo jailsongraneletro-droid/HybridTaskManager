@@ -35,9 +35,9 @@ export const LandingPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-50 overflow-x-hidden">
+    <div className="min-h-screen bg-white dark:bg-[#111315] overflow-x-hidden">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b dark:border-slate-800">
+      <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-[#1a1d21]/80 backdrop-blur-md border-b dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-200">
@@ -95,7 +95,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* User Manual Section */}
-      <section id="manual" className="py-16 sm:py-20 px-6 bg-white dark:bg-slate-50">
+      <section id="manual" className="py-16 sm:py-20 px-6 bg-white dark:bg-[#111315]">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row gap-12 items-center">
             <div className="flex-1">
@@ -170,7 +170,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Tech Specifications for SEO */}
-      <section className="py-12 px-6 border-t dark:border-slate-800 bg-white dark:bg-slate-50">
+      <section className="py-12 px-6 border-t dark:border-slate-800 bg-white dark:bg-[#111315]">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="flex items-center gap-3">
             <Smartphone size={20} className="text-indigo-600" />
@@ -192,7 +192,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t dark:border-slate-800 bg-slate-50 dark:bg-slate-50">
+      <footer className="py-12 px-6 border-t dark:border-slate-800 bg-slate-50 dark:bg-[#111315]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2 grayscale opacity-50">
             <Zap size={16} />
