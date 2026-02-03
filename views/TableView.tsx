@@ -216,7 +216,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
 
   return (
     <div className="bg-white dark:bg-[#0d0d0d] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-full relative theme-transition">
-      <div className="p-3 sm:p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-black/40 backdrop-blur-md">
+      <div className="p-3 sm:p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 backdrop-blur-md">
          <div className="flex items-center gap-2">
            <div className="relative w-40 sm:w-60">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
@@ -270,7 +270,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, onEditTask, onDelete
         <span className="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest hidden sm:block">{sortedAndFilteredTasks.length} {t('tasksFound')}</span>
       </div>
 
-      <div className="flex-1 overflow-auto custom-scrollbar dark:bg-black mobile-scroll-x">
+      <div className="flex-1 overflow-auto custom-scrollbar dark:bg-slate-50/0 mobile-scroll-x">
         <div className="w-fit min-w-full">
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="columns" direction="horizontal">

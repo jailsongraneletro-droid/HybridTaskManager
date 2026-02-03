@@ -121,7 +121,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0a] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-all theme-transition">
-      <div className="p-3 sm:p-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/80 dark:bg-black/80 backdrop-blur-xl">
+      <div className="p-3 sm:p-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-3 bg-slate-50/80 dark:bg-slate-900/40 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 rounded-lg"><CalendarIcon size={14} /></div>
@@ -151,12 +151,12 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ data, onEditTask, on
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-black custom-scrollbar">
+      <div className="flex-1 overflow-auto bg-slate-50/30 dark:bg-slate-50/0 custom-scrollbar">
         <DragDropContext onDragEnd={handleDragEnd}>
             {viewMode === 'month' && (
               <div className="grid grid-cols-7 h-full min-h-[520px] min-w-[700px] border-l border-slate-200 dark:border-slate-800">
                 {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                  <div key={day} className="p-2.5 text-center text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-[#0a0a0a] border-r border-b border-slate-200 dark:border-slate-800">{day}</div>
+                  <div key={day} className="p-2.5 text-center text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest bg-white dark:bg-slate-100 border-r border-b border-slate-200 dark:border-slate-800">{day}</div>
                 ))}
                 {monthData.map((item, idx) => {
                   const dateTasks = getTasksForDate(item.date);

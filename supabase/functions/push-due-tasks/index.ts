@@ -35,7 +35,8 @@ Deno.serve(async () => {
   const { data: tasks } = await supabase
     .from('kanban_tasks')
     .select('id,title,due_date,status,user_id')
-    .lte('due_date', nowIso);
+    .lte('due_date', nowIso)
+    .is('deleted_at', null);
 
   const { data: sent } = await supabase
     .from('kanban_task_notifications')

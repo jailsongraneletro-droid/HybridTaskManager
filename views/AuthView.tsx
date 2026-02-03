@@ -66,7 +66,7 @@ export const AuthView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-black overflow-hidden animate-in fade-in duration-500">
+    <div className="min-h-screen flex bg-white dark:bg-slate-50 overflow-hidden animate-in fade-in duration-500">
       {/* Esquerda: Formulário */}
       <div className="flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-24 py-12 relative z-10">
         <button onClick={() => navigate('/')} className="absolute top-6 left-6 sm:top-8 sm:left-8 flex items-center gap-1 text-[10px] font-bold uppercase text-slate-400 hover:text-indigo-600 transition-colors">
@@ -111,7 +111,7 @@ export const AuthView: React.FC = () => {
                     required
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-black rounded-2xl outline-none transition-all text-sm font-semibold dark:text-white"
+                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-slate-100 rounded-2xl outline-none transition-all text-sm font-semibold dark:text-white"
                     placeholder="Como deseja ser chamado?"
                   />
                 </div>
@@ -127,7 +127,7 @@ export const AuthView: React.FC = () => {
                   required
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-black rounded-2xl outline-none transition-all text-sm font-semibold dark:text-white"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-slate-100 rounded-2xl outline-none transition-all text-sm font-semibold dark:text-white"
                   placeholder="seu@email.com"
                 />
               </div>
@@ -142,7 +142,7 @@ export const AuthView: React.FC = () => {
                   required
                   value={formData.password}
                   onChange={e => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-black rounded-2xl outline-none transition-all text-sm font-semibold dark:text-white"
+                  className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-slate-100 rounded-2xl outline-none transition-all text-sm font-semibold dark:text-white"
                   placeholder="Min. 6 caracteres"
                 />
               </div>

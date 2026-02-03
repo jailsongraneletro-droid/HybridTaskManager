@@ -30,10 +30,14 @@ self.addEventListener('push', (event) => {
   }
 
   const title = data.title || 'HybridTask';
+  const fallbackIcon = 'https://ui-avatars.com/api/?name=H+T&background=4f46e5&color=fff&size=192';
   const options = {
     body: data.body || 'Tarefa vencida',
-    icon: data.icon || '/icons/icon-192.png',
-    badge: data.badge || '/icons/icon-192.png',
+    icon: data.icon || fallbackIcon,
+    badge: data.badge || fallbackIcon,
+    vibrate: data.vibrate || [200, 100, 200],
+    tag: data.tag || 'hybridtask-due',
+    renotify: true,
     data: { url: data.url || '/' }
   };
 

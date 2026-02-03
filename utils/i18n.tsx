@@ -55,6 +55,7 @@ const translations = {
     table: 'Tabela',
     notes: 'Anotações',
     calendar: 'Calendário',
+    trash: 'Lixeira',
     settings: 'Configurações',
     logout: 'Sair',
     projectOverview: 'Visão Geral',

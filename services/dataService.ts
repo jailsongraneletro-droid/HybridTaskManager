@@ -151,13 +151,25 @@ export const DataService = {
   },
 
   fetchBoardData: async (userId: string): Promise<BoardData> => {
-    const [tasksRes, columnsRes, prioritiesRes, assigneesRes, notesRes] = await Promise.all([
-      supabase.from('kanban_tasks').select('*').eq('user_id', userId),
+    const [columnsRes, prioritiesRes, assigneesRes, notesRes] = await Promise.all([
       supabase.from('kanban_columns').select('*').eq('user_id', userId).order('position'),
       supabase.from('kanban_priorities').select('*').eq('user_id', userId),
       supabase.from('kanban_assignees').select('*').eq('user_id', userId),
       supabase.from('kanban_notes').select('*').eq('user_id', userId).order('created_at', { ascending: false })
     ]);
+
+    let tasksRes = await supabase
+      .from('kanban_tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+
+    if (tasksRes.error && tasksRes.error.message?.includes('deleted_at')) {
+      tasksRes = await supabase
+        .from('kanban_tasks')
+        .select('*')
+        .eq('user_id', userId);
+    }
 
     const tasks: Record<string, Task> = {};
     tasksRes.data?.forEach((t: any) => {
@@ -170,7 +182,8 @@ export const DataService = {
         assigneeId: t.assignee_id,
         dueDate: t.due_date,
         createdAt: t.created_at,
-        position: typeof t.position === 'number' ? t.position : undefined
+        position: typeof t.position === 'number' ? t.position : undefined,
+        deletedAt: t.deleted_at
       };
     });
 
@@ -246,7 +259,8 @@ export const DataService = {
       priority: cleanPriority, 
       assignee_id: cleanAssigneeId,
       due_date: updates.dueDate,
-      position: updates.position
+      position: updates.position,
+      deleted_at: updates.deletedAt ?? null
     }).eq('id', taskId).select().single();
     
     if (error) throw error;
@@ -273,8 +287,67 @@ export const DataService = {
   },
 
   deleteTask: async (taskId: string): Promise<void> => {
+    const { error } = await supabase
+      .from('kanban_tasks')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', taskId);
+    if (error) throw error;
+  },
+
+  restoreTask: async (taskId: string): Promise<void> => {
+    const { error } = await supabase
+      .from('kanban_tasks')
+      .update({ deleted_at: null })
+      .eq('id', taskId);
+    if (error) throw error;
+  },
+
+  deleteTaskPermanently: async (taskId: string): Promise<void> => {
     const { error } = await supabase.from('kanban_tasks').delete().eq('id', taskId);
     if (error) throw error;
+  },
+
+  emptyTrash: async (userId: string): Promise<void> => {
+    const { error } = await supabase
+      .from('kanban_tasks')
+      .delete()
+      .eq('user_id', userId)
+      .not('deleted_at', 'is', null);
+    if (error) throw error;
+  },
+
+  fetchTrashTasks: async (userId: string): Promise<Task[]> => {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const deleteRes = await supabase
+      .from('kanban_tasks')
+      .delete()
+      .eq('user_id', userId)
+      .lt('deleted_at', cutoff);
+
+    if (deleteRes.error && deleteRes.error.message?.includes('deleted_at')) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from('kanban_tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false });
+
+    if (error) throw error;
+    return (data || []).map((t: any) => ({
+      id: t.id,
+      title: t.title,
+      description: t.description || '',
+      status: t.status,
+      priority: t.priority,
+      assigneeId: t.assignee_id,
+      dueDate: t.due_date,
+      createdAt: t.created_at,
+      position: typeof t.position === 'number' ? t.position : undefined,
+      deletedAt: t.deleted_at
+    }));
   },
 
   addColumn: async (title: string, color: string): Promise<void> => {

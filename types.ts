@@ -44,6 +44,7 @@ export interface Task {
   dueDate: string; // ISO Date string
   createdAt: string; // ISO Date string
   position?: number;
+  deletedAt?: string | null;
   tags?: string[];
 }
 

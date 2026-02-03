@@ -4,7 +4,7 @@ import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react
 import { 
   ClipboardList, LayoutDashboard, Settings, Plus, Bell, Calendar, 
   Kanban, List, Menu, RefreshCw, StickyNote, Activity, Layers, 
-  ChevronFirst, ChevronLast, Sun, Moon, AlertCircle, X, LogOut
+  ChevronFirst, ChevronLast, Sun, Moon, AlertCircle, X, LogOut, Trash2
 } from 'lucide-react';
 import { DataService } from './services/dataService';
 import { BoardData, Task, User } from './types';
@@ -14,6 +14,7 @@ import { Dashboard } from './views/Dashboard';
 import { SettingsView } from './views/SettingsView';
 import { NotesView } from './views/NotesView';
 import { CalendarView } from './views/CalendarView';
+import { TrashView } from './views/TrashView';
 import { LandingPage } from './views/LandingPage';
 import { AuthView } from './views/AuthView';
 import { TaskModal } from './components/TaskModal';
@@ -117,6 +118,31 @@ const AppContent = () => {
     window.location.href = '/';
   };
 
+  const playNotificationSound = () => {
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.value = 0.08;
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      setTimeout(() => {
+        osc.stop();
+        ctx.close();
+      }, 180);
+    } catch {
+      // ignore audio errors (autoplay restrictions)
+    }
+  };
+
   useEffect(() => { fetchBoard(); }, []);
 
   useEffect(() => {
@@ -202,6 +228,14 @@ const AppContent = () => {
     setIsTaskModalOpen(false);
   };
 
+  const handleTaskDelete = async (taskId: string) => {
+    const confirmed = window.confirm('Enviar esta tarefa para a lixeira?');
+    if (!confirmed) return;
+    await DataService.deleteTask(taskId);
+    fetchBoard(true);
+    setIsTaskModalOpen(false);
+  };
+
   const overdueCount = useMemo(() => {
     const tasks = Object.values(boardData.tasks) as Task[];
     return tasks.filter(isTaskOverdue).length;
@@ -257,9 +291,14 @@ const AppContent = () => {
     setDueQueue((prev) => prev.slice(1));
   }, [activeDue, dueQueue]);
 
+  useEffect(() => {
+    if (!activeDue) return;
+    playNotificationSound();
+  }, [activeDue]);
+
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-black gap-4 animate-in fade-in">
+      <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-slate-50 gap-4 animate-in fade-in">
         <RefreshCw className="animate-spin text-indigo-600" size={32} />
         <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Sincronizando ambiente...</p>
       </div>
@@ -282,6 +321,7 @@ const AppContent = () => {
     { to: '/table', label: t('table'), icon: List },
     { to: '/calendar', label: t('calendar'), icon: Calendar },
     { to: '/notes', label: t('notes'), icon: StickyNote },
+    { to: '/trash', label: t('trash'), icon: Trash2 },
     { to: '/settings', label: t('settings'), icon: Settings },
   ];
 
@@ -291,7 +331,7 @@ const AppContent = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-black overflow-hidden transition-all">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-50 overflow-hidden transition-all">
       {activeDue && (
         <div className="fixed bottom-4 right-4 z-[120] w-[280px] sm:w-[320px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0a0a0a] shadow-2xl p-3">
           <div className="flex items-start gap-2">
@@ -339,7 +379,7 @@ const AppContent = () => {
 
       {/* Mobile Sidebar Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm lg:hidden animate-in fade-in" onClick={() => setIsMobileMenuOpen(false)}>
+        <div className="fixed inset-0 z-[60] bg-slate-950/60 backdrop-blur-sm lg:hidden animate-in fade-in" onClick={() => setIsMobileMenuOpen(false)}>
           <aside className="w-64 h-full bg-white dark:bg-[#0a0a0a] flex flex-col animate-in slide-in-from-left duration-200" onClick={e => e.stopPropagation()}>
             <div className="p-4 border-b dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -399,20 +439,21 @@ const AppContent = () => {
            </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 custom-scrollbar bg-slate-50 dark:bg-black">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 custom-scrollbar bg-slate-50 dark:bg-slate-50">
            <Routes>
               <Route path="/dashboard" element={<Dashboard data={boardData} onEditTask={handleEditTask} />} />
               <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={handleEditTask} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />
               <Route path="/table" element={<TableView data={boardData} onEditTask={handleEditTask} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />
               <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={handleEditTask} onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }} onUpdate={() => fetchBoard(true)} />} />
               <Route path="/notes" element={<NotesView data={boardData} onUpdate={() => fetchBoard(true)} />} />
+              <Route path="/trash" element={<TrashView onUpdate={() => fetchBoard(true)} />} />
               <Route path="/settings" element={<SettingsView data={boardData} fontSize={fontSize} onFontSizeChange={setFontSize} onAddColumn={async (t, c) => { await DataService.addColumn(t, c); fetchBoard(true); }} onUpdateColumn={async (id, u) => { await DataService.updateColumn(id, u); fetchBoard(true); }} onDeleteColumn={async (id) => { await DataService.deleteColumn(id); fetchBoard(true); }} onAddPriority={async (t, c) => { await DataService.addPriority(t, c); fetchBoard(true); }} onUpdatePriority={async (id, u) => { await DataService.updatePriority(id, u); fetchBoard(true); }} onDeletePriority={async (id) => { await DataService.deletePriority(id); fetchBoard(true); }} onAddAssignee={async (n, e) => { await DataService.addAssignee(n, e); fetchBoard(true); }} onDeleteAssignee={async (id) => { await DataService.deleteAssignee(id); fetchBoard(true); }} onRestoreDefaults={async () => { await DataService.restoreDefaults(); fetchBoard(true); }} />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
            </Routes>
         </div>
       </main>
 
-      <TaskModal isOpen={isTaskModalOpen} onClose={() => setIsTaskModalOpen(false)} onSubmit={handleTaskSubmit} initialData={selectedTask} boardData={boardData} />
+      <TaskModal isOpen={isTaskModalOpen} onClose={() => setIsTaskModalOpen(false)} onSubmit={handleTaskSubmit} onDelete={handleTaskDelete} initialData={selectedTask} boardData={boardData} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} user={user!} onUpdate={async (id, upd) => { const u = await DataService.updateCurrentUser(id, upd); setUser(u); }} />
     </div>
   );

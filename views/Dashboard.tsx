@@ -57,13 +57,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
   }, [tasks]);
 
   const StatCard = ({ title, value, icon: Icon, color, subtext }: any) => (
-    <div className="bg-white dark:bg-[#0d0d0d] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm flex flex-col justify-between group hover:shadow-md transition-all">
+    <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-100 dark:to-slate-200 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between group hover:shadow-lg transition-all">
       <div className="flex justify-between items-start mb-3">
-        <div className={`p-2 rounded-xl ${color} text-white shadow-sm`}><Icon size={16} /></div>
+        <div className={`p-2.5 rounded-xl ${color} text-white shadow-md ring-1 ring-white/10`}><Icon size={16} /></div>
       </div>
       <div>
-        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{title}</p>
-        <h3 className="text-2xl font-bold text-slate-900 dark:text-white leading-none mt-1.5">{value}</h3>
+        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">{title}</p>
+        <h3 className="text-2xl font-black text-slate-900 dark:text-white leading-none mt-1.5">{value}</h3>
         <p className="text-[9px] font-semibold text-slate-500 dark:text-slate-500 mt-1.5 uppercase tracking-tight">{subtext}</p>
       </div>
     </div>
@@ -71,6 +71,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">{t('projectOverview')}</p>
+          <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1">Visão geral do projeto</h2>
+        </div>
+        <div className="flex items-center gap-2 text-[9px] font-semibold text-slate-500 dark:text-slate-500">
+          <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-200 border border-slate-200 dark:border-slate-800">{stats.total} tarefas</span>
+          <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-200 border border-slate-200 dark:border-slate-800">{stats.done} concluídas</span>
+        </div>
+      </div>
       {/* Top Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5">
         <StatCard title="Conclusão" value={`${rate}%`} icon={CheckCircle} color="bg-emerald-500" subtext={`${stats.done} concluidas`} />
@@ -81,7 +91,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Distribuição por Status */}
-        <div className="lg:col-span-1 bg-white dark:bg-[#0d0d0d] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
+        <div className="lg:col-span-1 bg-gradient-to-b from-white to-slate-50 dark:from-slate-100 dark:to-slate-200 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Layers size={14} /> Distribuição de Status</h3>
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
@@ -90,7 +100,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
                   {statusData.map((e, i) => <Cell key={i} fill={e.color} />)}
                 </Pie>
                 <Tooltip 
-                  contentStyle={{backgroundColor: '#0a0a0a', border: '1px solid #262626', fontSize: '10px', borderRadius: '8px', color: '#fff'}} 
+                  contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #333942', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -106,16 +116,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
         </div>
 
         {/* Carga por Responsável */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#0d0d0d] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
+        <div className="lg:col-span-2 bg-gradient-to-b from-white to-slate-50 dark:from-slate-100 dark:to-slate-200 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Users size={14} /> Carga por Responsável</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={assigneeWorkload} layout="vertical" margin={{ left: -10, right: 20 }}>
                 <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" tick={{fontSize: 9, fill: '#64748b', fontWeight: 600}} axisLine={false} tickLine={false} width={70} />
+                <YAxis dataKey="name" type="category" tick={{fontSize: 9, fill: '#94a3b8', fontWeight: 600}} axisLine={false} tickLine={false} width={70} />
                 <Tooltip 
                   cursor={{fill: 'rgba(255,255,255,0.02)'}} 
-                  contentStyle={{backgroundColor: '#0a0a0a', border: '1px solid #262626', fontSize: '10px', borderRadius: '8px', color: '#fff'}} 
+                  contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #333942', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
                 />
                 <Bar dataKey="tasks" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={12} name="Total" />
                 <Bar dataKey="done" fill="#10b981" radius={[0, 4, 4, 0]} barSize={12} name="Concluídas" />
@@ -126,7 +136,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
       </div>
 
       {/* Atividades Recentes */}
-      <div className="bg-white dark:bg-[#0d0d0d] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#262626] shadow-sm">
+      <div className="bg-gradient-to-b from-white to-slate-50 dark:from-slate-100 dark:to-slate-200 p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
          <div className="flex items-center justify-between mb-6">
             <h3 className="text-[10px] font-bold uppercase text-slate-800 dark:text-white flex items-center gap-2"><Clock size={14} /> Atividades Recentes</h3>
          </div>
@@ -135,7 +145,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
                <div 
                   key={task.id} 
                   onClick={() => onEditTask(task)}
-                  className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-white/[0.02] border border-transparent hover:border-slate-100 dark:hover:border-[#262626] transition-all group cursor-pointer"
+              className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50/70 dark:hover:bg-slate-200/40 border border-transparent hover:border-slate-100 dark:hover:border-slate-800 transition-all group cursor-pointer"
                >
                   <div className="flex items-center gap-4">
                      <div className="w-1.5 h-1.5 rounded-full" style={{backgroundColor: data.columns[task.status]?.color}} />

@@ -37,7 +37,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index, priorityData, assignee
           style={provided.draggableProps.style}
         >
           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button 
+            <button
+              type="button"
+              onMouseDown={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={onDelete}
               className="p-1 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
             >
@@ -151,7 +154,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ data, onDragEnd, onEdi
 
                 {/* Painel de Filtro e Ordenação - Agora abre como uma sub-seção fixa no topo da coluna */}
                 {isSettingOpen && (
-                  <div className="space-y-3 p-2.5 bg-slate-50 dark:bg-black/40 rounded-xl border border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200 mb-2">
+                  <div className="space-y-3 p-2.5 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200 mb-2">
                      <div className="relative">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
                         <input 
