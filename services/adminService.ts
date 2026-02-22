@@ -6,22 +6,62 @@ import { User, UserRole } from '../types';
  */
 
 export const AdminService = {
+  mapRowToUser(row: any): User {
+    return {
+      id: row.id,
+      name: row.name || row.full_name || 'Sem nome',
+      email: row.email || '',
+      avatar: row.avatar || null,
+      role: (row.role === 'admin' ? UserRole.ADMIN : UserRole.USER),
+      isActive: row.is_active ?? true,
+      maxDailyMinutes: row.max_daily_minutes ?? null,
+      maxWeeklyMinutes: row.max_weekly_minutes ?? null,
+      createdAt: row.created_at,
+      lastLogin: row.last_login,
+    };
+  },
+
   /**
    * Lista todos os usuários (apenas admin pode fazer isso)
    */
   async getAllUsers(): Promise<User[]> {
     try {
-      const { data, error } = await supabase
+      const { data: userProfiles, error: userProfilesError } = await supabase
         .from('user_profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (userProfilesError) throw userProfilesError;
 
-      return data || [];
+      if (userProfiles && userProfiles.length > 0) {
+        return userProfiles.map((row) => this.mapRowToUser(row));
+      }
+
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (profilesError) throw profilesError;
+
+      return (profiles || []).map((row) => this.mapRowToUser(row));
+
     } catch (error) {
       console.error('Erro ao listar usuários:', error);
-      throw error;
+
+      try {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (profilesError) throw profilesError;
+
+        return (profiles || []).map((row) => this.mapRowToUser(row));
+      } catch (fallbackError) {
+        console.error('Erro no fallback de usuários:', fallbackError);
+        throw fallbackError;
+      }
     }
   },
 
@@ -30,16 +70,17 @@ export const AdminService = {
    */
   async updateUserRole(userId: string, role: UserRole): Promise<User> {
     try {
+      const payload = { role };
       const { data, error } = await supabase
         .from('user_profiles')
-        .update({ role })
+        .update(payload)
         .eq('id', userId)
         .select()
         .single();
 
       if (error) throw error;
 
-      return data;
+      return this.mapRowToUser(data);
     } catch (error) {
       console.error('Erro ao atualizar role:', error);
       throw error;
@@ -60,7 +101,7 @@ export const AdminService = {
 
       if (error) throw error;
 
-      return data;
+      return this.mapRowToUser(data);
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       throw error;
@@ -88,7 +129,7 @@ export const AdminService = {
 
       if (error) throw error;
 
-      return data;
+      return this.mapRowToUser(data);
     } catch (error) {
       console.error('Erro ao atualizar limites:', error);
       throw error;

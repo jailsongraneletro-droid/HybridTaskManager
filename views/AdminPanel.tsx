@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, Settings, LogOut, Search, Filter, Edit2, Trash2, ToggleLeft, ToggleRight, Clock } from 'lucide-react';
-import { DataService } from '../services/dataService';
+import { AdminService } from '../services/adminService';
 import { User, UserRole } from '../types';
 
 interface AdminStats {
@@ -28,49 +28,13 @@ export const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => 
   const loadUsers = async () => {
     try {
       setLoading(true);
-      // Carrega todos os usuários (neste caso, vamos simular)
-      // Em produção, você terá um endpoint que lista todos os usuários
-      const mockUsers: EditingUser[] = [
-        {
-          id: '1',
-          name: 'João Silva',
-          email: 'joao@example.com',
-          role: UserRole.USER,
-          isActive: true,
-          maxDailyMinutes: 480, // 8 horas
-          maxWeeklyMinutes: 2400, // 40 horas
-          createdAt: '2026-01-15T10:00:00Z',
-          lastLogin: '2026-02-22T14:30:00Z',
-        },
-        {
-          id: '2',
-          name: 'Maria Santos',
-          email: 'maria@example.com',
-          role: UserRole.USER,
-          isActive: true,
-          maxDailyMinutes: 360, // 6 horas
-          maxWeeklyMinutes: 1800, // 30 horas
-          createdAt: '2026-01-20T10:00:00Z',
-          lastLogin: '2026-02-21T09:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'Pedro Costa',
-          email: 'pedro@example.com',
-          role: UserRole.USER,
-          isActive: false,
-          maxDailyMinutes: null,
-          maxWeeklyMinutes: null,
-          createdAt: '2026-02-01T10:00:00Z',
-          lastLogin: '2026-02-10T16:45:00Z',
-        },
-      ];
+      const realUsers = await AdminService.getAllUsers();
 
-      setUsers(mockUsers);
+      setUsers(realUsers as EditingUser[]);
       setStats({
-        totalUsers: mockUsers.length,
-        activeUsers: mockUsers.filter(u => u.isActive).length,
-        totalTasks: 150, // Simulado
+        totalUsers: realUsers.length,
+        activeUsers: realUsers.filter(u => u.isActive).length,
+        totalTasks: 0,
       });
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
@@ -84,10 +48,20 @@ export const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => 
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleToggleActive = (userId: string) => {
-    setUsers(users.map(u =>
-      u.id === userId ? { ...u, isActive: !u.isActive } : u
-    ));
+  const handleToggleActive = async (userId: string) => {
+    const current = users.find((user) => user.id === userId);
+    if (!current) return;
+
+    try {
+      const updated = await AdminService.updateUserStatus(userId, !current.isActive);
+      setUsers((prev) => prev.map((user) => user.id === userId ? { ...user, ...updated } : user));
+      setStats((prev) => {
+        const nextActive = !current.isActive ? prev.activeUsers + 1 : prev.activeUsers - 1;
+        return { ...prev, activeUsers: Math.max(0, nextActive) };
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar status do usuário:', error);
+    }
   };
 
   const handleUpdateLimits = async (userId: string, dailyMinutes: number | null, weeklyMinutes: number | null) => {
@@ -101,8 +75,19 @@ export const AdminPanel: React.FC<{ onLogout: () => void }> = ({ onLogout }) => 
 
   const handleDeleteUser = (userId: string) => {
     if (confirm('Tem certeza que deseja remover este usuário? Todos os seus dados serão perdidos.')) {
-      setUsers(users.filter(u => u.id !== userId));
-      // TODO: Deletar no Supabase
+      AdminService.deleteUser(userId)
+        .then(() => {
+          const deleted = users.find((user) => user.id === userId);
+          setUsers(users.filter(u => u.id !== userId));
+          setStats((prev) => ({
+            ...prev,
+            totalUsers: Math.max(0, prev.totalUsers - 1),
+            activeUsers: deleted?.isActive ? Math.max(0, prev.activeUsers - 1) : prev.activeUsers,
+          }));
+        })
+        .catch((error) => {
+          console.error('Erro ao deletar usuário:', error);
+        });
     }
   };
 
