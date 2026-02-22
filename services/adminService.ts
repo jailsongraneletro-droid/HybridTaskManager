@@ -28,8 +28,7 @@ export const AdminService = {
     try {
       const { data: userProfiles, error: userProfilesError } = await supabase
         .from('user_profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
       if (userProfilesError) throw userProfilesError;
 
@@ -39,8 +38,7 @@ export const AdminService = {
 
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
       if (profilesError) throw profilesError;
 
@@ -52,8 +50,7 @@ export const AdminService = {
       try {
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false });
+          .select('*');
 
         if (profilesError) throw profilesError;
 
