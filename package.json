@@ -6,18 +6,29 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:run": "npm run build && npx cap run android",
+    "apk:debug": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "apk:release": "npm run android:sync && cd android && gradlew.bat assembleRelease",
+    "aab:release": "npm run android:sync && cd android && gradlew.bat bundleRelease"
   },
   "dependencies": {
-    "lucide-react": "^0.561.0",
-    "react-router-dom": "^7.10.1",
-    "react-dom": "^19.2.3",
-    "react": "^19.2.3",
-    "recharts": "^3.5.1",
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/core": "^8.1.0",
+    "@capacitor/local-notifications": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.1",
     "@hello-pangea/dnd": "^18.0.1",
-    "@supabase/supabase-js": "^2.87.1"
+    "@supabase/supabase-js": "^2.87.1",
+    "lucide-react": "^0.561.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^7.10.1",
+    "recharts": "^3.5.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.1.0",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",

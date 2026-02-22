@@ -16,7 +16,6 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  password?: string; // Added for profile management
   avatar?: string;
 }
 

@@ -8,6 +8,7 @@ import {
 import { DataService } from '../services/dataService';
 import { ConfirmationModal, Modal } from '../components/Shared';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { sanitizeHtml } from '../utils/sanitizeHtml';
 
 interface NotesViewProps {
   data: BoardData;
@@ -55,14 +56,14 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
 
   const handleSaveNew = async () => {
     if (newTitle.trim() || newContent.trim()) {
-      await DataService.addNote({ title: newTitle, content: newContent, color: newColor });
+      await DataService.addNote({ title: newTitle, content: sanitizeHtml(newContent), color: newColor });
       onUpdate();
       setIsCreating(false); setNewTitle(''); setNewContent(''); setNewColor(NOTE_COLORS[0].bg);
     } else { setIsCreating(false); }
   };
 
   const handleUpdate = async (note: Note) => {
-    await DataService.updateNote(note);
+    await DataService.updateNote({ ...note, content: sanitizeHtml(note.content || '') });
     onUpdate();
     setEditingNote(null);
   };
@@ -119,7 +120,7 @@ export const NotesView: React.FC<NotesViewProps> = ({ data, onUpdate }) => {
                         >
                           <div {...dragProvided.dragHandleProps} className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-40 text-slate-500"><GripVertical size={12} /></div>
                           {note.title && <h3 className="font-black text-[11px] mb-1.5 dark:text-white line-clamp-1">{note.title}</h3>}
-                          <div className="text-[10px] leading-snug text-slate-600 dark:text-slate-400 line-clamp-[12]" dangerouslySetInnerHTML={{ __html: note.content }} />
+                          <div className="text-[10px] leading-snug text-slate-600 dark:text-slate-400 line-clamp-[12]" dangerouslySetInnerHTML={{ __html: sanitizeHtml(note.content || '') }} />
                         </div>
                       </div>
                     )}
@@ -176,11 +177,14 @@ const NoteEditorExpandido = ({ note, onSave, onDelete }: any) => {
 
 const RichTextEditor = ({ content, onChange, placeholder, autoFocus }: any) => {
   const editorRef = useRef<HTMLDivElement>(null);
-  useEffect(() => { if (editorRef.current && content !== editorRef.current.innerHTML) editorRef.current.innerHTML = content; }, [content]);
+  useEffect(() => { 
+    const safeContent = sanitizeHtml(content || '');
+    if (editorRef.current && safeContent !== editorRef.current.innerHTML) editorRef.current.innerHTML = safeContent;
+  }, [content]);
   const exec = (cmd: string) => { document.execCommand(cmd, false); editorRef.current?.focus(); };
   return (
     <div>
-      <div ref={editorRef} contentEditable onInput={() => onChange(editorRef.current?.innerHTML || '')} className={RICH_TEXT_STYLES} data-placeholder={placeholder} />
+      <div ref={editorRef} contentEditable onInput={() => onChange(sanitizeHtml(editorRef.current?.innerHTML || ''))} className={RICH_TEXT_STYLES} data-placeholder={placeholder} />
       <div className="flex gap-1 mt-2 opacity-60 hover:opacity-100 transition-opacity">
         {[ {icon: Bold, cmd: 'bold'}, {icon: Italic, cmd: 'italic'}, {icon: ListIcon, cmd: 'insertUnorderedList'} ].map(b => (
           <button key={b.cmd} onClick={() => exec(b.cmd)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"><b.icon size={12} /></button>

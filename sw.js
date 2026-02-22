@@ -30,7 +30,7 @@ self.addEventListener('push', (event) => {
   }
 
   const title = data.title || 'HybridTask';
-  const fallbackIcon = 'https://ui-avatars.com/api/?name=H+T&background=4f46e5&color=fff&size=192';
+  const fallbackIcon = '/icons/icon-192.svg';
   const options = {
     body: data.body || 'Tarefa vencida',
     icon: data.icon || fallbackIcon,

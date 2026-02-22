@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Mail, Lock, User as UserIcon, ArrowRight, Loader2, 
@@ -17,9 +17,9 @@ export const AuthView: React.FC = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    password: ''
+    email: ''
   });
+  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -28,16 +28,20 @@ export const AuthView: React.FC = () => {
     setError('');
     setSuccess('');
 
+    const cleanEmail = formData.email.trim().toLowerCase();
+    const cleanName = formData.name.trim();
+    const cleanPassword = passwordInputRef.current?.value || '';
+
     // Validações Básicas
-    if (!validateEmail(formData.email)) {
+    if (!validateEmail(cleanEmail)) {
       setError("Por favor, insira um e-mail válido.");
       return;
     }
-    if (formData.password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres.");
+    if (cleanPassword.length < 8) {
+      setError("A senha deve ter pelo menos 8 caracteres.");
       return;
     }
-    if (!isLogin && formData.name.trim().length < 2) {
+    if (!isLogin && cleanName.length < 2) {
       setError("O nome deve ter pelo menos 2 caracteres.");
       return;
     }
@@ -46,17 +50,21 @@ export const AuthView: React.FC = () => {
 
     try {
       if (isLogin) {
-        await DataService.login(formData.email, formData.password);
+        await DataService.login(cleanEmail, cleanPassword);
+        if (passwordInputRef.current) passwordInputRef.current.value = '';
         window.location.href = '/#/dashboard';
         window.location.reload();
       } else {
-        await DataService.signup(formData.name, formData.email, formData.password);
+        await DataService.signup(cleanName, cleanEmail, cleanPassword);
         setSuccess(t('checkEmail'));
+        if (passwordInputRef.current) passwordInputRef.current.value = '';
         setIsLogin(true); // Muda para login após cadastro
       }
     } catch (err: any) {
       if (err.message === 'CONFIRM_EMAIL') {
         setSuccess(t('checkEmail'));
+      } else if (err.message === 'EMAIL_ALREADY_REGISTERED') {
+        setError('Este e-mail já possui uma conta cadastrada.');
       } else {
         setError(isLogin ? t('loginError') : t('signupError'));
       }
@@ -140,10 +148,10 @@ export const AuthView: React.FC = () => {
                 <input
                   type="password"
                   required
-                  value={formData.password}
-                  onChange={e => setFormData({ ...formData, password: e.target.value })}
+                  ref={passwordInputRef}
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
                   className="w-full pl-12 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border-2 border-transparent focus:border-indigo-600/20 focus:bg-white dark:focus:bg-slate-100 rounded-2xl outline-none transition-all text-sm font-semibold dark:text-white"
-                  placeholder="Min. 6 caracteres"
+                  placeholder="Min. 8 caracteres"
                 />
               </div>
             </div>
@@ -161,7 +169,12 @@ export const AuthView: React.FC = () => {
 
           <div className="mt-8 text-center">
             <button 
-              onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); }}
+              onClick={() => { 
+                setIsLogin(!isLogin); 
+                setError(''); 
+                setSuccess(''); 
+                if (passwordInputRef.current) passwordInputRef.current.value = '';
+              }}
               className="text-xs font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
             >
               {isLogin ? t('dontHaveAccount') : t('alreadyHaveAccount')}{' '}

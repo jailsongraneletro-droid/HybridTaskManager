@@ -6,11 +6,15 @@ import { useLanguage } from '../utils/i18n';
 import { User as UserIcon, Mail, Lock, Image as ImageIcon, Camera, LogOut } from 'lucide-react';
 import { DataService } from '../services/dataService';
 
+type ProfileUpdatePayload = Partial<Pick<User, 'name' | 'email' | 'avatar'>> & {
+  newPassword?: string;
+};
+
 interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: User;
-  onUpdate: (userId: string, data: Partial<User>) => void;
+  onUpdate: (userId: string, data: ProfileUpdatePayload) => void;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user, onUpdate }) => {
@@ -18,23 +22,57 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [avatar, setAvatar] = useState(user.avatar || '');
-  const [password, setPassword] = useState(user.password || '');
+  const [error, setError] = useState('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
         setName(user.name);
         setEmail(user.email);
         setAvatar(user.avatar || '');
-        setPassword(user.password || '');
+        if (passwordInputRef.current) passwordInputRef.current.value = '';
+        setError('');
     }
   }, [isOpen, user]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(user.id, { name, email, avatar, password });
-    onClose();
+    setError('');
+
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = passwordInputRef.current?.value?.trim() || '';
+
+    if (cleanName.length < 2) {
+      setError('O nome deve ter pelo menos 2 caracteres.');
+      return;
+    }
+
+    if (!validateEmail(cleanEmail)) {
+      setError('Informe um e-mail válido.');
+      return;
+    }
+
+    if (cleanPassword && cleanPassword.length < 8) {
+      setError('A nova senha deve ter pelo menos 8 caracteres.');
+      return;
+    }
+
+    try {
+      await onUpdate(user.id, { name: cleanName, email: cleanEmail, avatar, newPassword: cleanPassword || undefined });
+      if (passwordInputRef.current) passwordInputRef.current.value = '';
+      onClose();
+    } catch (err: any) {
+      if (err?.message === 'PASSWORD_TOO_WEAK') {
+        setError('A nova senha deve ter pelo menos 8 caracteres.');
+      } else {
+        setError('Não foi possível atualizar o perfil. Verifique os dados e tente novamente.');
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -62,6 +100,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t('profileSettings')}>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="text-[10px] font-semibold text-red-600 bg-red-50 dark:bg-red-950/20 rounded-lg px-3 py-2">
+            {error}
+          </div>
+        )}
         
         {/* Avatar Selection */}
         <div className="flex flex-col items-center gap-4 py-2 border-b border-slate-100 dark:border-slate-800 pb-6 mb-2">
@@ -158,8 +201,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                 <input 
                     type="password" 
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
+                  ref={passwordInputRef}
                     className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-1 focus:ring-indigo-500 text-[11px]"
                     placeholder="Deixe em branco para manter"
                 />

@@ -2,6 +2,11 @@
 import { BoardData, Column, Task, User, Priority, Assignee, Note } from '../types';
 import { supabase } from '../utils/supabaseClient';
 import { DEFAULT_PRIORITIES, DEFAULT_COLUMNS } from '../constants';
+import { sanitizeHtml } from '../utils/sanitizeHtml';
+
+type ProfileUpdatePayload = Partial<Pick<User, 'name' | 'email' | 'avatar'>> & {
+  newPassword?: string;
+};
 
 export const DataService = {
   
@@ -30,16 +35,24 @@ export const DataService = {
     }
   },
 
-  updateCurrentUser: async (userId: string, updates: Partial<User>): Promise<User> => {
-    const { name, email, avatar, password } = updates;
+  updateCurrentUser: async (userId: string, updates: ProfileUpdatePayload): Promise<User> => {
+    const { name, email, avatar, newPassword } = updates;
+    const cleanName = typeof name === 'string' ? name.trim() : undefined;
+    const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : undefined;
+    const cleanAvatar = typeof avatar === 'string' ? avatar.trim() : undefined;
+    const cleanPassword = typeof newPassword === 'string' ? newPassword.trim() : undefined;
     
-    if (password) {
-      const { error: authError } = await supabase.auth.updateUser({ password });
+    if (cleanPassword) {
+      if (cleanPassword.length < 8) {
+        throw new Error('PASSWORD_TOO_WEAK');
+      }
+
+      const { error: authError } = await supabase.auth.updateUser({ password: cleanPassword });
       if (authError) throw authError;
     }
 
-    if (email) {
-      const { error: emailError } = await supabase.auth.updateUser({ email });
+    if (cleanEmail) {
+      const { error: emailError } = await supabase.auth.updateUser({ email: cleanEmail });
       if (emailError) throw emailError;
     }
     
@@ -47,9 +60,9 @@ export const DataService = {
       .from('profiles')
       .upsert({ 
         id: userId, 
-        name: name, 
-        email: email, 
-        avatar: avatar 
+        name: cleanName, 
+        email: cleanEmail, 
+        avatar: cleanAvatar 
       })
       .select()
       .single();
@@ -66,12 +79,13 @@ export const DataService = {
 
   login: async (email: string, password?: string): Promise<User> => {
     if (!password) throw new Error("Senha obrigatória");
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const cleanEmail = email.trim().toLowerCase();
+    const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     if (error) throw error;
     if (data.user) {
         return {
             id: data.user.id,
-            name: data.user.user_metadata.name || email,
+        name: data.user.user_metadata.name || cleanEmail,
             email: data.user.email!,
             avatar: data.user.user_metadata.avatar
         };
@@ -80,25 +94,32 @@ export const DataService = {
   },
 
   signup: async (name: string, email: string, password: string): Promise<User | null> => {
-    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`;
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(cleanName)}&background=random`;
     const { data, error } = await supabase.auth.signUp({
-        email, 
+        email: cleanEmail,
         password, 
         options: { 
-          data: { name, avatar: avatarUrl },
+          data: { name: cleanName, avatar: avatarUrl },
           emailRedirectTo: window.location.origin
         }
     });
 
     if (error) throw error;
+
+    const userIdentities = data.user?.identities;
+    if (data.user && !data.session && Array.isArray(userIdentities) && userIdentities.length === 0) {
+      throw new Error('EMAIL_ALREADY_REGISTERED');
+    }
     
     if (data.user) {
          if (!data.session) {
              throw new Error("CONFIRM_EMAIL");
          }
          
-         await supabase.from('profiles').upsert({ id: data.user.id, name, email, avatar: avatarUrl });
-         const newUser: User = { id: data.user.id, name, email, avatar: avatarUrl };
+         await supabase.from('profiles').upsert({ id: data.user.id, name: cleanName, email: cleanEmail, avatar: avatarUrl });
+         const newUser: User = { id: data.user.id, name: cleanName, email: cleanEmail, avatar: avatarUrl };
          await DataService.seedUserData(newUser);
          return newUser;
     }
@@ -432,7 +453,7 @@ export const DataService = {
     const { error } = await supabase.from('kanban_notes').insert({
       id: noteId,
       title: note.title,
-      content: note.content,
+      content: sanitizeHtml(note.content || ''),
       color: note.color,
       user_id: user.id
     });
@@ -442,7 +463,7 @@ export const DataService = {
   updateNote: async (note: Note): Promise<void> => {
     const { error } = await supabase.from('kanban_notes').update({
       title: note.title,
-      content: note.content,
+      content: sanitizeHtml(note.content || ''),
       color: note.color
     }).eq('id', note.id);
     if (error) throw error;

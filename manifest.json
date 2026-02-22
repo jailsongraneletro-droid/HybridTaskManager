@@ -8,15 +8,15 @@
   "theme_color": "#4f46e5",
   "icons": [
     {
-      "src": "https://ui-avatars.com/api/?name=H+T&background=4f46e5&color=fff&size=192",
+      "src": "/icons/icon-192.svg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "https://ui-avatars.com/api/?name=H+T&background=4f46e5&color=fff&size=512",
+      "src": "/icons/icon-512.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml"
     }
   ]
 }

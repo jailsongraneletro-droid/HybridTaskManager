@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { 
   ClipboardList, LayoutDashboard, Settings, Plus, Bell, Calendar, 
   Kanban, List, Menu, RefreshCw, StickyNote, Activity, Layers, 
@@ -52,6 +54,7 @@ const AppContent = () => {
   const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
   const [dueQueue, setDueQueue] = useState<Task[]>([]);
   const [activeDue, setActiveDue] = useState<Task | null>(null);
+  const [nativeNotificationsGranted, setNativeNotificationsGranted] = useState(false);
 
   const urlBase64ToUint8Array = (base64String: string) => {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -143,6 +146,15 @@ const AppContent = () => {
     }
   };
 
+  const getNotificationId = (value: string) => {
+    let hash = 0;
+    for (let index = 0; index < value.length; index++) {
+      hash = ((hash << 5) - hash) + value.charCodeAt(index);
+      hash |= 0;
+    }
+    return Math.abs(hash) % 2147483000;
+  };
+
   useEffect(() => { fetchBoard(); }, []);
 
   useEffect(() => {
@@ -181,6 +193,85 @@ const AppContent = () => {
     registerPush();
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    if (!Capacitor.isNativePlatform()) return;
+
+    const setupNativeNotifications = async () => {
+      try {
+        const permission = await LocalNotifications.requestPermissions();
+        setNativeNotificationsGranted(permission.display === 'granted');
+        if (permission.display === 'granted') {
+          await LocalNotifications.createChannel({
+            id: 'due-tasks',
+            name: 'Tarefas vencidas',
+            description: 'Alertas de vencimento de tarefas',
+            importance: 5,
+            visibility: 1,
+            vibration: true,
+          });
+        }
+      } catch (error) {
+        console.error('Falha ao solicitar permissão de notificação nativa:', error);
+        setNativeNotificationsGranted(false);
+      }
+    };
+
+    setupNativeNotifications();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (!Capacitor.isNativePlatform()) return;
+    if (!nativeNotificationsGranted) return;
+
+    const syncNativeDueNotifications = async () => {
+      try {
+        const tasks = Object.values(boardData.tasks) as Task[];
+        const now = Date.now();
+
+        const notifications = tasks
+          .filter((task) => {
+            if (!task?.dueDate) return false;
+            if (task.status === doneColumnId) return false;
+            const due = new Date(task.dueDate).getTime();
+            return !Number.isNaN(due);
+          })
+          .map((task) => {
+            const due = new Date(task.dueDate).getTime();
+            const at = new Date(Math.max(due, now + 1500));
+
+            return {
+              id: getNotificationId(task.id),
+              title: 'Tarefa vencida',
+              body: task.title,
+              schedule: { at, allowWhileIdle: true },
+              channelId: 'due-tasks',
+              extra: { taskId: task.id },
+            };
+          });
+
+        const activeIds = new Set<number>(notifications.map((notification) => notification.id));
+        const pending = await LocalNotifications.getPending();
+        const toCancel = pending.notifications
+          .filter((notification) => !activeIds.has(notification.id))
+          .map((notification) => ({ id: notification.id }));
+
+        if (toCancel.length > 0) {
+          await LocalNotifications.cancel({ notifications: toCancel });
+        }
+
+        if (notifications.length > 0) {
+          await LocalNotifications.schedule({ notifications });
+        }
+      } catch (error) {
+        console.error('Falha ao sincronizar notificações nativas:', error);
+      }
+    };
+
+    syncNativeDueNotifications();
+  }, [boardData.tasks, doneColumnId, nativeNotificationsGranted, user]);
+
   const handleDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
     if (!destination) return;
@@ -189,32 +280,54 @@ const AppContent = () => {
       return;
     }
 
-    const newBoard = { ...boardData };
-    const sourceCol = newBoard.columns[source.droppableId];
-    const destCol = newBoard.columns[destination.droppableId];
+    const sourceId = source.droppableId;
+    const destId = destination.droppableId;
 
-    if (sourceCol && destCol) {
-      // Remove o item usando o ID real, prevenindo erros se a lista visual estiver filtrada
-      const sourceTaskIdx = sourceCol.taskIds.indexOf(draggableId);
-      if (sourceTaskIdx !== -1) {
-        sourceCol.taskIds.splice(sourceTaskIdx, 1);
-      }
-      
-      // Insere na nova posição da coluna de destino
-      destCol.taskIds.splice(destination.index, 0, draggableId);
-      
-      setBoardData({ ...newBoard });
+    const sourceColBase = boardData.columns[sourceId];
+    const destColBase = boardData.columns[destId];
+    if (!sourceColBase || !destColBase) return;
 
-      if (user) {
-        persistColumnOrder(user.id, sourceCol.id, sourceCol.taskIds);
-        persistColumnOrder(user.id, destCol.id, destCol.taskIds);
+    const sourceCol = {
+      ...sourceColBase,
+      taskIds: [...sourceColBase.taskIds],
+    };
+    const destCol = sourceId === destId
+      ? sourceCol
+      : {
+          ...destColBase,
+          taskIds: [...destColBase.taskIds],
+        };
+
+    const sourceTaskIdx = sourceCol.taskIds.indexOf(draggableId);
+    if (sourceTaskIdx === -1) return;
+
+    sourceCol.taskIds.splice(sourceTaskIdx, 1);
+    destCol.taskIds.splice(destination.index, 0, draggableId);
+
+    const updatedTask = boardData.tasks[draggableId]
+      ? { ...boardData.tasks[draggableId], status: destId }
+      : undefined;
+
+    setBoardData((prev) => ({
+      ...prev,
+      tasks: updatedTask
+        ? { ...prev.tasks, [draggableId]: updatedTask }
+        : prev.tasks,
+      columns: {
+        ...prev.columns,
+        [sourceId]: sourceCol,
+        [destId]: destCol,
+      },
+    }));
+
+    try {
+      await DataService.updateTaskOrder(sourceId, sourceCol.taskIds);
+      if (sourceId !== destId) {
+        await DataService.updateTaskOrder(destId, destCol.taskIds);
       }
-      
-      // Persiste a ordem no banco
-      await DataService.updateTaskOrder(sourceCol.id, sourceCol.taskIds);
-      if (sourceCol.id !== destCol.id) {
-        await DataService.updateTaskOrder(destCol.id, destCol.taskIds);
-      }
+    } catch (error) {
+      console.error('Erro ao persistir drag and drop:', error);
+      await fetchBoard(true);
     }
   };
 
@@ -231,6 +344,15 @@ const AppContent = () => {
   const handleTaskDelete = async (taskId: string) => {
     const confirmed = window.confirm('Enviar esta tarefa para a lixeira?');
     if (!confirmed) return;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await LocalNotifications.cancel({ notifications: [{ id: getNotificationId(taskId) }] });
+      } catch (error) {
+        console.error('Falha ao cancelar notificação da tarefa removida:', error);
+      }
+    }
+
     await DataService.deleteTask(taskId);
     fetchBoard(true);
     setIsTaskModalOpen(false);
@@ -243,13 +365,15 @@ const AppContent = () => {
 
   useEffect(() => {
     if (!user) return;
-    if (typeof window === 'undefined' || !('Notification' in window)) return;
+
+    const isNative = Capacitor.isNativePlatform();
+    if (!isNative && (typeof window === 'undefined' || !('Notification' in window))) return;
 
     const notifiedKey = `hybridtask-notified:${user.id}`;
     const readNotified = () => new Set<string>(JSON.parse(localStorage.getItem(notifiedKey) || '[]'));
     const writeNotified = (set: Set<string>) => localStorage.setItem(notifiedKey, JSON.stringify(Array.from(set)));
 
-    const checkAndNotify = () => {
+    const checkAndNotify = async () => {
       if (document.visibilityState !== 'visible') return;
       const tasks = Object.values(boardData.tasks) as Task[];
       const now = Date.now();
@@ -262,17 +386,21 @@ const AppContent = () => {
         if (Number.isNaN(due)) return;
         if (due <= now && !notified.has(task.id)) {
           setDueQueue((prev) => (prev.some((t) => t.id === task.id) ? prev : [...prev, task]));
-          if (Notification.permission === 'granted') {
-            new Notification('Tarefa vencida', {
-              body: task.title,
-              tag: task.id
-            });
-            notified.add(task.id);
-          } else if (Notification.permission === 'default') {
-            Notification.requestPermission();
+          if (isNative) {
             notified.add(task.id);
           } else {
-            notified.add(task.id);
+            if (Notification.permission === 'granted') {
+              new Notification('Tarefa vencida', {
+                body: task.title,
+                tag: task.id
+              });
+              notified.add(task.id);
+            } else if (Notification.permission === 'default') {
+              Notification.requestPermission();
+              notified.add(task.id);
+            } else {
+              notified.add(task.id);
+            }
           }
         }
       });
@@ -280,10 +408,12 @@ const AppContent = () => {
       writeNotified(notified);
     };
 
-    const interval = window.setInterval(checkAndNotify, 30000);
+    const interval = window.setInterval(() => {
+      checkAndNotify();
+    }, 30000);
     checkAndNotify();
     return () => window.clearInterval(interval);
-  }, [boardData.tasks, doneColumnId, user]);
+  }, [boardData.tasks, doneColumnId, nativeNotificationsGranted, user]);
 
   useEffect(() => {
     if (activeDue || dueQueue.length === 0) return;
@@ -412,7 +542,7 @@ const AppContent = () => {
       )}
 
       <main className="flex-1 flex flex-col min-w-0 relative">
-        <header className="h-12 flex items-center justify-between px-3 sm:px-4 bg-white dark:bg-[#1a1d21] border-b border-slate-200 dark:border-slate-800 z-40">
+        <header className="safe-top safe-top-height flex items-center justify-between px-3 sm:px-4 bg-white dark:bg-[#1a1d21] border-b border-slate-200 dark:border-slate-800 z-40">
            <div className="flex items-center gap-2">
              <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden p-1 text-slate-500"><Menu size={18} /></button>
              <h1 className="text-[11px] sm:text-xs font-bold tracking-widest dark:text-white uppercase truncate max-w-[140px] sm:max-w-none">

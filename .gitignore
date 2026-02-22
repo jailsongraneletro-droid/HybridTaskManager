@@ -27,3 +27,8 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Android signing secrets (nunca commitar)
+android/keystore.properties
+android/*.keystore
+android/*.jks
