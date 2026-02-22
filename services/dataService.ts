@@ -21,12 +21,26 @@ type AnyProfile = {
   last_login?: string;
 };
 
-const getUnifiedProfile = async (userId: string): Promise<AnyProfile | null> => {
+const normalizeRole = (role?: string): string => {
+  const normalized = (role || '').trim().toLowerCase();
+  return normalized === 'admin' ? 'admin' : 'user';
+};
+
+const getUnifiedProfile = async (userId: string, email?: string): Promise<AnyProfile | null> => {
   const userProfilesRes = await supabase
     .from('user_profiles')
     .select('*')
     .eq('id', userId)
     .maybeSingle();
+
+  let userProfilesByEmailRes: any = { data: null, error: null };
+  if (email) {
+    userProfilesByEmailRes = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle();
+  }
 
   const profilesRes = await supabase
     .from('profiles')
@@ -37,16 +51,32 @@ const getUnifiedProfile = async (userId: string): Promise<AnyProfile | null> => 
   const fromUserProfiles = (!userProfilesRes.error && userProfilesRes.data)
     ? (userProfilesRes.data as AnyProfile)
     : null;
+  const fromUserProfilesByEmail = (!userProfilesByEmailRes.error && userProfilesByEmailRes.data)
+    ? (userProfilesByEmailRes.data as AnyProfile)
+    : null;
   const fromProfiles = (!profilesRes.error && profilesRes.data)
     ? (profilesRes.data as AnyProfile)
     : null;
 
-  if (!fromUserProfiles && !fromProfiles) return null;
+  if (!fromUserProfiles && !fromUserProfilesByEmail && !fromProfiles) return null;
+
+  const merged = {
+    ...(fromProfiles || {}),
+    ...(fromUserProfilesByEmail || {}),
+    ...(fromUserProfiles || {}),
+  } as AnyProfile;
+
+  const resolvedRole = [
+    fromUserProfiles?.role,
+    fromUserProfilesByEmail?.role,
+    fromProfiles?.role
+  ].map((value) => (value || '').trim().toLowerCase());
+
+  const hasAdmin = resolvedRole.includes('admin');
 
   return {
-    ...(fromProfiles || {}),
-    ...(fromUserProfiles || {}),
-    role: fromUserProfiles?.role || fromProfiles?.role || 'user',
+    ...merged,
+    role: hasAdmin ? 'admin' : normalizeRole(merged.role),
   } as AnyProfile;
 };
 
@@ -59,8 +89,8 @@ export const DataService = {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !session?.user) return null;
 
-        const profile = await getUnifiedProfile(session.user.id);
-        const userRole = profile?.role || 'user';
+        const profile = await getUnifiedProfile(session.user.id, session.user.email || undefined);
+        const userRole = normalizeRole(profile?.role);
         console.log('📋 getCurrentUser - Email:', session.user.email, 'Role:', userRole, 'Profile:', profile);
 
         return {
@@ -124,14 +154,14 @@ export const DataService = {
     const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     if (error) throw error;
     if (data.user) {
-        const profile = await getUnifiedProfile(data.user.id);
+        const profile = await getUnifiedProfile(data.user.id, data.user.email || cleanEmail);
         
         return {
             id: data.user.id,
             name: data.user.user_metadata.name || cleanEmail,
             email: data.user.email!,
             avatar: data.user.user_metadata.avatar,
-            role: profile?.role || 'user'
+            role: normalizeRole(profile?.role)
         };
     }
     throw new Error("Falha no login");
