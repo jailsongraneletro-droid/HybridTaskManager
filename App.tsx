@@ -102,6 +102,7 @@ const AppContent = () => {
       if (!silent) setLoading(true);
       const currUser = await DataService.getCurrentUser();
       if (currUser) {
+        console.log('✅ User loaded in App:', currUser.email, 'Role:', currUser.role);
         setUser(currUser);
         let data = await DataService.fetchBoardData(currUser.id);
         if (data.columnOrder.length === 0) {
@@ -467,6 +468,9 @@ const AppContent = () => {
     ...(user?.role === UserRole.ADMIN ? [{ to: '/admin', label: 'Admin', icon: Activity }] : []),
     { to: '/settings', label: t('settings'), icon: Settings },
   ];
+
+  console.log('🔧 NavItems check - User role:', user?.role, 'UserRole.ADMIN:', UserRole.ADMIN, 'Is Admin:', user?.role === UserRole.ADMIN);
+
 
   const handleEditTask = (task: Task) => {
     setSelectedTask(task);

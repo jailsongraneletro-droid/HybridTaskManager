@@ -23,12 +23,15 @@ export const DataService = {
           .eq('id', session.user.id)
           .maybeSingle();
 
+        const userRole = profile?.role || 'user';
+        console.log('📋 getCurrentUser - Email:', session.user.email, 'Role:', userRole, 'Profile:', profile);
+
         return {
             id: session.user.id,
             name: profile?.name || session.user.user_metadata.name || session.user.email,
             email: session.user.email!,
             avatar: profile?.avatar || session.user.user_metadata.avatar,
-            role: profile?.role || 'user'
+            role: userRole
         };
     } catch (e) {
         console.error("Critical error in getCurrentUser:", e);
