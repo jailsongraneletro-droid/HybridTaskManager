@@ -2,7 +2,19 @@
 
 ## 🔐 Como criar um usuário admin
 
-Como o sistema foi recém-implementado, você precisa criar um usuário admin manualmente no Supabase:
+**⚠️ IMPORTANTE:** Se você estiver tendo dificuldade para acessar `/#/admin`, veja o guia completo de SQL aqui:
+
+👉 **[ADMIN_SQL_SETUP.md](ADMIN_SQL_SETUP.md)** ← Abra este arquivo para instruções passo-a-passo com SQL
+
+---
+
+## ✅ Resumo Rápido
+
+1. **Acesse:** https://app.supabase.com → Seu projeto → SQL Editor
+2. **Execute os comandos SQL** do arquivo `ADMIN_SQL_SETUP.md`
+3. **Substitute seu email** no comando UPDATE
+4. **Faça logout e login novamente** para sincronizar
+5. **Acesse:** `/#/admin`
 
 ### **Opção 1: Via SQL (Recomendado)**
 
