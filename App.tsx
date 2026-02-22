@@ -21,7 +21,10 @@ import { LandingPage } from './views/LandingPage';
 import { AuthView } from './views/AuthView';
 import { TaskModal } from './components/TaskModal';
 import { ProfileModal } from './components/ProfileModal';
+import { UpdateBanner } from './components/UpdateChecker';
 import { Avatar } from './components/Shared';
+import { AdminPanel } from './views/AdminPanel';
+import { UserRole } from './types';
 import { DropResult } from '@hello-pangea/dnd';
 import { LanguageProvider, useLanguage } from './utils/i18n';
 import { INITIAL_DATA } from './constants';
@@ -440,9 +443,24 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<AuthView />} />
+        <Route path="/admin" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
+  }
+
+  // Rota de admin protegida por role
+  if (location.pathname === '/admin' && user.role !== UserRole.ADMIN) {
+    return (
+      <Routes>
+        <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    );
+  }
+
+  // Se for admin acessando /admin, mostrar painel
+  if (location.pathname === '/admin' && user.role === UserRole.ADMIN) {
+    return <AdminPanel onLogout={handleLogout} />;
   }
 
   const navItems = [
@@ -462,6 +480,9 @@ const AppContent = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-[#111315] overflow-hidden transition-all">
+      {/* Verificador de Atualizações */}
+      <UpdateBanner />
+
       {activeDue && (
         <div className="fixed bottom-4 right-4 z-[120] w-[280px] sm:w-[320px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1d21] shadow-2xl p-3">
           <div className="flex items-start gap-2">

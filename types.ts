@@ -5,6 +5,11 @@ export enum TaskStatus {
   DONE = 'Done',
 }
 
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user',
+}
+
 // Deprecated enum, kept for reference if needed, but logic moves to string IDs
 export enum TaskPriorityLegacy {
   LOW = 'Low',
@@ -17,6 +22,12 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  role?: UserRole;
+  maxDailyMinutes?: number; // Limite de minutos por dia (null = ilimitado)
+  maxWeeklyMinutes?: number; // Limite de minutos por semana
+  isActive?: boolean;
+  createdAt?: string;
+  lastLogin?: string;
 }
 
 // New Interface for custom assignees per user board
