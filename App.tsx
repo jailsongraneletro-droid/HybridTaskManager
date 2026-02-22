@@ -464,6 +464,7 @@ const AppContent = () => {
     { to: '/calendar', label: t('calendar'), icon: Calendar },
     { to: '/notes', label: t('notes'), icon: StickyNote },
     { to: '/trash', label: t('trash'), icon: Trash2 },
+    ...(user?.role === UserRole.ADMIN ? [{ to: '/admin', label: 'Admin', icon: Activity }] : []),
     { to: '/settings', label: t('settings'), icon: Settings },
   ];
 

@@ -27,7 +27,8 @@ export const DataService = {
             id: session.user.id,
             name: profile?.name || session.user.user_metadata.name || session.user.email,
             email: session.user.email!,
-            avatar: profile?.avatar || session.user.user_metadata.avatar
+            avatar: profile?.avatar || session.user.user_metadata.avatar,
+            role: profile?.role || 'user'
         };
     } catch (e) {
         console.error("Critical error in getCurrentUser:", e);
@@ -83,11 +84,18 @@ export const DataService = {
     const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     if (error) throw error;
     if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .maybeSingle();
+        
         return {
             id: data.user.id,
-        name: data.user.user_metadata.name || cleanEmail,
+            name: data.user.user_metadata.name || cleanEmail,
             email: data.user.email!,
-            avatar: data.user.user_metadata.avatar
+            avatar: data.user.user_metadata.avatar,
+            role: profile?.role || 'user'
         };
     }
     throw new Error("Falha no login");
