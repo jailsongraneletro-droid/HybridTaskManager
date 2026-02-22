@@ -8,6 +8,48 @@ type ProfileUpdatePayload = Partial<Pick<User, 'name' | 'email' | 'avatar'>> & {
   newPassword?: string;
 };
 
+type AnyProfile = {
+  id: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
+  role?: string;
+  is_active?: boolean;
+  max_daily_minutes?: number | null;
+  max_weekly_minutes?: number | null;
+  created_at?: string;
+  last_login?: string;
+};
+
+const getUnifiedProfile = async (userId: string): Promise<AnyProfile | null> => {
+  const userProfilesRes = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  const profilesRes = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+
+  const fromUserProfiles = (!userProfilesRes.error && userProfilesRes.data)
+    ? (userProfilesRes.data as AnyProfile)
+    : null;
+  const fromProfiles = (!profilesRes.error && profilesRes.data)
+    ? (profilesRes.data as AnyProfile)
+    : null;
+
+  if (!fromUserProfiles && !fromProfiles) return null;
+
+  return {
+    ...(fromProfiles || {}),
+    ...(fromUserProfiles || {}),
+    role: fromUserProfiles?.role || fromProfiles?.role || 'user',
+  } as AnyProfile;
+};
+
 export const DataService = {
   
   // --- Auth & User ---
@@ -16,13 +58,8 @@ export const DataService = {
     try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError || !session?.user) return null;
-        
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .maybeSingle();
 
+        const profile = await getUnifiedProfile(session.user.id);
         const userRole = profile?.role || 'user';
         console.log('📋 getCurrentUser - Email:', session.user.email, 'Role:', userRole, 'Profile:', profile);
 
@@ -87,11 +124,7 @@ export const DataService = {
     const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     if (error) throw error;
     if (data.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.user.id)
-          .maybeSingle();
+        const profile = await getUnifiedProfile(data.user.id);
         
         return {
             id: data.user.id,

@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BoardData, Task } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { CheckCircle, AlertTriangle, Activity, Layers, BarChart3, Users, Clock, ArrowRight } from 'lucide-react';
@@ -12,6 +12,42 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
   const { t } = useLanguage();
+
+  const statusChartRef = useRef<HTMLDivElement>(null);
+  const workloadChartRef = useRef<HTMLDivElement>(null);
+  const [statusChartReady, setStatusChartReady] = useState(false);
+  const [workloadChartReady, setWorkloadChartReady] = useState(false);
+
+  useEffect(() => {
+    const statusNode = statusChartRef.current;
+    const workloadNode = workloadChartRef.current;
+    if (!statusNode && !workloadNode) return;
+
+    const updateStatus = () => {
+      if (!statusNode) return;
+      const { width, height } = statusNode.getBoundingClientRect();
+      setStatusChartReady(width > 0 && height > 0);
+    };
+
+    const updateWorkload = () => {
+      if (!workloadNode) return;
+      const { width, height } = workloadNode.getBoundingClientRect();
+      setWorkloadChartReady(width > 0 && height > 0);
+    };
+
+    updateStatus();
+    updateWorkload();
+
+    const observer = new ResizeObserver(() => {
+      updateStatus();
+      updateWorkload();
+    });
+
+    if (statusNode) observer.observe(statusNode);
+    if (workloadNode) observer.observe(workloadNode);
+
+    return () => observer.disconnect();
+  }, []);
   
   if (!data || !data.columnOrder || data.columnOrder.length === 0) {
     return (
@@ -91,19 +127,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Distribuição por Status */}
-        <div className="lg:col-span-1 bg-white dark:bg-[#1a1d21] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#2a2f36] shadow-sm">
+        <div className="lg:col-span-1 min-w-0 bg-white dark:bg-[#1a1d21] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#2a2f36] shadow-sm">
           <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Layers size={14} /> Distribuição de Status</h3>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={statusData} innerRadius={50} outerRadius={70} dataKey="value" animationDuration={800} stroke="none">
-                  {statusData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #2a2f36', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
-                />
-              </PieChart>
-            </ResponsiveContainer>
+          <div ref={statusChartRef} className="h-48 min-w-0">
+            {statusChartReady && (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={statusData} innerRadius={50} outerRadius={70} dataKey="value" animationDuration={800} stroke="none">
+                    {statusData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #2a2f36', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
             {statusData.map((s, i) => (
@@ -116,21 +154,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
         </div>
 
         {/* Carga por Responsável */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#1a1d21] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#2a2f36] shadow-sm">
+        <div className="lg:col-span-2 min-w-0 bg-white dark:bg-[#1a1d21] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#2a2f36] shadow-sm">
           <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Users size={14} /> Carga por Responsável</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={assigneeWorkload} layout="vertical" margin={{ left: -10, right: 20 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" tick={{fontSize: 9, fill: '#aeb7c2', fontWeight: 600}} axisLine={false} tickLine={false} width={70} />
-                <Tooltip 
-                  cursor={{fill: 'rgba(255,255,255,0.02)'}} 
-                  contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #2a2f36', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
-                />
-                <Bar dataKey="tasks" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={12} name="Total" />
-                <Bar dataKey="done" fill="#10b981" radius={[0, 4, 4, 0]} barSize={12} name="Concluídas" />
-              </BarChart>
-            </ResponsiveContainer>
+          <div ref={workloadChartRef} className="h-64 min-w-0">
+            {workloadChartReady && (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={assigneeWorkload} layout="vertical" margin={{ left: -10, right: 20 }}>
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" tick={{fontSize: 9, fill: '#aeb7c2', fontWeight: 600}} axisLine={false} tickLine={false} width={70} />
+                  <Tooltip 
+                    cursor={{fill: 'rgba(255,255,255,0.02)'}} 
+                    contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #2a2f36', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
+                  />
+                  <Bar dataKey="tasks" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={12} name="Total" />
+                  <Bar dataKey="done" fill="#10b981" radius={[0, 4, 4, 0]} barSize={12} name="Concluídas" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
