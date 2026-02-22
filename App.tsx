@@ -171,7 +171,7 @@ const AppContent = () => {
 
     const registerPush = async () => {
       try {
-        const reg = await navigator.serviceWorker.register('/sw.js');
+        const reg = await navigator.serviceWorker.getRegistration('/') || await navigator.serviceWorker.register('/sw.js');
         if (Notification.permission === 'default') {
           await Notification.requestPermission();
         }
@@ -455,7 +455,27 @@ const AppContent = () => {
     if (user.role === UserRole.ADMIN) {
       return <AdminPanel onLogout={handleLogout} />;
     }
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <div className="h-full flex items-center justify-center p-4">
+        <div className="w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a1d21] p-6 shadow-sm">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Acesso restrito ao admin</h2>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Seu usuário atual está com perfil <strong>{user.role || 'user'}</strong> e não pode acessar o painel administrativo.
+          </p>
+          <p className="mt-2 text-xs text-slate-500 dark:text-slate-500">
+            Faça a promoção para admin no Supabase e entre novamente para atualizar a sessão.
+          </p>
+          <div className="mt-4">
+            <button
+              onClick={() => window.location.assign('/#/dashboard')}
+              className="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+            >
+              Voltar ao dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const navItems = [

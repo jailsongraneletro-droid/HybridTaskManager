@@ -1,7 +1,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { BoardData, Task } from '../types';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { CheckCircle, AlertTriangle, Activity, Layers, BarChart3, Users, Clock, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../utils/i18n';
 
@@ -15,8 +15,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
 
   const statusChartRef = useRef<HTMLDivElement>(null);
   const workloadChartRef = useRef<HTMLDivElement>(null);
-  const [statusChartReady, setStatusChartReady] = useState(false);
-  const [workloadChartReady, setWorkloadChartReady] = useState(false);
+  const [statusChartSize, setStatusChartSize] = useState({ width: 0, height: 0 });
+  const [workloadChartSize, setWorkloadChartSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     const statusNode = statusChartRef.current;
@@ -26,13 +26,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
     const updateStatus = () => {
       if (!statusNode) return;
       const { width, height } = statusNode.getBoundingClientRect();
-      setStatusChartReady(width > 0 && height > 0);
+      setStatusChartSize({ width: Math.floor(width), height: Math.floor(height) });
     };
 
     const updateWorkload = () => {
       if (!workloadNode) return;
       const { width, height } = workloadNode.getBoundingClientRect();
-      setWorkloadChartReady(width > 0 && height > 0);
+      setWorkloadChartSize({ width: Math.floor(width), height: Math.floor(height) });
     };
 
     updateStatus();
@@ -130,17 +130,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
         <div className="lg:col-span-1 min-w-0 bg-white dark:bg-[#1a1d21] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#2a2f36] shadow-sm">
           <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Layers size={14} /> Distribuição de Status</h3>
           <div ref={statusChartRef} className="h-48 min-w-0">
-            {statusChartReady && (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={statusData} innerRadius={50} outerRadius={70} dataKey="value" animationDuration={800} stroke="none">
-                    {statusData.map((e, i) => <Cell key={i} fill={e.color} />)}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #2a2f36', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+            {statusChartSize.width > 10 && statusChartSize.height > 10 && (
+              <PieChart width={statusChartSize.width} height={statusChartSize.height}>
+                <Pie data={statusData} innerRadius={50} outerRadius={70} dataKey="value" animationDuration={800} stroke="none">
+                  {statusData.map((e, i) => <Cell key={i} fill={e.color} />)}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #2a2f36', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
+                />
+              </PieChart>
             )}
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2">
@@ -157,19 +155,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ data, onEditTask }) => {
         <div className="lg:col-span-2 min-w-0 bg-white dark:bg-[#1a1d21] p-5 sm:p-6 rounded-2xl border border-slate-200 dark:border-[#2a2f36] shadow-sm">
           <h3 className="text-[10px] font-bold uppercase mb-6 text-slate-800 dark:text-white flex items-center gap-2"><Users size={14} /> Carga por Responsável</h3>
           <div ref={workloadChartRef} className="h-64 min-w-0">
-            {workloadChartReady && (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={assigneeWorkload} layout="vertical" margin={{ left: -10, right: 20 }}>
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" tick={{fontSize: 9, fill: '#aeb7c2', fontWeight: 600}} axisLine={false} tickLine={false} width={70} />
-                  <Tooltip 
-                    cursor={{fill: 'rgba(255,255,255,0.02)'}} 
-                    contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #2a2f36', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
-                  />
-                  <Bar dataKey="tasks" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={12} name="Total" />
-                  <Bar dataKey="done" fill="#10b981" radius={[0, 4, 4, 0]} barSize={12} name="Concluídas" />
-                </BarChart>
-              </ResponsiveContainer>
+            {workloadChartSize.width > 10 && workloadChartSize.height > 10 && (
+              <BarChart width={workloadChartSize.width} height={workloadChartSize.height} data={assigneeWorkload} layout="vertical" margin={{ left: -10, right: 20 }}>
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" tick={{fontSize: 9, fill: '#aeb7c2', fontWeight: 600}} axisLine={false} tickLine={false} width={70} />
+                <Tooltip 
+                  cursor={{fill: 'rgba(255,255,255,0.02)'}} 
+                  contentStyle={{backgroundColor: '#1a1d21', border: '1px solid #2a2f36', fontSize: '10px', borderRadius: '8px', color: '#e9eef5'}} 
+                />
+                <Bar dataKey="tasks" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={12} name="Total" />
+                <Bar dataKey="done" fill="#10b981" radius={[0, 4, 4, 0]} barSize={12} name="Concluídas" />
+              </BarChart>
             )}
           </div>
         </div>
