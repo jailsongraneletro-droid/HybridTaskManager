@@ -449,19 +449,13 @@ const AppContent = () => {
     );
   }
 
-  // Rota de admin protegida por role
-  if (location.pathname === '/admin' && user.role !== UserRole.ADMIN) {
-    return (
-      <Routes>
-        <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    );
-  }
-
-  // Se for admin acessando /admin, mostrar painel
-  if (location.pathname === '/admin' && user.role === UserRole.ADMIN) {
-    return <AdminPanel onLogout={handleLogout} />;
-  }
+  // Componente wrapper para proteger rota admin
+  const AdminRoute = () => {
+    if (user.role === UserRole.ADMIN) {
+      return <AdminPanel onLogout={handleLogout} />;
+    }
+    return <Navigate to="/dashboard" replace />;
+  };
 
   const navItems = [
     { to: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
@@ -593,6 +587,7 @@ const AppContent = () => {
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5 custom-scrollbar bg-slate-50 dark:bg-[#111315]">
            <Routes>
               <Route path="/dashboard" element={<Dashboard data={boardData} onEditTask={handleEditTask} />} />
+              <Route path="/admin" element={<AdminRoute />} />
               <Route path="/kanban" element={<KanbanBoard data={boardData} onDragEnd={handleDragEnd} onEditTask={handleEditTask} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />
               <Route path="/table" element={<TableView data={boardData} onEditTask={handleEditTask} onDeleteTask={async(id) => { await DataService.deleteTask(id); fetchBoard(true); }} />} />
               <Route path="/calendar" element={<CalendarView data={boardData} onEditTask={handleEditTask} onAddTaskOnDate={(date) => { setSelectedTask({ dueDate: date } as Task); setIsTaskModalOpen(true); }} onUpdate={() => fetchBoard(true)} />} />
