@@ -26,6 +26,23 @@ const normalizeRole = (role?: string): string => {
   return normalized === 'admin' ? 'admin' : 'user';
 };
 
+const isEmailInAdminList = (email?: string): boolean => {
+  if (!email) return false;
+  const admins = (import.meta.env.VITE_ADMIN_EMAILS || '')
+    .split(',')
+    .map((value: string) => value.trim().toLowerCase())
+    .filter(Boolean);
+  return admins.includes(email.trim().toLowerCase());
+};
+
+const resolveRole = (options: { profileRole?: string; metadataRole?: string; email?: string }): string => {
+  const profileRole = normalizeRole(options.profileRole);
+  const metadataRole = normalizeRole(options.metadataRole);
+  if (profileRole === 'admin' || metadataRole === 'admin') return 'admin';
+  if (isEmailInAdminList(options.email)) return 'admin';
+  return 'user';
+};
+
 const getUnifiedProfile = async (userId: string, email?: string): Promise<AnyProfile | null> => {
   const userProfilesRes = await supabase
     .from('user_profiles')
@@ -90,7 +107,11 @@ export const DataService = {
         if (sessionError || !session?.user) return null;
 
         const profile = await getUnifiedProfile(session.user.id, session.user.email || undefined);
-        const userRole = normalizeRole(profile?.role);
+        const userRole = resolveRole({
+          profileRole: profile?.role,
+          metadataRole: session.user.user_metadata?.role,
+          email: session.user.email || undefined,
+        });
         console.log('📋 getCurrentUser - Email:', session.user.email, 'Role:', userRole, 'Profile:', profile);
 
         return {
@@ -161,7 +182,11 @@ export const DataService = {
             name: data.user.user_metadata.name || cleanEmail,
             email: data.user.email!,
             avatar: data.user.user_metadata.avatar,
-            role: normalizeRole(profile?.role)
+            role: resolveRole({
+              profileRole: profile?.role,
+              metadataRole: data.user.user_metadata?.role,
+              email: data.user.email || cleanEmail,
+            })
         };
     }
     throw new Error("Falha no login");
